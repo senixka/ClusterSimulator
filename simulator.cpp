@@ -1,3 +1,5 @@
+#include "matplotlibcpp.h"
+
 #include <algorithm>
 #include <cstdint>
 #include <filesystem>
@@ -10,12 +12,13 @@
 #include <string>
 #include <vector>
 
+namespace plt = matplotlibcpp;
 using namespace std;
 
-const uint64_t SPEEDUP_TIME = 4;
+const uint64_t SPEEDUP_JOB_TIME = 1;
+const uint64_t SPEEDUP_TASK_TIME = 1;
 
-class Task {
-public:
+struct Task {
     uint64_t estimate = 0;
     uint64_t endTime = 0;
     double cpuRequest = 0;
@@ -24,7 +27,7 @@ public:
     unsigned machineIndex = UINT32_MAX;
 
     friend bool operator>(const Task& lhs, const Task& rhs) {
-        return lhs.estimate > rhs.estimate;
+        return lhs.endTime > rhs.endTime;
     }
 };
 
@@ -38,7 +41,7 @@ public:
 
     JobMaster(istream& in) {
         in >> jobTime >> jobID >> user;
-        jobTime /= SPEEDUP_TIME;
+        jobTime /= SPEEDUP_JOB_TIME;
 
         size_t taskN;
         in >> taskN;
@@ -57,7 +60,7 @@ public:
     double memoryCapacity = 1;
     double diskSpaceCapacity = 1;
 
-    bool isPlaceable(const Task& task) const {
+    bool IsPlaceable(const Task& task) const {
         return task.cpuRequest <= cpuCapacity
             && task.memoryRequest <= memoryCapacity
             && task.diskSpaceRequest <= diskSpaceCapacity;
@@ -77,17 +80,39 @@ public:
 };
 
 class Cluster {
-public:
     uint64_t time = 0;
     uint64_t updateIteration = 0;
-    const uint64_t scheduleEach = 100;
-    priority_queue<Task, vector<Task>, greater<>> runningTask;
-    list<JobMaster> futureJobs;
-    list<JobMaster> currentJobs;
+    const uint64_t scheduleEach = 1000;
+
     vector<Machine> machine;
 
-    Cluster(size_t machineN = 12000) {
+    list<JobMaster> futureJobs;
+    list<JobMaster> currentJobs;
+    priority_queue<Task, vector<Task>, greater<>> runningTask;
+
+    long double usedCPU = 0;
+    long double usedMemory = 0;
+    long double usedDisk = 0;
+
+    long double totalCPU = 0;
+    long double totalMemory = 0;
+    long double totalDisk = 0;
+    
+    const uint64_t updateStatEach = 10'000'000;
+    uint64_t updateStatTime = 0;
+    
+    vector<float> statCPU;
+    vector<float> statMemory;
+    vector<float> statDisk;
+    vector<uint64_t> statTime;
+    
+
+public:
+    Cluster(size_t machineN = 12500) {
         machine.resize(machineN);
+        totalCPU = machine[0].cpuCapacity * machineN;
+        totalMemory = machine[0].memoryCapacity * machineN;
+        totalDisk = machine[0].diskSpaceCapacity * machineN;
 
         ifstream fin;
         fin.open("./prepared.txt");
@@ -103,7 +128,10 @@ public:
     }
 
     void Run() {
-        while (Update());
+        while (Update()) {
+        }
+        
+        DumpStat();
     }
 
     bool Update() {
@@ -125,7 +153,7 @@ public:
             Task task = runningTask.top();
             runningTask.pop();
             time = task.endTime;
-            machine[task.machineIndex].RemoveTask(task);
+            RemoveTaskFromMachine(task);
         } else {
             return false;
         }
@@ -135,37 +163,29 @@ public:
             PrintClusterStat();
             Schedule();
         }
-
-        return true;
-    }
-
-    void PrintClusterStat() {
-        double cpuFree = 0, memFree = 0, diskFree = 0;
-        auto size = static_cast<double>(machine.size());
-
-        for (size_t i = 0; i < machine.size(); ++i) {
-            cpuFree += machine[i].cpuCapacity;
-            memFree += machine[i].memoryCapacity;
-            diskFree += machine[i].diskSpaceCapacity;
+        
+        while (time > updateStatTime) {
+            statCPU.push_back(usedCPU * 100 / totalCPU);
+            statMemory.push_back(usedMemory * 100 / totalMemory);
+            statDisk.push_back(usedDisk * 100 / totalDisk);
+            statTime.push_back(updateStatTime);
+            
+            updateStatTime += updateStatEach;
         }
 
-        cout << fixed << setprecision(4) << cpuFree / size * 100 << "%\t" << memFree / size * 100 << "%\t" << diskFree / size * 100 << "%\t";
-        cout << runningTask.size() << "\t" << currentJobs.size() << "\t" << futureJobs.size() << '\n';
+        return true;
     }
 
     void Schedule() {
         for (auto& job : currentJobs) {
             for (auto task = job.pendingTask.begin(); task != job.pendingTask.end();) {
-                Task newTask = *task;
+                Task& newTask = *task;
                 newTask.machineIndex = UINT32_MAX;
 
                 for (size_t i = 0; i < machine.size(); ++i) {
-                    if (machine[i].isPlaceable(newTask)) {
-                        machine[i].PlaceTask(newTask);
-
-                        newTask.machineIndex = i;
-                        newTask.endTime = newTask.estimate != UINT64_MAX ? (newTask.estimate + time) / SPEEDUP_TIME : UINT64_MAX;
-
+                    if (machine[i].IsPlaceable(newTask)) {
+                        newTask.endTime = newTask.estimate != UINT64_MAX ? time + newTask.estimate / SPEEDUP_TASK_TIME : UINT64_MAX;
+                        PlaceTaskOnMachine(newTask, i);
                         runningTask.push(newTask);
                         break;
                     }
@@ -180,6 +200,23 @@ public:
         }
     }
 
+    inline void PlaceTaskOnMachine(Task& task, size_t machineIndex) {
+        task.machineIndex = machineIndex;
+        machine[machineIndex].PlaceTask(task);
+
+        usedCPU += task.cpuRequest;
+        usedMemory += task.memoryRequest;
+        usedDisk += task.diskSpaceRequest;
+    }
+
+    inline void RemoveTaskFromMachine(const Task& task) {
+        machine[task.machineIndex].RemoveTask(task);
+
+        usedCPU -= task.cpuRequest;
+        usedMemory -= task.memoryRequest;
+        usedDisk -= task.diskSpaceRequest;
+    }
+
     void DeleteFinishedJobs() {
         for (auto it = currentJobs.begin(); it != currentJobs.end();) {
             if (it->pendingTask.empty()) {
@@ -188,6 +225,31 @@ public:
                 ++it;
             }
         }
+    }
+
+    void PrintClusterStat() {
+        printf("CPU: %2.2f%%  Memory: %2.2f%%  Disk: %2.2f%%  ", float(usedCPU * 100 / totalCPU), float(usedMemory * 100 / totalMemory), float(usedDisk * 100 / totalDisk));
+        printf("%zu\t%zu\t%zu\n", runningTask.size(), currentJobs.size(), futureJobs.size());
+    }
+    
+    void DumpStat() {
+        float avgCPU = std::accumulate(statCPU.begin(), statCPU.end(), static_cast<long double>(0)) / statCPU.size();
+        float avgMemory = std::accumulate(statMemory.begin(), statMemory.end(), static_cast<long double>(0)) / statMemory.size();
+        float avgDisk = std::accumulate(statDisk.begin(), statDisk.end(), static_cast<long double>(0)) / statDisk.size();
+
+        plt::figure_size(1200, 500);
+        plt::title("Cluster resource utilization in Time");
+        plt::xlabel("Time (in microseconds)");
+        plt::ylabel("Resource (in percent)");
+        plt::plot(statTime, statCPU, {{"label", "CPU"}});
+        plt::plot(statTime, vector(statTime.size(), avgCPU), {{"label", "CPU AVG at " + to_string(avgCPU)}});
+        plt::plot(statTime, statMemory, {{"label", "Memory"}});
+        plt::plot(statTime, vector(statTime.size(), avgMemory), {{"label", "Memory AVG at " + to_string(avgMemory)}});
+        plt::plot(statTime, statDisk, {{"label", "Disk"}});
+        plt::plot(statTime, vector(statTime.size(), avgDisk), {{"label", "Disk AVG at " + to_string(avgDisk)}});
+        plt::legend();
+        plt::savefig("./stat/cluster_utilization_speedup_job_task_" + to_string(SPEEDUP_JOB_TIME) + "_" + to_string(SPEEDUP_TASK_TIME) + ".png");
+        plt::show();
     }
 };
 
