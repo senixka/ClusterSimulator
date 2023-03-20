@@ -12,11 +12,13 @@ namespace plt = matplotlibcpp;
 
 
 Cluster::Cluster(size_t machineN) {
-    machine.resize(machineN);
+//    machine.resize(machineN);
+//
+//    totalCPU = machine[0].cpuCapacity * machineN;
+//    totalMemory = machine[0].memoryCapacity * machineN;
+//    totalDisk = machine[0].diskSpaceCapacity * machineN;
 
-    totalCPU = machine[0].cpuCapacity * machineN;
-    totalMemory = machine[0].memoryCapacity * machineN;
-    totalDisk = machine[0].diskSpaceCapacity * machineN;
+    InitializeMachinesFromFile();
 
     {
         std::ifstream fin;
@@ -37,6 +39,27 @@ Cluster::Cluster(size_t machineN) {
     }
 
     clusterEvents.push(std::make_shared<ClusterEvent>(0, ClusterEventType::RUN_SCHEDULER));
+}
+
+void Cluster::InitializeMachinesFromFile() {
+    totalCPU = 0, totalMemory = 0, totalDisk = 0;
+
+    std::ifstream in;
+    in.open("../../prepared_machine.txt");
+
+    size_t nMachine;
+    in >> nMachine;
+
+    machine.resize(nMachine);
+
+    for (size_t i = 0; i < nMachine; ++i) {
+        in >> machine[i].cpuCapacity >> machine[i].memoryCapacity;
+        machine[i].diskSpaceCapacity = 1;
+
+        totalCPU += machine[i].cpuCapacity;
+        totalMemory += machine[i].memoryCapacity;
+        totalDisk += machine[i].diskSpaceCapacity;
+    }
 }
 
 void Cluster::Run() {

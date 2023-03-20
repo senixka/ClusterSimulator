@@ -59,6 +59,8 @@ public:
 
     void DeleteFinishedJobs();
 
+    void InitializeMachinesFromFile();
+
     void PrintClusterStat();
     void DumpStat();
 };

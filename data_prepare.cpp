@@ -45,11 +45,11 @@ void JobDump(ostream& out, string& user, uint64_t jobID, uint64_t jobTime, map<u
     for (auto& it : taskEvents) {
         list<Task>& mutation = it.second;
 
-        if (mutation.back().eventType <= EventType::SCHEDULE) {
+        if (mutation.back().eventType <= TaskAndJobEventType::SCHEDULE) {
             mutation.back().estimate = UINT64_MAX;
         } else {
             uint64_t endTime = mutation.back().time;
-            while (mutation.back().eventType != EventType::SUBMIT) mutation.pop_back();
+            while (mutation.back().eventType != TaskAndJobEventType::SUBMIT) mutation.pop_back();
             uint64_t startTime = mutation.back().time;
             mutation.back().estimate = endTime - startTime;
         }
@@ -78,7 +78,7 @@ int main() {
         string user;
         JobEvent jobEvent;
         while (log.NextJobEvent(jobEvent)) {
-            if (jobEvent.eventType >= EventType::UPDATE_PENDING) continue;
+            if (jobEvent.eventType >= TaskAndJobEventType::UPDATE_PENDING) continue;
 
             user = jobEvent.user.has_value() ? jobEvent.user.value() : "NONAME";
             job_events[{jobEvent.jobID, user}].emplace_back(jobEvent);
@@ -95,7 +95,7 @@ int main() {
 
         // First event in job must be SUBMIT
         for (const auto& it : job_events) {
-            if (it.second.front().eventType != EventType::SUBMIT) {
+            if (it.second.front().eventType != TaskAndJobEventType::SUBMIT) {
                 cout << "NO SUBMIT " << it.first.first << " " << it.first.second << endl;
             }
         }
@@ -138,14 +138,14 @@ int main() {
                     continue;
                 }
 
-                if (inner.second.front().eventType != EventType::SUBMIT) {
+                if (inner.second.front().eventType != TaskAndJobEventType::SUBMIT) {
                     cout << "NO SUBMIT: " << jobID << " " << user << " " << taskIndex << endl;
                 }
 
                 for (auto elem = inner.second.begin(); elem != inner.second.end(); ++elem) {
-                    if (elem->eventType == EventType::SCHEDULE) {
+                    if (elem->eventType == TaskAndJobEventType::SCHEDULE) {
                         --elem;
-                        if (elem->eventType != EventType::SUBMIT) {
+                        if (elem->eventType != TaskAndJobEventType::SUBMIT) {
                             cout << "NO SUBMIT BEFORE SCHEDULE (" << elem->eventType << ") " << jobID << " " << user << " " << taskIndex << endl;
                         }
                         ++elem;
@@ -153,7 +153,7 @@ int main() {
 
                     if (elem->eventType >= 3) { // REAL CASE: 0 2 0 1 4
                         --elem;
-                        if (elem->eventType > EventType::SCHEDULE) {
+                        if (elem->eventType > TaskAndJobEventType::SCHEDULE) {
                             cout << "NO SCHEDULE OR SUBMIT BEFORE DEAD (" << elem->eventType << ") " << jobID << " " << user << " " << taskIndex << endl;
                         }
                         ++elem;
