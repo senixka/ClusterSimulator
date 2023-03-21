@@ -2,22 +2,11 @@
 
 #include <fstream>
 #include <string>
-#include <numeric>
-
-#include "../matplotlibcpp.h"
-namespace plt = matplotlibcpp;
-
 
 #define PANIC(S) printf("PANIC: " S); abort();
 
 
 Cluster::Cluster(size_t machineN) {
-//    machine.resize(machineN);
-//
-//    totalCPU = machine[0].cpuCapacity * machineN;
-//    totalMemory = machine[0].memoryCapacity * machineN;
-//    totalDisk = machine[0].diskSpaceCapacity * machineN;
-
     InitializeMachinesFromFile();
 
     {
@@ -27,8 +16,8 @@ Cluster::Cluster(size_t machineN) {
         size_t jobN;
         fin >> jobN;
 
-        for (size_t i = 0; i < jobN / 15; ++i) {
-            auto job = std::make_shared<Job>(fin);
+        for (size_t i = 0; i < jobN / 25; ++i) {
+            Job* job = new Job(fin);
             job->eventTime = job->jobTime;
             job->clusterEventType = JOB_SUBMITTED;
 
@@ -38,27 +27,24 @@ Cluster::Cluster(size_t machineN) {
         fin.close();
     }
 
-    clusterEvents.push(std::make_shared<ClusterEvent>(0, ClusterEventType::RUN_SCHEDULER));
+    clusterEvents.push(new ClusterEvent(0, ClusterEventType::RUN_SCHEDULER));
+    clusterEvents.push(new ClusterEvent(0, ClusterEventType::UPDATE_STATISTICS));
 }
 
 void Cluster::InitializeMachinesFromFile() {
-    totalCPU = 0, totalMemory = 0, totalDisk = 0;
-
     std::ifstream in;
     in.open("../../prepared_machine.txt");
 
     size_t nMachine;
     in >> nMachine;
 
-    machine.resize(nMachine);
+    machines.resize(nMachine);
 
     for (size_t i = 0; i < nMachine; ++i) {
-        in >> machine[i].cpuCapacity >> machine[i].memoryCapacity;
-        machine[i].diskSpaceCapacity = 1;
+        in >> machines[i].cpuCapacity >> machines[i].memoryCapacity;
+        machines[i].diskSpaceCapacity = 1;
 
-        totalCPU += machine[i].cpuCapacity;
-        totalMemory += machine[i].memoryCapacity;
-        totalDisk += machine[i].diskSpaceCapacity;
+        statistics.OnMachineAdded(machines[i]);
     }
 }
 
@@ -66,11 +52,12 @@ void Cluster::Run() {
     while (Update()) {
     }
 
-    DumpStat();
+    statistics.OnSimulationFinished(time);
+    statistics.DumpStatistics();
 }
 
 bool Cluster::Update() {
-    if (currentJobs.empty() && clusterEvents.size() == 1) {
+    if (currentJobs.empty() && clusterEvents.size() == 2) {
         return false;
     }
 
@@ -79,34 +66,32 @@ bool Cluster::Update() {
     time = event->eventTime;
 
     if (event->clusterEventType == ClusterEventType::JOB_SUBMITTED) {
-        std::shared_ptr<Job> job = std::dynamic_pointer_cast<Job>(event);
+        Job* job = reinterpret_cast<Job*>(event);
 
+        statistics.OnJobSubmitted(time, job);
         currentJobs.push_front(job);
         scheduler.OnJobSubmitted(*currentJobs.front());
     } else if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
-        std::shared_ptr<Task> task = std::dynamic_pointer_cast<Task>(event);
+        Task* task = reinterpret_cast<Task*>(event);
 
+        statistics.OnTaskFinished(time, task);
         RemoveTaskFromMachine(*task);
         scheduler.OnTaskFinished(*task);
+        delete task;
     } else if (event->clusterEventType == ClusterEventType::RUN_SCHEDULER) {
-        PrintClusterStat();
+        statistics.PrintStatistics();
         DeleteFinishedJobs();
         scheduler.Schedule(*this);
 
         event->eventTime += scheduleEachTime;
         clusterEvents.push(event);
+    } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
+        statistics.UpdateUtilization(time, currentUsedCPU, currentUsedMemory, currentUsedDisk);
+
+        event->eventTime += updateStatisticsEachTime;
+        clusterEvents.push(event);
     } else {
         PANIC("BAD EVENT TYPE")
-    }
-
-    while (time > updateStatTime) {
-        statCPU.push_back(usedCPU * 100 / totalCPU);
-        statMemory.push_back(usedMemory * 100 / totalMemory);
-        statDisk.push_back(usedDisk * 100 / totalDisk);
-        statTime.push_back(updateStatTime);
-        statPendingTask.push_back(pendingTaskCount);
-
-        updateStatTime += updateStatEach;
     }
 
     return true;
@@ -114,54 +99,29 @@ bool Cluster::Update() {
 
 void Cluster::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
     task.machineIndex = machineIndex;
-    machine[machineIndex].PlaceTask(task);
+    machines[machineIndex].PlaceTask(task);
 
-    usedCPU += task.cpuRequest;
-    usedMemory += task.memoryRequest;
-    usedDisk += task.diskSpaceRequest;
-    --pendingTaskCount;
+    currentUsedCPU += task.cpuRequest;
+    currentUsedMemory += task.memoryRequest;
+    currentUsedDisk += task.diskSpaceRequest;
 }
 
 void Cluster::RemoveTaskFromMachine(const Task& task) {
-    machine[task.machineIndex].RemoveTask(task);
+    machines[task.machineIndex].RemoveTask(task);
 
-    usedCPU -= task.cpuRequest;
-    usedMemory -= task.memoryRequest;
-    usedDisk -= task.diskSpaceRequest;
+    currentUsedCPU -= task.cpuRequest;
+    currentUsedMemory -= task.memoryRequest;
+    currentUsedDisk-= task.diskSpaceRequest;
 }
 
 void Cluster::DeleteFinishedJobs() {
     for (auto it = currentJobs.begin(); it != currentJobs.end();) {
         if ((*it)->pendingTask.empty()) {
+            Job* job = *it;
             it = currentJobs.erase(it);
+            // delete job;
         } else {
             ++it;
         }
     }
-}
-
-void Cluster::PrintClusterStat() {
-    printf("CPU: %2.2f%%  Memory: %2.2f%%  Disk: %2.2f%%  ", float(usedCPU * 100 / totalCPU), float(usedMemory * 100 / totalMemory), float(usedDisk * 100 / totalDisk));
-    printf("%zu\t%zu\n", currentJobs.size(), clusterEvents.size());
-}
-
-void Cluster::DumpStat() {
-    float avgCPU = std::accumulate(statCPU.begin(), statCPU.end(), static_cast<long double>(0)) / statCPU.size();
-    float avgMemory = std::accumulate(statMemory.begin(), statMemory.end(), static_cast<long double>(0)) / statMemory.size();
-    float avgDisk = std::accumulate(statDisk.begin(), statDisk.end(), static_cast<long double>(0)) / statDisk.size();
-
-    plt::figure_size(1200, 500);
-    plt::title("Cluster resource utilization in Time");
-    plt::xlabel("Time (in microseconds)");
-    plt::ylabel("Resource (in percent)");
-    plt::plot(statTime, statCPU, {{"label", "CPU"}});
-    plt::plot(statTime, std::vector<uint64_t>(statTime.size(), avgCPU), {{"label", "CPU AVG at " + std::to_string(avgCPU)}});
-    plt::plot(statTime, statMemory, {{"label", "Memory"}});
-    plt::plot(statTime, std::vector<uint64_t>(statTime.size(), avgMemory), {{"label", "Memory AVG at " + std::to_string(avgMemory)}});
-    plt::plot(statTime, statDisk, {{"label", "Disk"}});
-    plt::plot(statTime, std::vector<uint64_t>(statTime.size(), avgDisk), {{"label", "Disk AVG at " + std::to_string(avgDisk)}});
-    plt::plot(statTime, statPendingTask, {{"label", "Pending"}});
-    plt::legend();
-    //plt::savefig("./stat/1_cluster_utilization_speedup_job_task_" + to_string(SPEEDUP_JOB_TIME) + "_" + to_string(SPEEDUP_TASK_TIME) + ".png");
-    plt::show();
 }

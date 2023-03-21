@@ -1,13 +1,15 @@
 #ifndef CLUSTERSIMULATOR_CLUSTEREVENT_H
 #define CLUSTERSIMULATOR_CLUSTEREVENT_H
 
-#include <memory>
+#include <cstdint>
+#include <tuple>
 
 
 enum ClusterEventType {
     TASK_FINISHED,
     JOB_SUBMITTED,
     RUN_SCHEDULER,
+    UPDATE_STATISTICS,
 };
 
 class ClusterEvent {
@@ -24,7 +26,7 @@ public:
 
 class ClusterEventPtrCompare {
 public:
-    bool operator() (const std::shared_ptr<ClusterEvent>& lhs, const std::shared_ptr<ClusterEvent>& rhs) {
+    bool operator() (const ClusterEvent* lhs, const ClusterEvent* rhs) {
         return std::tie(lhs->eventTime, lhs->eventTime) > std::tie(rhs->eventTime, rhs->eventTime);
     }
 };

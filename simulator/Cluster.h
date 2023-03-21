@@ -5,47 +5,37 @@
 #include "Job.h"
 #include "Machine.h"
 #include "Scheduler.h"
+#include "Statistics.h"
+
 #include <cstdlib>
 #include <vector>
-#include <memory>
 #include <queue>
 #include <list>
 
 
 class Cluster {
-    friend class Scheduler;
-
     uint64_t time = 0;
+
     const uint64_t scheduleEachTime = 1'000'000;
+    std::vector<Machine> machines;
 
-    std::vector<Machine> machine;
-    std::list<std::shared_ptr<Job>> currentJobs;
-    std::priority_queue<
-        std::shared_ptr<ClusterEvent>,
-        std::vector<std::shared_ptr<ClusterEvent>>,
-        ClusterEventPtrCompare
-    > clusterEvents;
+    std::list<Job*> currentJobs;
+    std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare> clusterEvents;
 
-    long double usedCPU = 0;
-    long double usedMemory = 0;
-    long double usedDisk = 0;
+    Statistics statistics;
 
-    long double totalCPU = 0;
-    long double totalMemory = 0;
-    long double totalDisk = 0;
-
-    uint64_t pendingTaskCount = 0;
-
-    const uint64_t updateStatEach = 10'000'000;
-    uint64_t updateStatTime = 0;
-
-    std::vector<float> statCPU;
-    std::vector<float> statMemory;
-    std::vector<float> statDisk;
-    std::vector<uint64_t> statTime;
-    std::vector<uint64_t> statPendingTask;
-
+    friend class Scheduler;
     Scheduler scheduler;
+
+    ////////////////////// Statistics section //////////////////////
+
+    const uint64_t updateStatisticsEachTime{10'000'000'000};
+
+    long double currentUsedCPU{0};
+    long double currentUsedMemory{0};
+    long double currentUsedDisk{0};
+
+    ////////////////////////////////////////////////////////////////
 
 public:
 
@@ -60,9 +50,6 @@ public:
     void DeleteFinishedJobs();
 
     void InitializeMachinesFromFile();
-
-    void PrintClusterStat();
-    void DumpStat();
 };
 
 

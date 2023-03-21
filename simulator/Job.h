@@ -14,7 +14,7 @@ public:
     uint64_t jobTime{0};
     uint64_t jobID{0};
     std::string user;
-    std::list<Task> pendingTask;
+    std::list<Task*> pendingTask;
 
     Job() = default;
     Job(std::istream& in);
