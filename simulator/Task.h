@@ -4,11 +4,9 @@
 #include "ClusterEvent.h"
 
 
-class Job;
-
 struct Task : public ClusterEvent {
+    uint64_t jobID{0};
     uint64_t estimate{0};
-    Job* job{nullptr};
     double cpuRequest{0};
     double memoryRequest{0};
     double diskSpaceRequest{0};

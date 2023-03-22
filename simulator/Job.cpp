@@ -10,7 +10,7 @@ Job::Job(std::istream& in) {
     for (size_t i = 0; i < taskN; ++i) {
         Task* task = new Task();
 
-        task->job = this;
+        task->jobID = jobID;
         in >> task->estimate >> task->cpuRequest >> task->memoryRequest >> task->diskSpaceRequest;
 
         pendingTask.push_back(task);

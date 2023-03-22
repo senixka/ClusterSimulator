@@ -24,8 +24,8 @@ void Statistics::OnJobSubmitted(uint64_t currentTime, const Job* job) {
 }
 
 void Statistics::OnTaskFinished(uint64_t currentTime, const Task* task) {
-    if (--jobUnfinishedTask[task->job->jobID] == 0) {
-        jobEndTime[task->job->jobID] = currentTime;
+    if (--jobUnfinishedTask[task->jobID] == 0) {
+        jobEndTime[task->jobID] = currentTime;
     }
 }
 

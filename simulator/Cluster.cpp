@@ -119,7 +119,7 @@ void Cluster::DeleteFinishedJobs() {
         if ((*it)->pendingTask.empty()) {
             Job* job = *it;
             it = currentJobs.erase(it);
-            // delete job;
+            delete job;
         } else {
             ++it;
         }
