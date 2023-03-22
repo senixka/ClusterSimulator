@@ -35,6 +35,7 @@ void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
 
     if (--jobUnfinishedTaskCount[task.jobID] == 0) {
         jobEndTime[task.jobID] = currentTime;
+        jobCompletionTime.push_back(currentTime);
     }
 }
 
@@ -68,9 +69,15 @@ void Statistics::OnSimulationFinished(uint64_t currentTime) {
 
     ////////////////////// Job's ANP ////////////////////////
 
+
+    long double minANP = 1000000, maxANP = -100000;
     for (const auto& [jobID, endTime] : jobEndTime) {
         jobANP[jobID] = static_cast<long double>(jobMinEstimateTime[jobID]) / (endTime - jobStartTime[jobID]);
+        minANP = std::min(minANP, jobANP[jobID]);
+        maxANP = std::max(maxANP, jobANP[jobID]);
     }
+
+    std::cout << minANP << " " << maxANP << "\n";
 
     ////////////////////// SNP //////////////////////////////
 
@@ -119,6 +126,8 @@ void Statistics::DumpStatistics() {
     std::cout << std::fixed << std::setprecision(10) << "SNP: " << simulationSNP << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "Unfairness: " << simulationUnfairness << "%" << std::endl;
 
+    //////////////////////////// Utilization //////////////////////////////
+
     const auto& uTimes = utilizationMeasurementsTime;
 
     plt::figure_size(1200, 500);
@@ -138,4 +147,22 @@ void Statistics::DumpStatistics() {
     plt::legend();
     // plt::savefig("./stat/cluster_utilization.png");
     plt::show();
+
+    ///////////////////////// Job Completion Time /////////////////////////
+
+    plt::figure_size(1200, 500);
+    plt::title("Job completion counter in Time");
+    plt::xlabel("Time (in microseconds)");
+    plt::ylabel("Counter");
+
+    std::vector<uint64_t> counter(jobCompletionTime.size());
+    for (size_t i = 0; i < counter.size(); ++i) {
+        counter[i] = i + 1;
+    }
+    plt::plot(jobCompletionTime, counter, {{"label", "Job finished"}});
+
+    plt::legend();
+    // plt::savefig("./stat/cluster_utilization.png");
+    plt::show();
+
 }

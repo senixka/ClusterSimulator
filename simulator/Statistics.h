@@ -43,6 +43,8 @@ public:
     float simulationSNP{0};
     float simulationUnfairness{0};
 
+    std::vector<uint64_t> jobCompletionTime;
+
 public:
     void UpdateUtilization(uint64_t currentTime, long double usedCPU, long double usedMemory, long double usedDisk);
     void OnJobSubmitted(uint64_t currentTime, const Job& job);
