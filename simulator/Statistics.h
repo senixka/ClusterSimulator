@@ -41,6 +41,7 @@ public:
     uint64_t taskFinishedCounter{0};
 
     float simulationSNP{0};
+    float simulationUnfairness{0};
 
 public:
     void UpdateUtilization(uint64_t currentTime, long double usedCPU, long double usedMemory, long double usedDisk);

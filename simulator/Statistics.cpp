@@ -81,6 +81,22 @@ void Statistics::OnSimulationFinished(uint64_t currentTime) {
     snp = std::exp(snp / jobANP.size());
 
     simulationSNP = static_cast<float>(snp);
+
+    ////////////////////// Unfairness ///////////////////////
+
+    long double meanANP = 0;
+    for (const auto& [jobID, anp] : jobANP) {
+        meanANP += anp;
+    }
+    meanANP /= jobANP.size();
+
+    long double stdDeviation = 0;
+    for (const auto& [jobID, anp] : jobANP) {
+        stdDeviation += (anp - meanANP) * (anp - meanANP);
+    }
+    stdDeviation = std::pow(stdDeviation / jobANP.size(), 0.5L);
+
+    simulationUnfairness = static_cast<float>(stdDeviation * 100 / meanANP);
 }
 
 void Statistics::OnMachineAdded(const Machine& machine) {
@@ -101,6 +117,7 @@ void Statistics::PrintStatistics() {
 void Statistics::DumpStatistics() {
     std::cout << std::fixed << std::setprecision(10) << "MakeSpan: " << makeSpanTime << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "SNP: " << simulationSNP << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "Unfairness: " << simulationUnfairness << "%" << std::endl;
 
     const auto& uTimes = utilizationMeasurementsTime;
 
