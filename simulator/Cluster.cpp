@@ -6,21 +6,27 @@
 #define PANIC(S) printf("PANIC: " S); abort();
 
 
-Cluster::Cluster(size_t machineN) {
+Cluster::Cluster() {
     InitializeMachinesFromFile();
 
     {
         std::ifstream fin;
         fin.open("../../prepared.txt");
 
-        size_t jobN;
-        fin >> jobN;
+        size_t nJob;
+        fin >> nJob;
 
-        for (size_t i = 0; i < jobN / 25; ++i) {
+        // To test only
+        nJob /= 15;
+
+        statistics.nJobInSimulation = nJob;
+
+        for (size_t i = 0; i < nJob; ++i) {
             Job* job = new Job(fin);
             job->eventTime = job->jobTime;
             job->clusterEventType = JOB_SUBMITTED;
 
+            statistics.nTaskInSimulation += job->pendingTask.size();
             clusterEvents.push(job);
         }
 
@@ -68,18 +74,18 @@ bool Cluster::Update() {
     if (event->clusterEventType == ClusterEventType::JOB_SUBMITTED) {
         Job* job = reinterpret_cast<Job*>(event);
 
-        statistics.OnJobSubmitted(time, job);
         currentJobs.push_front(job);
+        statistics.OnJobSubmitted(time, *job);
         scheduler.OnJobSubmitted(*currentJobs.front());
     } else if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
         Task* task = reinterpret_cast<Task*>(event);
 
-        statistics.OnTaskFinished(time, task);
         RemoveTaskFromMachine(*task);
+        statistics.OnTaskFinished(time, *task);
         scheduler.OnTaskFinished(*task);
+
         delete task;
     } else if (event->clusterEventType == ClusterEventType::RUN_SCHEDULER) {
-        statistics.PrintStatistics();
         DeleteFinishedJobs();
         scheduler.Schedule(*this);
 
@@ -87,6 +93,7 @@ bool Cluster::Update() {
         clusterEvents.push(event);
     } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
         statistics.UpdateUtilization(time, currentUsedCPU, currentUsedMemory, currentUsedDisk);
+        statistics.PrintStatistics();
 
         event->eventTime += updateStatisticsEachTime;
         clusterEvents.push(event);

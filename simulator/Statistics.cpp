@@ -1,5 +1,8 @@
 #include "Statistics.h"
 
+#include <cmath>
+#include <iomanip>
+
 #include "../matplotlibcpp.h"
 namespace plt = matplotlibcpp;
 
@@ -12,25 +15,45 @@ void Statistics::UpdateUtilization(uint64_t currentTime, long double usedCPU, lo
     utilizationDisk.push_back(static_cast<float>(usedDisk * 100 / totalAvailableDisk));
 }
 
-void Statistics::OnJobSubmitted(uint64_t currentTime, const Job* job) {
-    jobStartTime[job->jobID] = currentTime;
-    jobUnfinishedTask[job->jobID] = job->pendingTask.size();
+void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
+    ++jobSubmittedCounter;
 
-    uint64_t tempJobMinEstimateTime = 0;
-    for (const auto& task : job->pendingTask) {
-        tempJobMinEstimateTime += task->estimate;
+    jobStartTime[job.jobID] = currentTime;
+    jobUnfinishedTaskCount[job.jobID] = job.pendingTask.size();
+
+    uint64_t minTaskEstimateTime = job.pendingTask.front()->estimate;
+    for (const auto& task : job.pendingTask) {
+        if (minTaskEstimateTime > task->estimate) {
+            minTaskEstimateTime = task->estimate;
+        }
     }
-    jobMinEstimateTime[job->jobID] = tempJobMinEstimateTime;
+    jobMinEstimateTime[job.jobID] = minTaskEstimateTime;
 }
 
-void Statistics::OnTaskFinished(uint64_t currentTime, const Task* task) {
-    if (--jobUnfinishedTask[task->jobID] == 0) {
-        jobEndTime[task->jobID] = currentTime;
+void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
+    ++taskFinishedCounter;
+
+    if (--jobUnfinishedTaskCount[task.jobID] == 0) {
+        jobEndTime[task.jobID] = currentTime;
     }
+}
+
+long double countSNP(const std::unordered_map<uint64_t, long double>& jobANP) {
+    long double snp = 0;
+    for (const auto& [jobID, anp] : jobANP) {
+        snp += std::log(anp);
+    }
+    snp = std::exp(snp / jobANP.size());
+
+    return snp;
 }
 
 void Statistics::OnSimulationFinished(uint64_t currentTime) {
+    //////////////////// MakeSpan ///////////////////////////
+
     makeSpanTime = currentTime;
+
+    ////////////////// Average Utilization //////////////////
 
     long double sumCPU = 0, sumMemory = 0, sumDisk = 0;
     for (size_t i = 0; i < utilizationMeasurementsTime.size(); ++i) {
@@ -43,9 +66,21 @@ void Statistics::OnSimulationFinished(uint64_t currentTime) {
     averageUtilizationMemory = static_cast<float>(sumMemory / utilizationMeasurementsTime.size());
     averageUtilizationDisk = static_cast<float>(sumDisk / utilizationMeasurementsTime.size());
 
+    ////////////////////// Job's ANP ////////////////////////
+
     for (const auto& [jobID, endTime] : jobEndTime) {
         jobANP[jobID] = static_cast<long double>(jobMinEstimateTime[jobID]) / (endTime - jobStartTime[jobID]);
     }
+
+    ////////////////////// SNP //////////////////////////////
+
+    long double snp = 0;
+    for (const auto& [jobID, anp] : jobANP) {
+        snp += std::log(anp);
+    }
+    snp = std::exp(snp / jobANP.size());
+
+    simulationSNP = static_cast<float>(snp);
 }
 
 void Statistics::OnMachineAdded(const Machine& machine) {
@@ -58,11 +93,15 @@ void Statistics::PrintStatistics() {
     if (utilizationMeasurementsTime.empty()) [[unlikely]] {
         printf("CPU: NO INFO  Memory: NO INFO  Disk: NO INFO\n");
     } else [[likely]] {
-        printf("CPU: %2.3f%%  Memory: %2.3f%%  Disk: %2.3f%%\n", utilizationCPU.back(), utilizationMemory.back(), utilizationDisk.back());
+        printf("CPU: %2.3f%%  Memory: %2.3f%%  Disk: %2.3f%%  ", utilizationCPU.back(), utilizationMemory.back(), utilizationDisk.back());
+        printf("Job submitted: %lu / %lu \t Task finished: %lu / %lu\n", jobSubmittedCounter, nJobInSimulation, taskFinishedCounter, nTaskInSimulation);
     }
 }
 
 void Statistics::DumpStatistics() {
+    std::cout << std::fixed << std::setprecision(10) << "MakeSpan: " << makeSpanTime << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "SNP: " << simulationSNP << std::endl;
+
     const auto& uTimes = utilizationMeasurementsTime;
 
     plt::figure_size(1200, 500);

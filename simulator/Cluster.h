@@ -16,7 +16,7 @@
 class Cluster {
     uint64_t time = 0;
 
-    const uint64_t scheduleEachTime = 1'000'000;
+    const uint64_t scheduleEachTime = 10'000'000;
     std::vector<Machine> machines;
 
     std::list<Job*> currentJobs;
@@ -29,7 +29,7 @@ class Cluster {
 
     ////////////////////// Statistics section //////////////////////
 
-    const uint64_t updateStatisticsEachTime{10'000'000'000};
+    const uint64_t updateStatisticsEachTime{1'000'000'000ull};
 
     long double currentUsedCPU{0};
     long double currentUsedMemory{0};
@@ -39,7 +39,7 @@ class Cluster {
 
 public:
 
-    Cluster(size_t machineN = 12500);
+    Cluster();
 
     void Run();
     bool Update();
