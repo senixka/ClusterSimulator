@@ -40,6 +40,7 @@ class Cluster {
 public:
 
     Cluster();
+    ~Cluster();
 
     void Run();
     bool Update();

@@ -18,6 +18,7 @@ public:
 
     Job() = default;
     Job(std::istream& in);
+    ~Job();
 };
 
 

@@ -21,6 +21,8 @@ void Scheduler::Schedule(Cluster& cluster) {
 
             if (task->eventTime != UINT64_MAX) {
                 cluster.clusterEvents.push(task);
+            } else {
+                delete task;
             }
         }
 

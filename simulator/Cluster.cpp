@@ -37,6 +37,18 @@ Cluster::Cluster() {
     clusterEvents.push(new ClusterEvent(0, ClusterEventType::UPDATE_STATISTICS));
 }
 
+Cluster::~Cluster() {
+    while (!clusterEvents.empty()) {
+        auto event = clusterEvents.top();
+        clusterEvents.pop();
+        delete event;
+    }
+
+    for (auto job : currentJobs) {
+        delete job;
+    }
+}
+
 void Cluster::InitializeMachinesFromFile() {
     std::ifstream in;
     in.open("../../prepared_machine.txt");

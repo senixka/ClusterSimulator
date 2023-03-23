@@ -16,3 +16,9 @@ Job::Job(std::istream& in) {
         pendingTask.push_back(task);
     }
 }
+
+Job::~Job() {
+    for (auto task : pendingTask) {
+        delete task;
+    }
+}
