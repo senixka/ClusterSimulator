@@ -10,6 +10,7 @@ struct Task : public ClusterEvent {
     double cpuRequest{0};
     double memoryRequest{0};
     double diskSpaceRequest{0};
+    unsigned taskIndex{0};
     unsigned machineIndex{UINT32_MAX};
 };
 

@@ -15,7 +15,6 @@ LogReader::LogReader(const std::string& inputLogDir)
         taskEventFiles.push_back(entry.path());
     }
     std::sort(taskEventFiles.begin(), taskEventFiles.end());
-    taskEventFiles.erase(taskEventFiles.cbegin() + 10, taskEventFiles.cend());
 
     for (const auto& entry : std::filesystem::directory_iterator(pathMachineEvents)) {
         machineEventFiles.push_back(entry.path());

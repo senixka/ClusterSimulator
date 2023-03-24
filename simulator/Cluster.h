@@ -14,13 +14,16 @@
 
 
 class Cluster {
+    using EventQueueType = std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare>;
+
     uint64_t time = 0;
 
     const uint64_t scheduleEachTime = 10'000'000;
     std::vector<Machine> machines;
 
     std::list<Job*> currentJobs;
-    std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare> clusterEvents;
+    EventQueueType clusterEvents;
+    EventQueueType deferEvents;
 
     Statistics statistics;
 
@@ -44,6 +47,9 @@ public:
 
     void Run();
     bool Update();
+
+    uint64_t IncTime(uint64_t current_time, uint64_t shift);
+    void PutEvent(ClusterEvent*);
 
     void PlaceTaskOnMachine(Task& task, size_t machineIndex);
     void RemoveTaskFromMachine(const Task& task);

@@ -14,16 +14,11 @@ void Scheduler::Schedule(Cluster& cluster) {
     for (auto& job : cluster.currentJobs) {
         for (auto task : job->pendingTask) {
             task->machineIndex = UINT32_MAX;
-            task->eventTime = task->estimate != UINT64_MAX ? cluster.time + task->estimate : UINT64_MAX;
+            task->eventTime = cluster.IncTime(cluster.time, task->estimate);
             task->clusterEventType = ClusterEventType::TASK_FINISHED;
 
             cluster.PlaceTaskOnMachine(*task, 0);
-
-            if (task->eventTime != UINT64_MAX) {
-                cluster.clusterEvents.push(task);
-            } else {
-                delete task;
-            }
+            cluster.PutEvent(task);
         }
 
         job->pendingTask.clear();
