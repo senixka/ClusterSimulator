@@ -1,7 +1,11 @@
 #include "LogReader.h"
 
 
-LogReader::LogReader() {
+std::ostream& operator<< (std::ostream& out, std::ostream& /*ignore*/) { return out; }
+
+LogReader::LogReader(const std::string& inputLogDir)
+    : inputDir(inputLogDir) {
+
     for (const auto& entry : std::filesystem::directory_iterator(pathJobEvents)) {
         jobEventFiles.push_back(entry.path());
     }
@@ -11,6 +15,7 @@ LogReader::LogReader() {
         taskEventFiles.push_back(entry.path());
     }
     std::sort(taskEventFiles.begin(), taskEventFiles.end());
+    taskEventFiles.erase(taskEventFiles.cbegin() + 10, taskEventFiles.cend());
 
     for (const auto& entry : std::filesystem::directory_iterator(pathMachineEvents)) {
         machineEventFiles.push_back(entry.path());
@@ -93,7 +98,7 @@ bool LogReader::NextTaskEvent(TaskEvent& taskEvent) {
     taskEvent.cpuRequest.reset();
     taskEvent.memoryRequest.reset();
     taskEvent.diskSpaceRequest.reset();
-    taskEvent.differentMachinesRestriction.reset();
+    taskEvent.machinesRestriction.reset();
 
     taskEvent.time = std::stoull(params[0]);
     if (!params[1].empty()) taskEvent.missingInfo = std::stoull(params[1]);
@@ -107,7 +112,7 @@ bool LogReader::NextTaskEvent(TaskEvent& taskEvent) {
     if (!params[9].empty()) taskEvent.cpuRequest = std::stold(params[9]);
     if (!params[10].empty()) taskEvent.memoryRequest = std::stold(params[10]);
     if (!params[11].empty()) taskEvent.diskSpaceRequest = std::stold(params[11]);
-    if (!params[12].empty()) taskEvent.differentMachinesRestriction = std::stoi(params[12]);
+    if (!params[12].empty()) taskEvent.machinesRestriction = std::stoi(params[12]);
 
     return true;
 }
