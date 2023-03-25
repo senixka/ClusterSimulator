@@ -67,7 +67,7 @@ void Cluster::InitializeMachinesFromFile() {
 
 uint64_t Cluster::IncTime(uint64_t current_time, uint64_t shift) {
     uint64_t res;
-    if (__builtin_add_overflow(current_time, shift, &res)) {
+    if (__builtin_add_overflow(current_time, shift, &res)) [[unlikely]] {
         res = UINT64_MAX;
     }
     return res;

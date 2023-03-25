@@ -21,13 +21,13 @@ void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
     jobStartTime[job.jobID] = currentTime;
     jobUnfinishedTaskCount[job.jobID] = job.pendingTask.size();
 
-    uint64_t minTaskEstimateTime = job.pendingTask.front()->estimate;
+    uint64_t maxTaskEstimateTime = job.pendingTask.front()->estimate;
     for (const auto& task : job.pendingTask) {
-        if (minTaskEstimateTime > task->estimate) {
-            minTaskEstimateTime = task->estimate;
+        if (maxTaskEstimateTime < task->estimate) {
+            maxTaskEstimateTime = task->estimate;
         }
     }
-    jobMinEstimateTime[job.jobID] = minTaskEstimateTime;
+    jobMinEstimateTime[job.jobID] = maxTaskEstimateTime;
 }
 
 void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
@@ -69,15 +69,15 @@ void Statistics::OnSimulationFinished(uint64_t currentTime) {
 
     ////////////////////// Job's ANP ////////////////////////
 
-
     long double minANP = 1000000, maxANP = -100000;
     for (const auto& [jobID, endTime] : jobEndTime) {
         jobANP[jobID] = static_cast<long double>(jobMinEstimateTime[jobID]) / (endTime - jobStartTime[jobID]);
-        minANP = std::min(minANP, jobANP[jobID]);
+        if (minANP > jobANP[jobID]) {
+            minANP = jobANP[jobID];
+            mid = jobID;
+        }
         maxANP = std::max(maxANP, jobANP[jobID]);
     }
-
-    std::cout << minANP << " " << maxANP << "\n";
 
     ////////////////////// SNP //////////////////////////////
 
