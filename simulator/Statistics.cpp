@@ -51,59 +51,70 @@ long double countSNP(const std::unordered_map<uint64_t, long double>& jobANP) {
 
 void Statistics::OnSimulationFinished(uint64_t currentTime) {
     //////////////////// MakeSpan ///////////////////////////
-
-    makeSpanTime = currentTime;
-
-    ////////////////// Average Utilization //////////////////
-
-    long double sumCPU = 0, sumMemory = 0, sumDisk = 0;
-    for (size_t i = 0; i < utilizationMeasurementsTime.size(); ++i) {
-        sumCPU += utilizationCPU[i];
-        sumMemory += utilizationMemory[i];
-        sumDisk += utilizationDisk[i];
+    {
+        makeSpanTime = currentTime;
     }
 
-    averageUtilizationCPU = static_cast<float>(sumCPU / utilizationMeasurementsTime.size());
-    averageUtilizationMemory = static_cast<float>(sumMemory / utilizationMeasurementsTime.size());
-    averageUtilizationDisk = static_cast<float>(sumDisk / utilizationMeasurementsTime.size());
+    ////////////////// Average Utilization //////////////////
+    {
+        long double sumCPU = 0, sumMemory = 0, sumDisk = 0;
+        for (size_t i = 0; i < utilizationMeasurementsTime.size(); ++i) {
+            sumCPU += utilizationCPU[i];
+            sumMemory += utilizationMemory[i];
+            sumDisk += utilizationDisk[i];
+        }
+
+        averageUtilizationCPU = static_cast<float>(sumCPU / utilizationMeasurementsTime.size());
+        averageUtilizationMemory = static_cast<float>(sumMemory / utilizationMeasurementsTime.size());
+        averageUtilizationDisk = static_cast<float>(sumDisk / utilizationMeasurementsTime.size());
+    }
 
     ////////////////////// Job's ANP ////////////////////////
-
-    long double minANP = 1000000, maxANP = -100000;
-    for (const auto& [jobID, endTime] : jobEndTime) {
-        jobANP[jobID] = static_cast<long double>(jobMinEstimateTime[jobID]) / (endTime - jobStartTime[jobID]);
-        if (minANP > jobANP[jobID]) {
-            minANP = jobANP[jobID];
-            mid = jobID;
+    {
+        for (const auto &[jobID, endTime] : jobEndTime) {
+            jobANP[jobID] = static_cast<long double>(jobMinEstimateTime[jobID]) / (endTime - jobStartTime[jobID]);
+            minANP = std::min(minANP, jobANP[jobID]);
+            maxANP = std::max(maxANP, jobANP[jobID]);
         }
-        maxANP = std::max(maxANP, jobANP[jobID]);
     }
 
     ////////////////////// SNP //////////////////////////////
+    {
+        long double snp = 0;
+        for (const auto &[jobID, anp] : jobANP) {
+            snp += std::log(anp);
+        }
+        snp = std::exp(snp / jobANP.size());
 
-    long double snp = 0;
-    for (const auto& [jobID, anp] : jobANP) {
-        snp += std::log(anp);
+        simulationSNP = snp;
     }
-    snp = std::exp(snp / jobANP.size());
-
-    simulationSNP = static_cast<float>(snp);
 
     ////////////////////// Unfairness ///////////////////////
+    {
+        long double meanANP = 0;
+        for (const auto &[jobID, anp] : jobANP) {
+            meanANP += anp;
+        }
+        meanANP /= jobANP.size();
 
-    long double meanANP = 0;
-    for (const auto& [jobID, anp] : jobANP) {
-        meanANP += anp;
+        long double stdDeviation = 0;
+        for (const auto &[jobID, anp] : jobANP) {
+            stdDeviation += (anp - meanANP) * (anp - meanANP);
+        }
+        stdDeviation = std::pow(stdDeviation / jobANP.size(), 0.5L);
+
+        simulationUnfairness = stdDeviation * 100 / meanANP;
     }
-    meanANP /= jobANP.size();
 
-    long double stdDeviation = 0;
-    for (const auto& [jobID, anp] : jobANP) {
-        stdDeviation += (anp - meanANP) * (anp - meanANP);
+    ////////////////////// Slowdown 2-norm /////////////////////
+    {
+        long double slowdown = 0;
+        for (const auto &[jobID, anp] : jobANP) {
+            slowdown += 1.0L / (anp * anp);
+        }
+
+        simulationSlowdown2Norm = std::sqrt(slowdown / jobANP.size());
     }
-    stdDeviation = std::pow(stdDeviation / jobANP.size(), 0.5L);
-
-    simulationUnfairness = static_cast<float>(stdDeviation * 100 / meanANP);
 }
 
 void Statistics::OnMachineAdded(const Machine& machine) {
@@ -124,7 +135,10 @@ void Statistics::PrintStatistics() {
 void Statistics::DumpStatistics() {
     std::cout << std::fixed << std::setprecision(10) << "MakeSpan: " << makeSpanTime << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "SNP: " << simulationSNP << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "Unfairness: " << simulationUnfairness << "%" << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "Unfairness: " << simulationUnfairness << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "Slowdown: " << simulationSlowdown2Norm << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "Min ANP: " << minANP << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "Max ANP: " << maxANP << std::endl;
 
     //////////////////////////// Utilization //////////////////////////////
 

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <optional>
 #include <unordered_map>
 
 
@@ -40,8 +41,12 @@ public:
     uint64_t nTaskInSimulation{0};
     uint64_t taskFinishedCounter{0};
 
-    float simulationSNP{0};
-    float simulationUnfairness{0};
+    long double simulationSNP{0};
+    long double simulationUnfairness{0};
+    long double simulationSlowdown2Norm{0};
+
+    long double minANP{INT16_MAX};
+    long double maxANP{INT16_MIN};
 
     std::vector<uint64_t> jobCompletionTime;
 
