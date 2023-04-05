@@ -127,7 +127,7 @@ void Statistics::PrintStatistics() {
     if (utilizationMeasurementsTime.empty()) [[unlikely]] {
         printf("CPU: NO INFO  Memory: NO INFO  Disk: NO INFO\n");
     } else [[likely]] {
-        printf("CPU: %2.3f%%  Memory: %2.3f%%  Disk: %2.3f%%  ", utilizationCPU.back(), utilizationMemory.back(), utilizationDisk.back());
+        printf("CPU: %7.3f%%  Memory: %7.3f%%  Disk: %7.3f%%  ", utilizationCPU.back(), utilizationMemory.back(), utilizationDisk.back());
         printf("Job submitted: %lu / %lu \t Task finished: %lu / %lu\n", jobSubmittedCounter, nJobInSimulation, taskFinishedCounter, nTaskInSimulation);
     }
 }
@@ -159,7 +159,7 @@ void Statistics::DumpStatistics() {
     plt::plot(uTimes, std::vector<float>(uTimes.size(), averageUtilizationDisk), {{"label", "Disk AVG at " + std::to_string(averageUtilizationDisk)}});
 
     plt::legend();
-    // plt::savefig("./stat/cluster_utilization.png");
+    plt::savefig("../output/cluster_utilization_1.png");
     plt::show();
 
     ///////////////////////// Job Completion Time /////////////////////////
@@ -176,7 +176,7 @@ void Statistics::DumpStatistics() {
     plt::plot(jobCompletionTime, counter, {{"label", "Job finished"}});
 
     plt::legend();
-    // plt::savefig("./stat/cluster_utilization.png");
+    plt::savefig("../output/job_completion_1.png");
     plt::show();
 
 }

@@ -6,6 +6,7 @@
 #include "Machine.h"
 #include "Scheduler.h"
 #include "Statistics.h"
+#include "MachineManager.h"
 
 #include <cstdlib>
 #include <vector>
@@ -18,8 +19,8 @@ class Cluster {
 
     uint64_t time = 0;
 
-    const uint64_t scheduleEachTime{1'000'000ULL};
-    std::vector<Machine> machines;
+    const uint64_t scheduleEachTime{1'000'000'000ULL};
+    MachineManager machineManager;
 
     std::list<Job*> currentJobs;
     EventQueueType clusterEvents;
@@ -32,7 +33,7 @@ class Cluster {
 
     ////////////////////// Statistics section //////////////////////
 
-    const uint64_t updateStatisticsEachTime{1'000'000'000ULL};
+    const uint64_t updateStatisticsEachTime{scheduleEachTime};
 
     long double currentUsedCPU{0};
     long double currentUsedMemory{0};
@@ -55,8 +56,6 @@ public:
     void RemoveTaskFromMachine(const Task& task);
 
     void DeleteFinishedJobs();
-
-    void InitializeMachinesFromFile();
 };
 
 

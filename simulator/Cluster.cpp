@@ -7,7 +7,11 @@
 
 
 Cluster::Cluster() {
-    InitializeMachinesFromFile();
+    {
+        for (const auto& machine : machineManager.GetAllMachines()) {
+            statistics.OnMachineAdded(machine);
+        }
+    }
 
     {
         std::ifstream fin;
@@ -46,22 +50,6 @@ Cluster::~Cluster() {
 
     for (auto job : currentJobs) {
         delete job;
-    }
-}
-
-void Cluster::InitializeMachinesFromFile() {
-    std::ifstream in;
-    in.open("../input/machine.txt");
-
-    size_t nMachine;
-    in >> nMachine;
-
-    machines.resize(nMachine);
-
-    for (size_t i = 0; i < nMachine; ++i) {
-        in >> machines[i].cpuCapacity >> machines[i].memoryCapacity >> machines[i].diskSpaceCapacity;
-
-        statistics.OnMachineAdded(machines[i]);
     }
 }
 
@@ -150,7 +138,7 @@ bool Cluster::Update() {
 
 void Cluster::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
     task.machineIndex = machineIndex;
-    machines[machineIndex].PlaceTask(task);
+    machineManager.PlaceTaskOnMachine(task, machineIndex);
 
     currentUsedCPU += task.cpuRequest;
     currentUsedMemory += task.memoryRequest;
@@ -158,7 +146,7 @@ void Cluster::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
 }
 
 void Cluster::RemoveTaskFromMachine(const Task& task) {
-    machines[task.machineIndex].RemoveTask(task);
+    machineManager.RemoveTaskFromMachine(task, task.machineIndex);
 
     currentUsedCPU -= task.cpuRequest;
     currentUsedMemory -= task.memoryRequest;
