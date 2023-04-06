@@ -20,7 +20,7 @@ MachineManager::MachineManager() {
     }
 }
 
-void MachineManager::FindSuitableMachines(const Task& task, std::vector<std::pair<point_3d, size_t>>& result) {
+void MachineManager::FindSuitableMachines(const Task& task, ReturnQueryType& result) {
     box_3d query_box({task.cpuRequest, task.memoryRequest, task.diskSpaceRequest}, {1, 1, 1});
 
     tree.query(bgi::intersects(query_box), std::back_inserter(result));

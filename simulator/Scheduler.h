@@ -10,11 +10,11 @@ class Cluster;
 
 class Scheduler {
 public:
-    void OnJobSubmitted(const Job&);
+    virtual void OnJobSubmitted(const Job&) = 0;
+    virtual void OnTaskFinished(const Task&) = 0;
+    virtual void Schedule(Cluster& cluster) = 0;
 
-    void OnTaskFinished(const Task&);
-
-    void Schedule(Cluster& cluster);
+    virtual ~Scheduler() = default;
 };
 
 

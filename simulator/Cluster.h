@@ -4,7 +4,6 @@
 #include "Task.h"
 #include "Job.h"
 #include "Machine.h"
-#include "Scheduler.h"
 #include "Statistics.h"
 #include "MachineManager.h"
 
@@ -12,6 +11,9 @@
 #include <vector>
 #include <queue>
 #include <list>
+
+class Scheduler;
+class SchedulerRandom;
 
 
 class Cluster {
@@ -28,8 +30,8 @@ class Cluster {
 
     Statistics statistics;
 
-    friend class Scheduler;
-    Scheduler scheduler;
+    friend class SchedulerRandom;
+    Scheduler* scheduler{nullptr};
 
     ////////////////////// Statistics section //////////////////////
 

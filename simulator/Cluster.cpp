@@ -1,12 +1,14 @@
 #include "Cluster.h"
 
+#include "SchedulerRandom.h"
+
 #include <fstream>
 #include <string>
 
 #define PANIC(S) printf("PANIC: " S); abort()
 
 
-Cluster::Cluster() {
+Cluster::Cluster() : scheduler(new SchedulerRandom{}) {
     {
         for (const auto& machine : machineManager.GetAllMachines()) {
             statistics.OnMachineAdded(machine);
@@ -51,6 +53,8 @@ Cluster::~Cluster() {
     for (auto job : currentJobs) {
         delete job;
     }
+
+    delete scheduler;
 }
 
 uint64_t Cluster::IncTime(uint64_t current_time, uint64_t shift) {
@@ -108,18 +112,18 @@ bool Cluster::Update() {
 
         currentJobs.push_front(job);
         statistics.OnJobSubmitted(time, *job);
-        scheduler.OnJobSubmitted(*currentJobs.front());
+        scheduler->OnJobSubmitted(*currentJobs.front());
     } else if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
         Task* task = reinterpret_cast<Task*>(event);
 
         RemoveTaskFromMachine(*task);
         statistics.OnTaskFinished(time, *task);
-        scheduler.OnTaskFinished(*task);
+        scheduler->OnTaskFinished(*task);
 
         delete task;
     } else if (event->clusterEventType == ClusterEventType::RUN_SCHEDULER) {
         DeleteFinishedJobs();
-        scheduler.Schedule(*this);
+        scheduler->Schedule(*this);
 
         event->eventTime = IncTime(time, scheduleEachTime);
         clusterEvents.push(event);
