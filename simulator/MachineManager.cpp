@@ -46,10 +46,6 @@ void MachineManager::RemoveTaskFromMachine(const Task& task, size_t machineIndex
     tree.insert({{new_cpu, new_memory, new_disk}, machineIndex});
 }
 
-//bool MachineManager::IsTaskPlaceableOnMachine(const Task& task, size_t machineIndex) const {
-//    return machines[machineIndex].IsTaskPlaceable(task);
-//}
-
 const std::vector<Machine>& MachineManager::GetAllMachines() {
     return machines;
 }

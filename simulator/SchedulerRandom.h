@@ -6,8 +6,8 @@
 
 class SchedulerRandom : public Scheduler {
 public:
-    void OnJobSubmitted(const Job&) override;
-    void OnTaskFinished(const Task&) override;
+    void OnJobSubmitted(Cluster& cluster, Job* job) override;
+    void OnTaskFinished(Cluster& cluster, Task* task) override;
     void Schedule(Cluster& cluster) override;
 };
 

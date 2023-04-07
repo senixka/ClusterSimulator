@@ -1,10 +1,11 @@
 #include "Cluster.h"
+#include "MachineManager.h"
+#include "Statistics.h"
+#include "SchedulerRandom.h"
 
 #include <cstdlib>
 #include <random>
 
-
-using namespace std;
 
 int main() {
     std::srand(179);
@@ -12,8 +13,16 @@ int main() {
     char env[] = "PYTHONMALLOC=malloc";
     putenv(env);
 
-    Cluster cluster;
-    cluster.Run();
+    {
+        MachineManager machineManager{};
+        SchedulerRandom schedulerRandom{};
+        Statistics statistics{};
+
+        Cluster cluster(&machineManager, &schedulerRandom, &statistics);
+        cluster.Run();
+
+        statistics.DumpStatistics();
+    }
 
     return 0;
 }

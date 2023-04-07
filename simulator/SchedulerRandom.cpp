@@ -5,11 +5,34 @@
 
 #include <random>
 
+void SchedulerRandom::OnJobSubmitted(Cluster& cluster, Job* job) {
+    MachineManager::ReturnQueryType machines;
 
-void SchedulerRandom::OnJobSubmitted(const Job&) {
+    for (auto it = job->pendingTask.begin(); it != job->pendingTask.end();) {
+        Task* task = *it;
+        task->machineIndex = UINT32_MAX;
+
+        machines.clear();
+        cluster.machineManager->FindSuitableMachines(*task, machines);
+
+        if (machines.empty()) {
+            ++it;
+        } else {
+            size_t machineIndex = machines[std::rand() % machines.size()].second;
+
+            task->machineIndex = machineIndex;
+            task->eventTime = cluster.IncTime(cluster.time, task->estimate);
+            task->clusterEventType = ClusterEventType::TASK_FINISHED;
+
+            cluster.PlaceTaskOnMachine(*task, machineIndex);
+            cluster.PutEvent(task);
+
+            it = job->pendingTask.erase(it);
+        }
+    }
 }
 
-void SchedulerRandom::OnTaskFinished(const Task&) {
+void SchedulerRandom::OnTaskFinished(Cluster& /*cluster*/, Task* /*task*/) {
 }
 
 void SchedulerRandom::Schedule(Cluster& cluster) {
@@ -21,7 +44,7 @@ void SchedulerRandom::Schedule(Cluster& cluster) {
             task->machineIndex = UINT32_MAX;
 
             machines.clear();
-            cluster.machineManager.FindSuitableMachines(*task, machines);
+            cluster.machineManager->FindSuitableMachines(*task, machines);
 
             if (machines.empty()) {
                 ++it;

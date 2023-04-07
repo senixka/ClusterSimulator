@@ -1,5 +1,7 @@
 #include "Machine.h"
 
+#include <cassert>
+
 
 bool Machine::IsTaskPlaceable(const Task& task) const {
     return task.cpuRequest <= cpuCapacity
@@ -8,6 +10,8 @@ bool Machine::IsTaskPlaceable(const Task& task) const {
 }
 
 void Machine::PlaceTask(const Task& task) {
+    assert(IsTaskPlaceable(task));
+
     cpuCapacity -= task.cpuRequest;
     memoryCapacity -= task.memoryRequest;
     diskSpaceCapacity -= task.diskSpaceRequest;

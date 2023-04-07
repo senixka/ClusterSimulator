@@ -5,14 +5,17 @@
 #include <fstream>
 #include <string>
 
+#ifndef NDEBUG
 #define PANIC(S) printf("PANIC: " S); abort()
+#else
+#define PANIC(S)
+#endif
 
 
-Cluster::Cluster() : scheduler(new SchedulerRandom{}) {
-    {
-        for (const auto& machine : machineManager.GetAllMachines()) {
-            statistics.OnMachineAdded(machine);
-        }
+Cluster::Cluster(MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr)
+    : machineManager(machineManagerPtr), scheduler(schedulerPtr), statistics(statisticsPtr) {
+    for (const auto& machine : machineManager->GetAllMachines()) {
+        statistics->OnMachineAdded(machine);
     }
 
     {
@@ -25,14 +28,14 @@ Cluster::Cluster() : scheduler(new SchedulerRandom{}) {
         // To test speed up only
         nJob /= 15;
 
-        statistics.nJobInSimulation = nJob;
+        statistics->nJobInSimulation = nJob;
 
         for (size_t i = 0; i < nJob; ++i) {
             Job* job = new Job(fin);
             job->eventTime = job->jobTime;
             job->clusterEventType = JOB_SUBMITTED;
 
-            statistics.nTaskInSimulation += job->pendingTask.size();
+            statistics->nTaskInSimulation += job->pendingTask.size();
             clusterEvents.push(job);
         }
 
@@ -53,8 +56,6 @@ Cluster::~Cluster() {
     for (auto job : currentJobs) {
         delete job;
     }
-
-    delete scheduler;
 }
 
 uint64_t Cluster::IncTime(uint64_t current_time, uint64_t shift) {
@@ -93,9 +94,7 @@ void Cluster::Run() {
     }
     DeleteFinishedJobs();
 
-
-    statistics.OnSimulationFinished(time);
-    statistics.DumpStatistics();
+    statistics->OnSimulationFinished(time);
 }
 
 bool Cluster::Update() {
@@ -107,20 +106,20 @@ bool Cluster::Update() {
     clusterEvents.pop();
     time = event->eventTime;
 
-    if (event->clusterEventType == ClusterEventType::JOB_SUBMITTED) {
-        Job* job = reinterpret_cast<Job*>(event);
-
-        currentJobs.push_front(job);
-        statistics.OnJobSubmitted(time, *job);
-        scheduler->OnJobSubmitted(*currentJobs.front());
-    } else if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
+    if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
         Task* task = reinterpret_cast<Task*>(event);
 
         RemoveTaskFromMachine(*task);
-        statistics.OnTaskFinished(time, *task);
-        scheduler->OnTaskFinished(*task);
+        statistics->OnTaskFinished(time, *task);
+        scheduler->OnTaskFinished(*this, task);
 
         delete task;
+    } else if (event->clusterEventType == ClusterEventType::JOB_SUBMITTED) {
+        Job* job = reinterpret_cast<Job*>(event);
+
+        currentJobs.push_front(job);
+        statistics->OnJobSubmitted(time, *job);
+        scheduler->OnJobSubmitted(*this, job);
     } else if (event->clusterEventType == ClusterEventType::RUN_SCHEDULER) {
         DeleteFinishedJobs();
         scheduler->Schedule(*this);
@@ -128,8 +127,8 @@ bool Cluster::Update() {
         event->eventTime = IncTime(time, scheduleEachTime);
         clusterEvents.push(event);
     } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
-        statistics.UpdateUtilization(time, currentUsedCPU, currentUsedMemory, currentUsedDisk);
-        statistics.PrintStatistics();
+        statistics->UpdateUtilization(time, currentUsedCPU, currentUsedMemory, currentUsedDisk);
+        statistics->PrintStatistics();
 
         event->eventTime = IncTime(time, updateStatisticsEachTime);
         clusterEvents.push(event);
@@ -142,7 +141,7 @@ bool Cluster::Update() {
 
 void Cluster::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
     task.machineIndex = machineIndex;
-    machineManager.PlaceTaskOnMachine(task, machineIndex);
+    machineManager->PlaceTaskOnMachine(task, machineIndex);
 
     currentUsedCPU += task.cpuRequest;
     currentUsedMemory += task.memoryRequest;
@@ -150,7 +149,7 @@ void Cluster::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
 }
 
 void Cluster::RemoveTaskFromMachine(const Task& task) {
-    machineManager.RemoveTaskFromMachine(task, task.machineIndex);
+    machineManager->RemoveTaskFromMachine(task, task.machineIndex);
 
     currentUsedCPU -= task.cpuRequest;
     currentUsedMemory -= task.memoryRequest;

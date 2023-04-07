@@ -17,24 +17,30 @@ class SchedulerRandom;
 
 
 class Cluster {
+    ////////////////////// Cluster section /////////////////////////
+
     using EventQueueType = std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare>;
+
+    EventQueueType clusterEvents;
+    EventQueueType deferEvents;
+    std::list<Job*> currentJobs;
 
     uint64_t time = 0;
 
-    const uint64_t scheduleEachTime{1'000'000'000ULL};
-    MachineManager machineManager;
+    ////////////////////// Machine section /////////////////////////
 
-    std::list<Job*> currentJobs;
-    EventQueueType clusterEvents;
-    EventQueueType deferEvents;
+    MachineManager* machineManager{nullptr};
 
-    Statistics statistics;
+    ////////////////////// Scheduler section ///////////////////////
 
     friend class SchedulerRandom;
+
     Scheduler* scheduler{nullptr};
+    const uint64_t scheduleEachTime{1'000'000'000ULL};
 
     ////////////////////// Statistics section //////////////////////
 
+    Statistics* statistics{nullptr};
     const uint64_t updateStatisticsEachTime{scheduleEachTime};
 
     long double currentUsedCPU{0};
@@ -44,8 +50,7 @@ class Cluster {
     ////////////////////////////////////////////////////////////////
 
 public:
-
-    Cluster();
+    Cluster(MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr);
     ~Cluster();
 
     void Run();
