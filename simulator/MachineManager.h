@@ -5,6 +5,7 @@
 #include "Task.h"
 
 #include <vector>
+#include <string>
 
 #include <boost/geometry.hpp>
 #include <boost/geometry/index/rtree.hpp>
@@ -25,7 +26,7 @@ private:
     rtree_3d tree;
 
 public:
-    MachineManager();
+    MachineManager(const std::string& inputFilePath);
 
     void FindSuitableMachines(const Task& task, ReturnQueryType& result);
 

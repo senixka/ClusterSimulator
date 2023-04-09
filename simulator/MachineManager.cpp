@@ -3,9 +3,9 @@
 #include <fstream>
 
 
-MachineManager::MachineManager() {
+MachineManager::MachineManager(const std::string& inputFilePath) {
     std::ifstream in;
-    in.open("../input/machine.txt");
+    in.open(inputFilePath);
 
     size_t nMachine;
     in >> nMachine;

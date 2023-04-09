@@ -6,19 +6,26 @@
 #include <cstdlib>
 #include <random>
 
-
-int main() {
+void inline Init() {
     std::srand(179);
 
     char env[] = "PYTHONMALLOC=malloc";
     putenv(env);
+}
 
+int main() {
+    Init();
+
+    // Experiment
     {
-        MachineManager machineManager{};
+        const std::string task_and_job = "../input/job_and_task.txt";
+        const std::string machine = "../input/machine.txt";
+
+        MachineManager machineManager{machine};
         SchedulerRandom schedulerRandom{};
         Statistics statistics{};
 
-        Cluster cluster(&machineManager, &schedulerRandom, &statistics);
+        Cluster cluster(task_and_job, &machineManager, &schedulerRandom, &statistics);
         cluster.Run();
 
         statistics.DumpStatistics();

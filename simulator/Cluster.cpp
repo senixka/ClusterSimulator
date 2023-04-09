@@ -3,7 +3,6 @@
 #include "SchedulerRandom.h"
 
 #include <fstream>
-#include <string>
 
 #ifndef NDEBUG
 #define PANIC(S) printf("PANIC: " S); abort()
@@ -12,15 +11,16 @@
 #endif
 
 
-Cluster::Cluster(MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr)
+Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr)
     : machineManager(machineManagerPtr), scheduler(schedulerPtr), statistics(statisticsPtr) {
     for (const auto& machine : machineManager->GetAllMachines()) {
         statistics->OnMachineAdded(machine);
     }
 
+    // Task and Job input
     {
         std::ifstream fin;
-        fin.open("../input/job_and_task.txt");
+        fin.open(inputFilePath);
 
         size_t nJob;
         fin >> nJob;

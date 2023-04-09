@@ -10,6 +10,7 @@
 
 #include <cstdlib>
 #include <vector>
+#include <string>
 #include <queue>
 #include <list>
 
@@ -51,7 +52,7 @@ class Cluster {
     ////////////////////////////////////////////////////////////////
 
 public:
-    Cluster(MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr);
+    Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr);
     ~Cluster();
 
     void Run();
