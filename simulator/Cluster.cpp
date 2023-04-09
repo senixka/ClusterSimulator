@@ -58,19 +58,11 @@ Cluster::~Cluster() {
     }
 }
 
-uint64_t Cluster::IncTime(uint64_t current_time, uint64_t shift) {
-    uint64_t res;
-    if (__builtin_add_overflow(current_time, shift, &res)) [[unlikely]] {
-        res = UINT64_MAX;
-    }
-    return res;
-}
-
 void Cluster::PutEvent(ClusterEvent* event) {
-    if (event->eventTime != UINT64_MAX) {
-        clusterEvents.push(event);
-    } else {
+    if (AtBound(event->eventTime)) [[unlikely]] {
         deferEvents.push(event);
+    } else [[likely]] {
+        clusterEvents.push(event);
     }
 }
 
@@ -78,27 +70,31 @@ void Cluster::Run() {
     while (Update()) {
     }
 
+    for (auto& job : currentJobs) {
+        for (auto task : job->pendingTask) {
+            delete task;
+        }
+        job->pendingTask.clear();
+    }
+    DeleteFinishedJobs();
+
     while (!deferEvents.empty()) {
         auto event = deferEvents.top();
         deferEvents.pop();
 
         if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
             Task* task = reinterpret_cast<Task*>(event);
-
-            RemoveTaskFromMachine(*task);
-
             delete task;
         } else {
             PANIC("BAD EVENT TYPE");
         }
     }
-    DeleteFinishedJobs();
 
     statistics->OnSimulationFinished(time);
 }
 
 bool Cluster::Update() {
-    if (currentJobs.empty() && clusterEvents.size() == 2) {
+    if (statistics->nJobInSimulation == statistics->jobSubmittedCounter) {
         return false;
     }
 
@@ -124,13 +120,13 @@ bool Cluster::Update() {
         DeleteFinishedJobs();
         scheduler->Schedule(*this);
 
-        event->eventTime = IncTime(time, scheduleEachTime);
+        event->eventTime = BoundedSum(time, scheduleEachTime);
         clusterEvents.push(event);
     } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
         statistics->UpdateUtilization(time, currentUsedCPU, currentUsedMemory, currentUsedDisk);
         statistics->PrintStatistics();
 
-        event->eventTime = IncTime(time, updateStatisticsEachTime);
+        event->eventTime = BoundedSum(time, updateStatisticsEachTime);
         clusterEvents.push(event);
     } else {
         PANIC("BAD EVENT TYPE");

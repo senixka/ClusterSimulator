@@ -39,16 +39,6 @@ void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
     }
 }
 
-long double countSNP(const std::unordered_map<uint64_t, long double>& jobANP) {
-    long double snp = 0;
-    for (const auto& [jobID, anp] : jobANP) {
-        snp += std::log(anp);
-    }
-    snp = std::exp(snp / jobANP.size());
-
-    return snp;
-}
-
 void Statistics::OnSimulationFinished(uint64_t currentTime) {
     //////////////////// MakeSpan ///////////////////////////
     {

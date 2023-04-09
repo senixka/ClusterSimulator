@@ -9,6 +9,9 @@ public:
     void OnJobSubmitted(Cluster& cluster, Job* job) override;
     void OnTaskFinished(Cluster& cluster, Task* task) override;
     void Schedule(Cluster& cluster) override;
+
+private:
+    bool anyTaskFinished{true};
 };
 
 

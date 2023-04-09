@@ -5,6 +5,7 @@
 #include "Job.h"
 #include "Machine.h"
 #include "Statistics.h"
+#include "BoundedTime.h"
 #include "MachineManager.h"
 
 #include <cstdlib>
@@ -25,7 +26,7 @@ class Cluster {
     EventQueueType deferEvents;
     std::list<Job*> currentJobs;
 
-    uint64_t time = 0;
+    uint64_t time{0};
 
     ////////////////////// Machine section /////////////////////////
 
@@ -36,12 +37,12 @@ class Cluster {
     friend class SchedulerRandom;
 
     Scheduler* scheduler{nullptr};
-    const uint64_t scheduleEachTime{1'000'000'000ULL};
+    const uint64_t scheduleEachTime{10_S2MICROS};
 
     ////////////////////// Statistics section //////////////////////
 
     Statistics* statistics{nullptr};
-    const uint64_t updateStatisticsEachTime{scheduleEachTime};
+    const uint64_t updateStatisticsEachTime{500_S2MICROS};
 
     long double currentUsedCPU{0};
     long double currentUsedMemory{0};
@@ -56,7 +57,6 @@ public:
     void Run();
     bool Update();
 
-    uint64_t IncTime(uint64_t current_time, uint64_t shift);
     void PutEvent(ClusterEvent*);
 
     void PlaceTaskOnMachine(Task& task, size_t machineIndex);

@@ -2,6 +2,7 @@
 
 #include "MachineManager.h"
 #include "Cluster.h"
+#include "BoundedTime.h"
 
 #include <random>
 
@@ -10,7 +11,6 @@ void SchedulerRandom::OnJobSubmitted(Cluster& cluster, Job* job) {
 
     for (auto it = job->pendingTask.begin(); it != job->pendingTask.end();) {
         Task* task = *it;
-        task->machineIndex = UINT32_MAX;
 
         machines.clear();
         cluster.machineManager->FindSuitableMachines(*task, machines);
@@ -20,8 +20,7 @@ void SchedulerRandom::OnJobSubmitted(Cluster& cluster, Job* job) {
         } else {
             size_t machineIndex = machines[std::rand() % machines.size()].second;
 
-            task->machineIndex = machineIndex;
-            task->eventTime = cluster.IncTime(cluster.time, task->estimate);
+            task->eventTime = BoundedSum(cluster.time, task->estimate);
             task->clusterEventType = ClusterEventType::TASK_FINISHED;
 
             cluster.PlaceTaskOnMachine(*task, machineIndex);
@@ -33,15 +32,19 @@ void SchedulerRandom::OnJobSubmitted(Cluster& cluster, Job* job) {
 }
 
 void SchedulerRandom::OnTaskFinished(Cluster& /*cluster*/, Task* /*task*/) {
+    anyTaskFinished = true;
 }
 
 void SchedulerRandom::Schedule(Cluster& cluster) {
+    if (!anyTaskFinished) {
+        return;
+    }
+
     MachineManager::ReturnQueryType machines;
 
     for (auto& job : cluster.currentJobs) {
         for (auto it = job->pendingTask.begin(); it != job->pendingTask.end();) {
             Task* task = *it;
-            task->machineIndex = UINT32_MAX;
 
             machines.clear();
             cluster.machineManager->FindSuitableMachines(*task, machines);
@@ -51,8 +54,7 @@ void SchedulerRandom::Schedule(Cluster& cluster) {
             } else {
                 size_t machineIndex = machines[std::rand() % machines.size()].second;
 
-                task->machineIndex = machineIndex;
-                task->eventTime = cluster.IncTime(cluster.time, task->estimate);
+                task->eventTime = BoundedSum(cluster.time, task->estimate);
                 task->clusterEventType = ClusterEventType::TASK_FINISHED;
 
                 cluster.PlaceTaskOnMachine(*task, machineIndex);
@@ -62,4 +64,6 @@ void SchedulerRandom::Schedule(Cluster& cluster) {
             }
         }
     }
+
+    anyTaskFinished = false;
 }
