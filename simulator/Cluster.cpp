@@ -1,6 +1,6 @@
 #include "Cluster.h"
 
-#include "SchedulerRandom.h"
+#include "Scheduler.h"
 
 #include <fstream>
 
@@ -26,7 +26,7 @@ Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManage
         fin >> nJob;
 
         // To test speed up only
-        nJob /= 15;
+        nJob /= 20;
 
         statistics->nJobInSimulation = nJob;
 

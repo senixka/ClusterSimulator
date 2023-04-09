@@ -1,12 +1,15 @@
-CPP_FILES = ../main.cpp ../Machine.cpp ../Job.cpp ../Cluster.cpp ../SchedulerRandom.cpp ../Statistics.cpp ../MachineManager.cpp
-HPP_FILES = ../Task.h ../Job.h ../Machine.h ../Statistics.h ../Scheduler.h ../ClusterEvent.h ../BoundedTime.h ../SchedulerRandom.h ../MachineManager.h ../Cluster.h
-LINK_PYTHON =  -I /usr/include/python3.10 -lpython3.10
+CPP_FILES = ../main.cpp ../Machine.cpp ../Job.cpp ../Cluster.cpp ../SchedulerRandom.cpp ../Statistics.cpp ../MachineManager.cpp ../SchedulerTetris.cpp
+HPP_FILES = ../Task.h ../Job.h ../Machine.h ../Statistics.h ../Scheduler.h ../ClusterEvent.h ../BoundedTime.h ../SchedulerRandom.h ../MachineManager.h ../Cluster.h ../SchedulerTetris.h
+LINK_PYTHON = -I /usr/include/python3.10 -lpython3.10
 NO_DEBUG = -DNDEBUG -DNS_BLOCK_ASSERTIONS
 DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS
 SANITIZE = -fsanitize=address,undefined
 
 Release:
-	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(NO_DEBUG) $(CPP_FILES)	 $(LINK_PYTHON)
+	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(NO_DEBUG) $(CPP_FILES) $(LINK_PYTHON)
+
+ReleaseAssert:
+	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(CPP_FILES)	$(LINK_PYTHON)
 
 Fast:
 	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)

@@ -2,6 +2,7 @@
 #include "MachineManager.h"
 #include "Statistics.h"
 #include "SchedulerRandom.h"
+#include "SchedulerTetris.h"
 
 #include <cstdlib>
 #include <random>
@@ -22,10 +23,11 @@ int main() {
         const std::string machine = "../input/machine.txt";
 
         MachineManager machineManager{machine};
-        SchedulerRandom schedulerRandom{};
+        //SchedulerRandom scheduler{};
+        SchedulerTetris scheduler{};
         Statistics statistics{};
 
-        Cluster cluster(task_and_job, &machineManager, &schedulerRandom, &statistics);
+        Cluster cluster(task_and_job, &machineManager, &scheduler, &statistics);
         cluster.Run();
 
         statistics.DumpStatistics();

@@ -16,6 +16,7 @@
 
 class Scheduler;
 class SchedulerRandom;
+class SchedulerTetris;
 
 
 class Cluster {
@@ -36,6 +37,7 @@ class Cluster {
     ////////////////////// Scheduler section ///////////////////////
 
     friend class SchedulerRandom;
+    friend class SchedulerTetris;
 
     Scheduler* scheduler{nullptr};
     const uint64_t scheduleEachTime{10_S2MICROS};
