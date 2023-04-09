@@ -46,12 +46,11 @@ void SchedulerTetris::OnJobSubmitted(Cluster& cluster, Job* job) {
         if (machines.empty()) {
             ++it;
         } else {
-            size_t machineIndex = BestMachineIndex(machines, *task);
-
+            task->machineIndex = BestMachineIndex(machines, *task);
             task->eventTime = BoundedSum(cluster.time, task->estimate);
             task->clusterEventType = ClusterEventType::TASK_FINISHED;
 
-            cluster.PlaceTaskOnMachine(*task, machineIndex);
+            cluster.PlaceTask(*task);
             cluster.PutEvent(task);
 
             it = job->pendingTask.erase(it);
@@ -80,12 +79,11 @@ void SchedulerTetris::Schedule(Cluster& cluster) {
             if (machines.empty()) {
                 ++it;
             } else {
-                size_t machineIndex = BestMachineIndex(machines, *task);
-
+                task->machineIndex = BestMachineIndex(machines, *task);
                 task->eventTime = BoundedSum(cluster.time, task->estimate);
                 task->clusterEventType = ClusterEventType::TASK_FINISHED;
 
-                cluster.PlaceTaskOnMachine(*task, machineIndex);
+                cluster.PlaceTask(*task);
                 cluster.PutEvent(task);
 
                 it = job->pendingTask.erase(it);

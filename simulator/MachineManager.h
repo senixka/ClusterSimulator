@@ -30,8 +30,8 @@ public:
 
     void FindSuitableMachines(const Task& task, ReturnQueryType& result);
 
-    void PlaceTaskOnMachine(Task& task, size_t machineIndex);
-    void RemoveTaskFromMachine(const Task& task, size_t machineIndex);
+    void PlaceTaskOnMachine(const Task& task);
+    void RemoveTaskFromMachine(const Task& task);
 
     const std::vector<Machine>& GetAllMachines();
 };

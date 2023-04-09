@@ -18,6 +18,10 @@ public:
     long double totalAvailableMemory{0};
     long double totalAvailableDisk{0};
 
+    long double currentUsedCPU{0};
+    long double currentUsedMemory{0};
+    long double currentUsedDisk{0};
+
     float averageUtilizationCPU{0};
     float averageUtilizationMemory{0};
     float averageUtilizationDisk{0};
@@ -50,9 +54,12 @@ public:
 
     std::vector<uint64_t> jobCompletionTime;
 
+    uint64_t currentWorkingTaskCounter{0};
+
 public:
-    void UpdateUtilization(uint64_t currentTime, long double usedCPU, long double usedMemory, long double usedDisk);
+    void UpdateUtilization(uint64_t currentTime);
     void OnJobSubmitted(uint64_t currentTime, const Job& job);
+    void OnTaskScheduled(uint64_t currentTime, const Task& task);
     void OnTaskFinished(uint64_t currentTime, const Task& task);
     void OnSimulationFinished(uint64_t currentTime);
     void OnMachineAdded(const Machine& machine);

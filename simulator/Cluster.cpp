@@ -105,7 +105,7 @@ bool Cluster::Update() {
     if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
         Task* task = reinterpret_cast<Task*>(event);
 
-        RemoveTaskFromMachine(*task);
+        machineManager->RemoveTaskFromMachine(*task);
         statistics->OnTaskFinished(time, *task);
         scheduler->OnTaskFinished(*this, task);
 
@@ -123,7 +123,7 @@ bool Cluster::Update() {
         event->eventTime = BoundedSum(time, scheduleEachTime);
         clusterEvents.push(event);
     } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
-        statistics->UpdateUtilization(time, currentUsedCPU, currentUsedMemory, currentUsedDisk);
+        statistics->UpdateUtilization(time);
         statistics->PrintStatistics();
 
         event->eventTime = BoundedSum(time, updateStatisticsEachTime);
@@ -135,21 +135,9 @@ bool Cluster::Update() {
     return true;
 }
 
-void Cluster::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
-    task.machineIndex = machineIndex;
-    machineManager->PlaceTaskOnMachine(task, machineIndex);
-
-    currentUsedCPU += task.cpuRequest;
-    currentUsedMemory += task.memoryRequest;
-    currentUsedDisk += task.diskSpaceRequest;
-}
-
-void Cluster::RemoveTaskFromMachine(const Task& task) {
-    machineManager->RemoveTaskFromMachine(task, task.machineIndex);
-
-    currentUsedCPU -= task.cpuRequest;
-    currentUsedMemory -= task.memoryRequest;
-    currentUsedDisk-= task.diskSpaceRequest;
+void Cluster::PlaceTask(const Task& task) {
+    machineManager->PlaceTaskOnMachine(task);
+    statistics->OnTaskScheduled(time, task);
 }
 
 void Cluster::DeleteFinishedJobs() {

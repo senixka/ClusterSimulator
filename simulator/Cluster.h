@@ -15,11 +15,10 @@
 #include <list>
 
 class Scheduler;
-class SchedulerRandom;
-class SchedulerTetris;
 
 
 class Cluster {
+public:
     ////////////////////// Cluster section /////////////////////////
 
     using EventQueueType = std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare>;
@@ -36,9 +35,6 @@ class Cluster {
 
     ////////////////////// Scheduler section ///////////////////////
 
-    friend class SchedulerRandom;
-    friend class SchedulerTetris;
-
     Scheduler* scheduler{nullptr};
     const uint64_t scheduleEachTime{10_S2MICROS};
 
@@ -46,10 +42,6 @@ class Cluster {
 
     Statistics* statistics{nullptr};
     const uint64_t updateStatisticsEachTime{500_S2MICROS};
-
-    long double currentUsedCPU{0};
-    long double currentUsedMemory{0};
-    long double currentUsedDisk{0};
 
     ////////////////////////////////////////////////////////////////
 
@@ -61,10 +53,7 @@ public:
     bool Update();
 
     void PutEvent(ClusterEvent*);
-
-    void PlaceTaskOnMachine(Task& task, size_t machineIndex);
-    void RemoveTaskFromMachine(const Task& task);
-
+    void PlaceTask(const Task& task);
     void DeleteFinishedJobs();
 };
 

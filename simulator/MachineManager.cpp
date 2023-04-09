@@ -26,24 +26,24 @@ void MachineManager::FindSuitableMachines(const Task& task, ReturnQueryType& res
     tree.query(bgi::intersects(query_box), std::back_inserter(result));
 }
 
-void MachineManager::PlaceTaskOnMachine(Task& task, size_t machineIndex) {
-    auto [old_cpu, old_memory, old_disk] = machines[machineIndex];
-    tree.remove({{old_cpu, old_memory, old_disk}, machineIndex});
+void MachineManager::PlaceTaskOnMachine(const Task& task) {
+    auto [old_cpu, old_memory, old_disk] = machines[task.machineIndex];
+    tree.remove({{old_cpu, old_memory, old_disk}, task.machineIndex});
 
-    machines[machineIndex].PlaceTask(task);
+    machines[task.machineIndex].PlaceTask(task);
 
-    auto [new_cpu, new_memory, new_disk] = machines[machineIndex];
-    tree.insert({{new_cpu, new_memory, new_disk}, machineIndex});
+    auto [new_cpu, new_memory, new_disk] = machines[task.machineIndex];
+    tree.insert({{new_cpu, new_memory, new_disk}, task.machineIndex});
 }
 
-void MachineManager::RemoveTaskFromMachine(const Task& task, size_t machineIndex) {
-    auto [old_cpu, old_memory, old_disk] = machines[machineIndex];
-    tree.remove({{old_cpu, old_memory, old_disk}, machineIndex});
+void MachineManager::RemoveTaskFromMachine(const Task& task) {
+    auto [old_cpu, old_memory, old_disk] = machines[task.machineIndex];
+    tree.remove({{old_cpu, old_memory, old_disk}, task.machineIndex});
 
-    machines[machineIndex].RemoveTask(task);
+    machines[task.machineIndex].RemoveTask(task);
 
-    auto [new_cpu, new_memory, new_disk] = machines[machineIndex];
-    tree.insert({{new_cpu, new_memory, new_disk}, machineIndex});
+    auto [new_cpu, new_memory, new_disk] = machines[task.machineIndex];
+    tree.insert({{new_cpu, new_memory, new_disk}, task.machineIndex});
 }
 
 const std::vector<Machine>& MachineManager::GetAllMachines() {

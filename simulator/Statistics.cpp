@@ -2,17 +2,18 @@
 
 #include <cmath>
 #include <iomanip>
+#include <cassert>
 
 #include "../matplotlibcpp.h"
 namespace plt = matplotlibcpp;
 
 
-void Statistics::UpdateUtilization(uint64_t currentTime, long double usedCPU, long double usedMemory, long double usedDisk) {
+void Statistics::UpdateUtilization(uint64_t currentTime) {
     utilizationMeasurementsTime.push_back(currentTime);
 
-    utilizationCPU.push_back(static_cast<float>(usedCPU * 100 / totalAvailableCPU));
-    utilizationMemory.push_back(static_cast<float>(usedMemory * 100 / totalAvailableMemory));
-    utilizationDisk.push_back(static_cast<float>(usedDisk * 100 / totalAvailableDisk));
+    utilizationCPU.push_back(static_cast<float>(currentUsedCPU * 100 / totalAvailableCPU));
+    utilizationMemory.push_back(static_cast<float>(currentUsedMemory * 100 / totalAvailableMemory));
+    utilizationDisk.push_back(static_cast<float>(currentUsedDisk * 100 / totalAvailableDisk));
 }
 
 void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
@@ -30,8 +31,21 @@ void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
     jobMinEstimateTime[job.jobID] = maxTaskEstimateTime;
 }
 
+void Statistics::OnTaskScheduled(uint64_t /*currentTime*/, const Task& task) {
+    ++currentWorkingTaskCounter;
+
+    currentUsedCPU += task.cpuRequest;
+    currentUsedMemory += task.memoryRequest;
+    currentUsedDisk += task.diskSpaceRequest;
+}
+
 void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
     ++taskFinishedCounter;
+    --currentWorkingTaskCounter;
+
+    currentUsedCPU -= task.cpuRequest;
+    currentUsedMemory -= task.memoryRequest;
+    currentUsedDisk -= task.diskSpaceRequest;
 
     if (--jobUnfinishedTaskCount[task.jobID] == 0) {
         jobEndTime[task.jobID] = currentTime;
@@ -118,7 +132,7 @@ void Statistics::PrintStatistics() {
         printf("CPU: NO INFO  Memory: NO INFO  Disk: NO INFO\n");
     } else [[likely]] {
         printf("CPU: %7.3f%%  Memory: %7.3f%%  Disk: %7.3f%%  ", utilizationCPU.back(), utilizationMemory.back(), utilizationDisk.back());
-        printf("Job submitted: %lu / %lu \t Task finished: %lu / %lu\n", jobSubmittedCounter, nJobInSimulation, taskFinishedCounter, nTaskInSimulation);
+        printf("Job submitted: %lu / %lu \t Task finished: %lu / %lu \t Task working: %lu\n", jobSubmittedCounter, nJobInSimulation, taskFinishedCounter, nTaskInSimulation, currentWorkingTaskCounter);
     }
 }
 
