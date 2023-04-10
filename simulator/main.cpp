@@ -3,6 +3,7 @@
 #include "Statistics.h"
 #include "SchedulerRandom.h"
 #include "SchedulerTetris.h"
+#include "SchedulerMinVolume.h"
 
 #include <cstdlib>
 #include <random>
@@ -24,7 +25,8 @@ int main() {
 
         MachineManager machineManager{machine};
         //SchedulerRandom scheduler{};
-        SchedulerTetris scheduler{};
+        //SchedulerTetris scheduler{};
+        SchedulerMinVolume scheduler{};
         Statistics statistics{};
 
         Cluster cluster(task_and_job, &machineManager, &scheduler, &statistics);
