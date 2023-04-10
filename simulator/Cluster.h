@@ -41,7 +41,7 @@ public:
     ////////////////////// Statistics section //////////////////////
 
     Statistics* statistics{nullptr};
-    const uint64_t updateStatisticsEachTime{500_S2MICROS};
+    const uint64_t updateStatisticsEachTime{10_S2MICROS};
 
     ////////////////////////////////////////////////////////////////
 

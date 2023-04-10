@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 #include <optional>
 #include <unordered_map>
 
@@ -55,9 +56,16 @@ public:
     std::vector<uint64_t> jobCompletionTime;
 
     uint64_t currentWorkingTaskCounter{0};
+    uint64_t currentPendingTaskCounter{0};
+
+    std::vector<uint64_t> pendingTask;
+    std::vector<uint64_t> workingTask;
+
+    std::string name;
 
 public:
-    void UpdateUtilization(uint64_t currentTime);
+    Statistics(const std::string& sName);
+    void UpdateStats(uint64_t currentTime);
     void OnJobSubmitted(uint64_t currentTime, const Job& job);
     void OnTaskScheduled(uint64_t currentTime, const Task& task);
     void OnTaskFinished(uint64_t currentTime, const Task& task);

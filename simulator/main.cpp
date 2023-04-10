@@ -18,18 +18,46 @@ void inline Init() {
 int main() {
     Init();
 
-    // Experiment
+    // Experiment Random
     {
-        const std::string task_and_job = "../input/job_and_task.txt";
-        const std::string machine = "../input/machine.txt";
+        const std::string taskAndJobFilePath = "../input/job_and_task.txt";
+        const std::string machineFilePath = "../input/machine.txt";
 
-        MachineManager machineManager{machine};
-        //SchedulerRandom scheduler{};
-        //SchedulerTetris scheduler{};
+        MachineManager machineManager{machineFilePath};
+        SchedulerRandom scheduler{};
+        Statistics statistics{"random"};
+
+        Cluster cluster(taskAndJobFilePath, &machineManager, &scheduler, &statistics);
+        cluster.Run();
+
+        statistics.DumpStatistics();
+    }
+
+    // Experiment MinVolume
+    {
+        const std::string taskAndJobFilePath = "../input/job_and_task.txt";
+        const std::string machineFilePath = "../input/machine.txt";
+
+        MachineManager machineManager{machineFilePath};
         SchedulerMinVolume scheduler{};
-        Statistics statistics{};
+        Statistics statistics{"min_volume"};
 
-        Cluster cluster(task_and_job, &machineManager, &scheduler, &statistics);
+        Cluster cluster(taskAndJobFilePath, &machineManager, &scheduler, &statistics);
+        cluster.Run();
+
+        statistics.DumpStatistics();
+    }
+
+    // Experiment Tetris
+    {
+        const std::string taskAndJobFilePath = "../input/job_and_task.txt";
+        const std::string machineFilePath = "../input/machine.txt";
+
+        MachineManager machineManager{machineFilePath};
+        SchedulerTetris scheduler{};
+        Statistics statistics{"tetris"};
+
+        Cluster cluster(taskAndJobFilePath, &machineManager, &scheduler, &statistics);
         cluster.Run();
 
         statistics.DumpStatistics();

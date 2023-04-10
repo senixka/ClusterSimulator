@@ -26,7 +26,7 @@ Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManage
         fin >> nJob;
 
         // To test speed up only
-        nJob /= 20;
+        //nJob /= 20;
 
         statistics->nJobInSimulation = nJob;
 
@@ -123,7 +123,7 @@ bool Cluster::Update() {
         event->eventTime = BoundedSum(time, scheduleEachTime);
         clusterEvents.push(event);
     } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
-        statistics->UpdateUtilization(time);
+        statistics->UpdateStats(time);
         statistics->PrintStatistics();
 
         event->eventTime = BoundedSum(time, updateStatisticsEachTime);

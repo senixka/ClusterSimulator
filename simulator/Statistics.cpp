@@ -1,23 +1,31 @@
 #include "Statistics.h"
 
+#include "BoundedTime.h"
+
 #include <cmath>
 #include <iomanip>
-#include <cassert>
 
 #include "../matplotlibcpp.h"
 namespace plt = matplotlibcpp;
 
 
-void Statistics::UpdateUtilization(uint64_t currentTime) {
+Statistics::Statistics(const std::string& sName) : name(sName){
+}
+
+void Statistics::UpdateStats(uint64_t currentTime) {
     utilizationMeasurementsTime.push_back(currentTime);
 
     utilizationCPU.push_back(static_cast<float>(currentUsedCPU * 100 / totalAvailableCPU));
     utilizationMemory.push_back(static_cast<float>(currentUsedMemory * 100 / totalAvailableMemory));
     utilizationDisk.push_back(static_cast<float>(currentUsedDisk * 100 / totalAvailableDisk));
+
+    pendingTask.push_back(currentPendingTaskCounter);
+    workingTask.push_back(currentWorkingTaskCounter);
 }
 
 void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
     ++jobSubmittedCounter;
+    currentPendingTaskCounter += job.pendingTask.size();
 
     jobStartTime[job.jobID] = currentTime;
     jobUnfinishedTaskCount[job.jobID] = job.pendingTask.size();
@@ -33,6 +41,7 @@ void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
 
 void Statistics::OnTaskScheduled(uint64_t /*currentTime*/, const Task& task) {
     ++currentWorkingTaskCounter;
+    --currentPendingTaskCounter;
 
     currentUsedCPU += task.cpuRequest;
     currentUsedMemory += task.memoryRequest;
@@ -54,12 +63,12 @@ void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
 }
 
 void Statistics::OnSimulationFinished(uint64_t currentTime) {
-    //////////////////// MakeSpan ///////////////////////////
+    ////////////////////// MakeSpan /////////////////////////
     {
         makeSpanTime = currentTime;
     }
 
-    ////////////////// Average Utilization //////////////////
+    ////////////////////// Average Utilization //////////////
     {
         long double sumCPU = 0, sumMemory = 0, sumDisk = 0;
         for (size_t i = 0; i < utilizationMeasurementsTime.size(); ++i) {
@@ -132,25 +141,46 @@ void Statistics::PrintStatistics() {
         printf("CPU: NO INFO  Memory: NO INFO  Disk: NO INFO\n");
     } else [[likely]] {
         printf("CPU: %7.3f%%  Memory: %7.3f%%  Disk: %7.3f%%  ", utilizationCPU.back(), utilizationMemory.back(), utilizationDisk.back());
-        printf("Job submitted: %lu / %lu \t Task finished: %lu / %lu \t Task working: %lu\n", jobSubmittedCounter, nJobInSimulation, taskFinishedCounter, nTaskInSimulation, currentWorkingTaskCounter);
+        printf("Job submitted: %lu / %lu \tTask finished: %lu / %lu", jobSubmittedCounter, nJobInSimulation, taskFinishedCounter, nTaskInSimulation);
+        printf("\tTask working: %lu \tTask pending: %lu\n", currentWorkingTaskCounter, currentPendingTaskCounter);
     }
 }
 
 void Statistics::DumpStatistics() {
     std::cout << std::fixed << std::setprecision(10) << "MakeSpan: " << makeSpanTime << std::endl;
+    std::cout << std::fixed << std::setprecision(10) << "PendingTaskCounter: " << currentPendingTaskCounter << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "SNP: " << simulationSNP << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "Unfairness: " << simulationUnfairness << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "Slowdown: " << simulationSlowdown2Norm << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "Min ANP: " << minANP << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "Max ANP: " << maxANP << std::endl;
 
-    //////////////////////////// Utilization //////////////////////////////
-
+    std::for_each(utilizationMeasurementsTime.begin(), utilizationMeasurementsTime.end(), [](uint64_t& value) { value /= MICROS_IN_S; });
     const auto& uTimes = utilizationMeasurementsTime;
+
+    ///////////////////////// Task Pending vs Working /////////////////////////
+
+    plt::figure_size(1200, 500);
+    plt::title("Task Pending vs Working in Time");
+    plt::xlabel("Time (in seconds)");
+    plt::ylabel("Count");
+
+    plt::plot(uTimes, workingTask, {{"label", "Working task"}});
+    plt::plot(uTimes, pendingTask, {{"label", "Pending task"}});
+    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask[0]}, {{"label", "Slowdown: " + std::to_string(simulationSlowdown2Norm)}});
+    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask[0]}, {{"label", "Unfairness: " + std::to_string(simulationUnfairness)}});
+    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask[0]}, {{"label", "SNP: " + std::to_string(simulationSNP)}});
+    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask[0]}, {{"label", "Min ANP: " + std::to_string(minANP)}});
+
+    plt::legend();
+    plt::savefig("../output/" + name + "_cluster_pending_working.png");
+    plt::show();
+
+    //////////////////////////// Utilization //////////////////////////////
 
     plt::figure_size(1200, 500);
     plt::title("Cluster resource utilization in Time");
-    plt::xlabel("Time (in microseconds)");
+    plt::xlabel("Time (in seconds)");
     plt::ylabel("Resource (in percent)");
 
     plt::plot(uTimes, utilizationCPU, {{"label", "CPU"}});
@@ -162,25 +192,10 @@ void Statistics::DumpStatistics() {
     plt::plot(uTimes, utilizationDisk, {{"label", "Disk"}});
     plt::plot(uTimes, std::vector<float>(uTimes.size(), averageUtilizationDisk), {{"label", "Disk AVG at " + std::to_string(averageUtilizationDisk)}});
 
-    plt::legend();
-    plt::savefig("../output/cluster_utilization_1.png");
-    plt::show();
-
-    ///////////////////////// Job Completion Time /////////////////////////
-
-    plt::figure_size(1200, 500);
-    plt::title("Job completion counter in Time");
-    plt::xlabel("Time (in microseconds)");
-    plt::ylabel("Counter");
-
-    std::vector<uint64_t> counter(jobCompletionTime.size());
-    for (size_t i = 0; i < counter.size(); ++i) {
-        counter[i] = i + 1;
-    }
-    plt::plot(jobCompletionTime, counter, {{"label", "Job finished"}});
+    std::for_each(pendingTask.begin(), pendingTask.end(), [](uint64_t& value) { value /= 500; });
+    plt::plot(uTimes, pendingTask, {{"label", "Pending task / 500"}});
 
     plt::legend();
-    plt::savefig("../output/job_completion_1.png");
+    plt::savefig("../output/" + name + "_cluster_utilization.png");
     plt::show();
-
 }
