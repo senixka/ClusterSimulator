@@ -131,9 +131,9 @@ void Statistics::OnSimulationFinished(uint64_t currentTime) {
 }
 
 void Statistics::OnMachineAdded(const Machine& machine) {
-    totalAvailableCPU += machine.cpuCapacity;
-    totalAvailableMemory += machine.memoryCapacity;
-    totalAvailableDisk += machine.diskSpaceCapacity;
+    totalAvailableCPU += machine.currentCpu;
+    totalAvailableMemory += machine.currentMemory;
+    totalAvailableDisk += machine.currentDiskSpace;
 }
 
 void Statistics::PrintStatistics() {

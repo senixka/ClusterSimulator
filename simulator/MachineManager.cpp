@@ -7,16 +7,21 @@ MachineManager::MachineManager(const std::string& inputFilePath) {
     std::ifstream in;
     in.open(inputFilePath);
 
+    size_t nConfig;
+    in >> nConfig;
+
     size_t nMachine;
-    in >> nMachine;
+    double machineCpu, machineMemory, machineDisk;
 
-    machines.resize(nMachine);
+    for (size_t i = 0; i < nConfig; ++i) {
+        in >> machineCpu >> machineMemory >> machineDisk >> nMachine;
 
-    for (size_t i = 0; i < nMachine; ++i) {
-        in >> machines[i].cpuCapacity >> machines[i].memoryCapacity >> machines[i].diskSpaceCapacity;
+        for (size_t j = 0; j < nMachine; ++j) {
+            machines.push_back({machineCpu, machineMemory, machineDisk});
 
-        point_3d point(machines[i].cpuCapacity, machines[i].memoryCapacity, machines[i].diskSpaceCapacity);
-        tree.insert({point, i});
+            point_3d point(machineCpu, machineMemory, machineDisk);
+            tree.insert({point, machines.size() - 1});
+        }
     }
 }
 

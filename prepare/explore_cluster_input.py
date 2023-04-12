@@ -97,9 +97,9 @@ def TaskWorkloadInClusterInput():
 
     sumCpu, sumMem, sumDisk = 0, 0, 0
 
-    print("count\tcpu\tmem\tdisk")
+    print("cpu\tmemory\tdisk\tcount")
     for key, value in machines.items():
-        print(f"{value}\t{key[0]}\t{key[1]}\t{key[2]}")
+        print(f"{key[0]}\t{key[1]}\t{key[2]}\t{value}")
         sumCpu += value * key[0]
         sumMem += value * key[1]
         sumDisk += value * key[2]
@@ -140,7 +140,7 @@ def TaskWorkloadInClusterInput():
     # ///////////////////////// Task working /////////////////////////
 
     plt.figure(figsize=(12, 5))
-    plt.title("Task Pending vs Working in Time")
+    plt.title("Task working in Time")
     plt.xlabel("Time (in microseconds)")
     plt.ylabel("Count")
 

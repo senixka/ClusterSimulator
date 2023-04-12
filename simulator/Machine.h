@@ -6,9 +6,9 @@
 
 class Machine {
 public:
-    double cpuCapacity{1};
-    double memoryCapacity{1};
-    double diskSpaceCapacity{1};
+    double currentCpu{0};
+    double currentMemory{0};
+    double currentDiskSpace{0};
 
 
     bool IsTaskPlaceable(const Task& task) const;

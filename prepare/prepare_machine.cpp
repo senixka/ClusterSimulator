@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <map>
 #include <unordered_map>
 
 
@@ -23,26 +24,23 @@ int main() {
         }
     }
 
-    std::vector<std::pair<long double, long double>> values;
+    std::map<std::pair<long double, long double>, size_t> values;
 
     for (const auto& [key, value] : machines) {
         if (!value.cpu.has_value() || !value.memory.has_value()) {
             continue;
         }
 
-        values.emplace_back(value.cpu.value(), value.memory.value());
+        ++values[{value.cpu.value(), value.memory.value()}];
     }
-
-    std::sort(values.begin(), values.end());
-
 
     std::ofstream out;
     out.open(outputFilePath);
 
-    out << machines.size() << '\n';
+    out << values.size() << '\n';
 
-    for (const auto& value : values) {
-        out << value.first << " " << value.second << " " << 1 << '\n';
+    for (const auto& [key, value] : values) {
+        out << key.first << " " << key.second << " " << 0.5 << " " << value << '\n';
     }
 
     out.close();
