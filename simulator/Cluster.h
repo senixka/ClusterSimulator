@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_CLUSTER_H
-#define CLUSTERSIMULATOR_CLUSTER_H
+#pragma once
 
 #include "Task.h"
 #include "Job.h"
@@ -59,6 +58,3 @@ public:
     void PutEvent(ClusterEvent*);
     void PlaceTask(const Task& task) const;
 };
-
-
-#endif //CLUSTERSIMULATOR_CLUSTER_H

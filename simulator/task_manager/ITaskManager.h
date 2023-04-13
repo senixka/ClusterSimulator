@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_ITASKMANAGER_H
-#define CLUSTERSIMULATOR_ITASKMANAGER_H
+#pragma once
 
 #include "../Task.h"
 
@@ -18,6 +17,3 @@ public:
 
     virtual ~ITaskManager() = default;
 };
-
-
-#endif //CLUSTERSIMULATOR_ITASKMANAGER_H

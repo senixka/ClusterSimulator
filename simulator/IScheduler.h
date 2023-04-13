@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_ISCHEDULER_H
-#define CLUSTERSIMULATOR_ISCHEDULER_H
+#pragma once
 
 class Cluster;
 
@@ -12,6 +11,3 @@ public:
 
     virtual ~IScheduler() = default;
 };
-
-
-#endif //CLUSTERSIMULATOR_ISCHEDULER_H

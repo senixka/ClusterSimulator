@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_ROUNDROBIN_H
-#define CLUSTERSIMULATOR_ROUNDROBIN_H
+#pragma once
 
 #include "IJobManager.h"
 
@@ -22,6 +21,3 @@ public:
 private:
     std::list<Job*> jobs;
 };
-
-
-#endif //CLUSTERSIMULATOR_ROUNDROBIN_H

@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_JOB_H
-#define CLUSTERSIMULATOR_JOB_H
+#pragma once
 
 #include "Task.h"
 #include "ClusterEvent.h"
@@ -20,6 +19,3 @@ public:
 
     Job(TaskManagerType taskManagerType, std::istream& in);
 };
-
-
-#endif //CLUSTERSIMULATOR_JOB_H

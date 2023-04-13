@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_FACTORYTASKMANAGER_H
-#define CLUSTERSIMULATOR_FACTORYTASKMANAGER_H
+#pragma once
 
 #include "ITaskManager.h"
 
@@ -14,6 +13,3 @@ class FactoryTaskManager {
 public:
     static ITaskManager* Create(TaskManagerType taskManagerType);
 };
-
-
-#endif //CLUSTERSIMULATOR_FACTORYTASKMANAGER_H

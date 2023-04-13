@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_ASSERTS_H
-#define CLUSTERSIMULATOR_ASSERTS_H
+#pragma once
 
 #include <cassert>
 #include <cstdio>
@@ -33,6 +32,3 @@ if (!static_cast<bool>(expr)) [[unlikely]] {                                    
 #else
 #define DEBUG_PRINT(S)
 #endif
-
-
-#endif //CLUSTERSIMULATOR_ASSERTS_H

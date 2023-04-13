@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_TASK_H
-#define CLUSTERSIMULATOR_TASK_H
+#pragma once
 
 #include "ClusterEvent.h"
 
@@ -13,6 +12,3 @@ struct Task : public ClusterEvent {
     unsigned taskIndex{0};
     unsigned machineIndex{UINT32_MAX};
 };
-
-
-#endif //CLUSTERSIMULATOR_TASK_H

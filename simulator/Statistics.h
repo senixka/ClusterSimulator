@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_STATISTICS_H
-#define CLUSTERSIMULATOR_STATISTICS_H
+#pragma once
 
 #include "Job.h"
 #include "Machine.h"
@@ -74,6 +73,3 @@ public:
     void PrintStatistics();
     void DumpStatistics();
 };
-
-
-#endif //CLUSTERSIMULATOR_STATISTICS_H

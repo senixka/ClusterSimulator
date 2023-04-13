@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_IPLACINGSTRATEGY_H
-#define CLUSTERSIMULATOR_IPLACINGSTRATEGY_H
+#pragma once
 
 #include "../Task.h"
 #include "../MachineManager.h"
@@ -11,6 +10,3 @@ public:
 
     virtual ~IPlacingStrategy() = default;
 };
-
-
-#endif //CLUSTERSIMULATOR_IPLACINGSTRATEGY_H

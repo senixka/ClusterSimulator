@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_CLUSTEREVENT_H
-#define CLUSTERSIMULATOR_CLUSTEREVENT_H
+#pragma once
 
 #include <cstdint>
 #include <tuple>
@@ -30,6 +29,3 @@ public:
         return std::tie(lhs->eventTime, lhs->clusterEventType) > std::tie(rhs->eventTime, rhs->clusterEventType);
     }
 };
-
-
-#endif //CLUSTERSIMULATOR_CLUSTEREVENT_H

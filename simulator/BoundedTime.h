@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_BOUNDEDTIME_H
-#define CLUSTERSIMULATOR_BOUNDEDTIME_H
+#pragma once
 
 #include <cstdint>
 #include <limits>
@@ -25,6 +24,3 @@ template<typename T>
 inline bool AtBound(T value) {
     return value == std::numeric_limits<T>::max();
 }
-
-
-#endif //CLUSTERSIMULATOR_BOUNDEDTIME_H

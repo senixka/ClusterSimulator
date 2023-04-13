@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_SCHEDULERIMPL_H
-#define CLUSTERSIMULATOR_SCHEDULERIMPL_H
+#pragma once
 
 #include "IScheduler.h"
 #include "placing_strategy/IPlacingStrategy.h"
@@ -16,6 +15,3 @@ public:
 private:
     IPlacingStrategy* placingStrategy{nullptr};
 };
-
-
-#endif //CLUSTERSIMULATOR_SCHEDULERIMPL_H

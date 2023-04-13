@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_MACHINE_H
-#define CLUSTERSIMULATOR_MACHINE_H
+#pragma once
 
 #include "Task.h"
 
@@ -17,6 +16,3 @@ public:
 
     void RemoveTask(const Task& task);
 };
-
-
-#endif //CLUSTERSIMULATOR_MACHINE_H

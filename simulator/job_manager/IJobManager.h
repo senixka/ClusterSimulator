@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_IJOBMANAGER_H
-#define CLUSTERSIMULATOR_IJOBMANAGER_H
+#pragma once
 
 #include "../Job.h"
 
@@ -15,6 +14,3 @@ public:
 
     virtual ~IJobManager() = default;
 };
-
-
-#endif //CLUSTERSIMULATOR_IJOBMANAGER_H

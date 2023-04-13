@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_MACHINEMANAGER_H
-#define CLUSTERSIMULATOR_MACHINEMANAGER_H
+#pragma once
 
 #include "Machine.h"
 #include "Task.h"
@@ -35,6 +34,3 @@ public:
 
     const std::vector<Machine>& GetAllMachines();
 };
-
-
-#endif //CLUSTERSIMULATOR_MACHINEMANAGER_H

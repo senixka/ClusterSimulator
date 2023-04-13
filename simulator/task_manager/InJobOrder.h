@@ -1,5 +1,4 @@
-#ifndef CLUSTERSIMULATOR_INJOBORDER_H
-#define CLUSTERSIMULATOR_INJOBORDER_H
+#pragma once
 
 #include "ITaskManager.h"
 #include "../Task.h"
@@ -22,6 +21,3 @@ public:
 private:
     std::list<Task*> tasks;
 };
-
-
-#endif //CLUSTERSIMULATOR_INJOBORDER_H
