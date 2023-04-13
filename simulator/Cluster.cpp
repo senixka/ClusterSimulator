@@ -1,6 +1,6 @@
 #include "Cluster.h"
 
-#include "Scheduler.h"
+#include "IScheduler.h"
 
 #include <fstream>
 
@@ -11,8 +11,10 @@
 #endif
 
 
-Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr)
-    : machineManager(machineManagerPtr), scheduler(schedulerPtr), statistics(statisticsPtr) {
+Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, TaskManagerType taskManagerType,
+                 IJobManager* jobManagerPtr, IScheduler* schedulerPtr, Statistics* statisticsPtr)
+    : machineManager(machineManagerPtr), jobManager(jobManagerPtr), scheduler(schedulerPtr), statistics(statisticsPtr) {
+
     for (const auto& machine : machineManager->GetAllMachines()) {
         statistics->OnMachineAdded(machine);
     }
@@ -26,16 +28,16 @@ Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManage
         fin >> nJob;
 
         // To test speed up only
-        //nJob /= 20;
+        // Job /= 30;
 
         statistics->nJobInSimulation = nJob;
 
         for (size_t i = 0; i < nJob; ++i) {
-            Job* job = new Job(fin);
+            Job* job = new Job(taskManagerType, fin);
             job->eventTime = job->jobTime;
             job->clusterEventType = JOB_SUBMITTED;
 
-            statistics->nTaskInSimulation += job->pendingTask.size();
+            statistics->nTaskInSimulation += job->taskManager->TaskCount();
             clusterEvents.push(job);
         }
 
@@ -50,17 +52,17 @@ Cluster::~Cluster() {
     while (!clusterEvents.empty()) {
         auto event = clusterEvents.top();
         clusterEvents.pop();
-        delete event;
-    }
 
-    for (auto job : currentJobs) {
-        delete job;
+        delete event;
     }
 }
 
 void Cluster::PutEvent(ClusterEvent* event) {
     if (AtBound(event->eventTime)) [[unlikely]] {
-        deferEvents.push(event);
+        assert(event->clusterEventType == ClusterEventType::TASK_FINISHED);
+
+        Task* task = reinterpret_cast<Task*>(event);
+        delete task;
     } else [[likely]] {
         clusterEvents.push(event);
     }
@@ -68,26 +70,6 @@ void Cluster::PutEvent(ClusterEvent* event) {
 
 void Cluster::Run() {
     while (Update()) {
-    }
-
-    for (auto& job : currentJobs) {
-        for (auto task : job->pendingTask) {
-            delete task;
-        }
-        job->pendingTask.clear();
-    }
-    DeleteFinishedJobs();
-
-    while (!deferEvents.empty()) {
-        auto event = deferEvents.top();
-        deferEvents.pop();
-
-        if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
-            Task* task = reinterpret_cast<Task*>(event);
-            delete task;
-        } else {
-            PANIC("BAD EVENT TYPE");
-        }
     }
 
     statistics->OnSimulationFinished(time);
@@ -107,17 +89,16 @@ bool Cluster::Update() {
 
         machineManager->RemoveTaskFromMachine(*task);
         statistics->OnTaskFinished(time, *task);
-        scheduler->OnTaskFinished(*this, task);
+        scheduler->OnTaskFinished(*this);
 
         delete task;
     } else if (event->clusterEventType == ClusterEventType::JOB_SUBMITTED) {
         Job* job = reinterpret_cast<Job*>(event);
 
-        currentJobs.push_front(job);
+        jobManager->PutJob(job);
         statistics->OnJobSubmitted(time, *job);
-        scheduler->OnJobSubmitted(*this, job);
+        scheduler->OnJobSubmitted(*this);
     } else if (event->clusterEventType == ClusterEventType::RUN_SCHEDULER) {
-        DeleteFinishedJobs();
         scheduler->Schedule(*this);
 
         event->eventTime = BoundedSum(time, scheduleEachTime);
@@ -135,19 +116,7 @@ bool Cluster::Update() {
     return true;
 }
 
-void Cluster::PlaceTask(const Task& task) {
+void Cluster::PlaceTask(const Task& task) const {
     machineManager->PlaceTaskOnMachine(task);
     statistics->OnTaskScheduled(time, task);
-}
-
-void Cluster::DeleteFinishedJobs() {
-    for (auto it = currentJobs.begin(); it != currentJobs.end();) {
-        if ((*it)->pendingTask.empty()) {
-            Job* job = *it;
-            it = currentJobs.erase(it);
-            delete job;
-        } else {
-            ++it;
-        }
-    }
 }

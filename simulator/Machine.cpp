@@ -1,6 +1,6 @@
 #include "Machine.h"
 
-#include <cassert>
+#include "Macro.h"
 
 
 bool Machine::IsTaskPlaceable(const Task& task) const {
@@ -10,7 +10,7 @@ bool Machine::IsTaskPlaceable(const Task& task) const {
 }
 
 void Machine::PlaceTask(const Task& task) {
-    assert(IsTaskPlaceable(task));
+    ASSERT(IsTaskPlaceable(task));
 
     currentCpu -= task.cpuRequest;
     currentMemory -= task.memoryRequest;

@@ -3,6 +3,8 @@
 
 #include "Task.h"
 #include "ClusterEvent.h"
+#include "task_manager/ITaskManager.h"
+#include "task_manager/FactoryTaskManager.h"
 
 #include <list>
 #include <string>
@@ -14,11 +16,9 @@ public:
     uint64_t jobTime{0};
     uint64_t jobID{0};
     std::string user;
-    std::list<Task*> pendingTask;
+    ITaskManager* taskManager{nullptr};
 
-    Job() = default;
-    Job(std::istream& in);
-    ~Job();
+    Job(TaskManagerType taskManagerType, std::istream& in);
 };
 
 

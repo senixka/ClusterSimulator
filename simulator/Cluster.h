@@ -7,6 +7,8 @@
 #include "Statistics.h"
 #include "BoundedTime.h"
 #include "MachineManager.h"
+#include "job_manager/IJobManager.h"
+#include "task_manager/FactoryTaskManager.h"
 
 #include <cstdlib>
 #include <vector>
@@ -14,7 +16,7 @@
 #include <queue>
 #include <list>
 
-class Scheduler;
+class IScheduler;
 
 
 class Cluster {
@@ -23,20 +25,21 @@ public:
 
     using EventQueueType = std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare>;
 
-    EventQueueType clusterEvents;
-    EventQueueType deferEvents;
-    std::list<Job*> currentJobs;
-
     uint64_t time{0};
+    EventQueueType clusterEvents;
 
     ////////////////////// Machine section /////////////////////////
 
     MachineManager* machineManager{nullptr};
 
+    ////////////////////// Job section /////////////////////////////
+
+    IJobManager* jobManager{nullptr};
+
     ////////////////////// Scheduler section ///////////////////////
 
-    Scheduler* scheduler{nullptr};
-    const uint64_t scheduleEachTime{10_S2MICROS};
+    IScheduler* scheduler{nullptr};
+    const uint64_t scheduleEachTime{1_S2MICROS};
 
     ////////////////////// Statistics section //////////////////////
 
@@ -46,15 +49,15 @@ public:
     ////////////////////////////////////////////////////////////////
 
 public:
-    Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, Scheduler* schedulerPtr, Statistics* statisticsPtr);
+    Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, TaskManagerType taskManagerType,
+            IJobManager* jobManagerPtr, IScheduler* schedulerPtr, Statistics* statisticsPtr);
     ~Cluster();
 
     void Run();
     bool Update();
 
     void PutEvent(ClusterEvent*);
-    void PlaceTask(const Task& task);
-    void DeleteFinishedJobs();
+    void PlaceTask(const Task& task) const;
 };
 
 

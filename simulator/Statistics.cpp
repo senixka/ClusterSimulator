@@ -25,18 +25,11 @@ void Statistics::UpdateStats(uint64_t currentTime) {
 
 void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
     ++jobSubmittedCounter;
-    currentPendingTaskCounter += job.pendingTask.size();
+    currentPendingTaskCounter += job.taskManager->TaskCount();
 
     jobStartTime[job.jobID] = currentTime;
-    jobUnfinishedTaskCount[job.jobID] = job.pendingTask.size();
-
-    uint64_t maxTaskEstimateTime = job.pendingTask.front()->estimate;
-    for (const auto& task : job.pendingTask) {
-        if (maxTaskEstimateTime < task->estimate) {
-            maxTaskEstimateTime = task->estimate;
-        }
-    }
-    jobMinEstimateTime[job.jobID] = maxTaskEstimateTime;
+    jobUnfinishedTaskCount[job.jobID] = job.taskManager->TaskCount();
+    jobMinEstimateTime[job.jobID] = job.taskManager->MaxTaskEstimateTime();
 }
 
 void Statistics::OnTaskScheduled(uint64_t /*currentTime*/, const Task& task) {
@@ -192,8 +185,8 @@ void Statistics::DumpStatistics() {
     plt::plot(uTimes, utilizationDisk, {{"label", "Disk"}});
     plt::plot(uTimes, std::vector<float>(uTimes.size(), averageUtilizationDisk), {{"label", "Disk AVG at " + std::to_string(averageUtilizationDisk)}});
 
-    std::for_each(pendingTask.begin(), pendingTask.end(), [](uint64_t& value) { value /= 500; });
-    plt::plot(uTimes, pendingTask, {{"label", "Pending task / 500"}});
+//    std::for_each(pendingTask.begin(), pendingTask.end(), [](uint64_t& value) { value /= 500; });
+//    plt::plot(uTimes, pendingTask, {{"label", "Pending task / 500"}});
 
     plt::legend();
     plt::savefig("../output/" + name + "_cluster_utilization.png");

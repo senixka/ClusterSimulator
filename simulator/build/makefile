@@ -1,12 +1,17 @@
-CPP_FILES = ../main.cpp ../Machine.cpp ../Job.cpp ../Cluster.cpp ../SchedulerRandom.cpp ../Statistics.cpp ../MachineManager.cpp ../SchedulerTetris.cpp ../SchedulerMinVolume.cpp
-HPP_FILES = ../Task.h ../Job.h ../Machine.h ../Statistics.h ../Scheduler.h ../ClusterEvent.h ../BoundedTime.h ../SchedulerRandom.h ../MachineManager.h ../Cluster.h ../SchedulerTetris.h ../SchedulerMinVolume.h
+CPP_JOB_MANAGER = ../job_manager/RoundRobin.cpp
+CPP_TASK_MANAGER = ../task_manager/FactoryTaskManager.cpp ../task_manager/InJobOrder.cpp
+CPP_PLACING_STRATEGY = ../placing_strategy/Random.cpp ../placing_strategy/MinVolume.cpp ../placing_strategy/Tetris.cpp
+CPP_BASIC = ../Cluster.cpp ../Job.cpp ../Machine.cpp ../MachineManager.cpp ../SchedulerImpl.cpp ../Statistics.cpp
+
+CPP_FILES = ../main.cpp $(CPP_BASIC) $(CPP_PLACING_STRATEGY) $(CPP_TASK_MANAGER) $(CPP_JOB_MANAGER)
+
 LINK_PYTHON = -I /usr/include/python3.10 -lpython3.10
-NO_DEBUG = -DNDEBUG -DNS_BLOCK_ASSERTIONS
+BUILTIN_DEBUG_OFF = -DNDEBUG -DNS_BLOCK_ASSERTIONS
 DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS
 SANITIZE = -fsanitize=address,undefined
 
 Release:
-	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(NO_DEBUG) $(CPP_FILES) $(LINK_PYTHON)
+	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(LINK_PYTHON)
 
 ReleaseAssert:
 	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(CPP_FILES)	$(LINK_PYTHON)

@@ -1,7 +1,8 @@
 #include "Job.h"
 
 
-Job::Job(std::istream& in) {
+Job::Job(TaskManagerType taskManagerType, std::istream& in)
+    : taskManager(FactoryTaskManager::Create(taskManagerType)) {
     in >> jobID >> jobTime;
 
     size_t taskN;
@@ -13,12 +14,6 @@ Job::Job(std::istream& in) {
         task->jobID = jobID;
         in >> task->taskIndex >> task->estimate >> task->cpuRequest >> task->memoryRequest >> task->diskSpaceRequest;
 
-        pendingTask.push_back(task);
-    }
-}
-
-Job::~Job() {
-    for (auto task : pendingTask) {
-        delete task;
+        taskManager->PutTask(task);
     }
 }
