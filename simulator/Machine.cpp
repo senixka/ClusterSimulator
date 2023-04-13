@@ -4,21 +4,21 @@
 
 
 bool Machine::IsTaskPlaceable(const Task& task) const {
-    return task.cpuRequest <= currentCpu
-           && task.memoryRequest <= currentMemory
-           && task.diskSpaceRequest <= currentDiskSpace;
+    return task.cpuRequest_ <= currentCpu_
+           && task.memoryRequest_ <= currentMemory_
+           && task.diskSpaceRequest_ <= currentDiskSpace_;
 }
 
 void Machine::PlaceTask(const Task& task) {
     ASSERT(IsTaskPlaceable(task));
 
-    currentCpu -= task.cpuRequest;
-    currentMemory -= task.memoryRequest;
-    currentDiskSpace -= task.diskSpaceRequest;
+    currentCpu_ -= task.cpuRequest_;
+    currentMemory_ -= task.memoryRequest_;
+    currentDiskSpace_ -= task.diskSpaceRequest_;
 }
 
 void Machine::RemoveTask(const Task& task) {
-    currentCpu += task.cpuRequest;
-    currentMemory += task.memoryRequest;
-    currentDiskSpace += task.diskSpaceRequest;
+    currentCpu_ += task.cpuRequest_;
+    currentMemory_ += task.memoryRequest_;
+    currentDiskSpace_ += task.diskSpaceRequest_;
 }

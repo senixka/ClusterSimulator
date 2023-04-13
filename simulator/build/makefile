@@ -1,6 +1,6 @@
-CPP_JOB_MANAGER = ../job_manager/RoundRobin.cpp
+CPP_JOB_MANAGER = ../job_manager/FactoryJobManager.cpp ../job_manager/RoundRobin.cpp
 CPP_TASK_MANAGER = ../task_manager/FactoryTaskManager.cpp ../task_manager/InJobOrder.cpp
-CPP_PLACING_STRATEGY = ../placing_strategy/Random.cpp ../placing_strategy/MinVolume.cpp ../placing_strategy/Tetris.cpp
+CPP_PLACING_STRATEGY = ../placing_strategy/FactoryPlacingStrategy.cpp ../placing_strategy/Random.cpp ../placing_strategy/MinVolume.cpp ../placing_strategy/Tetris.cpp
 CPP_BASIC = ../Cluster.cpp ../Job.cpp ../Machine.cpp ../MachineManager.cpp ../SchedulerImpl.cpp ../Statistics.cpp
 
 CPP_FILES = ../main.cpp $(CPP_BASIC) $(CPP_PLACING_STRATEGY) $(CPP_TASK_MANAGER) $(CPP_JOB_MANAGER)
@@ -13,14 +13,8 @@ SANITIZE = -fsanitize=address,undefined
 Release:
 	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(LINK_PYTHON)
 
-ReleaseAssert:
-	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(CPP_FILES)	$(LINK_PYTHON)
-
-Fast:
-	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)
-
-FastASan:
-	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)
+ReleaseASan:
+	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES)	$(LINK_PYTHON)
 
 Slow:
 	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)

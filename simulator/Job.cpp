@@ -2,18 +2,24 @@
 
 
 Job::Job(TaskManagerType taskManagerType, std::istream& in)
-    : taskManager(FactoryTaskManager::Create(taskManagerType)) {
-    in >> jobID >> jobTime;
+    : taskManager_(FactoryTaskManager::Create(taskManagerType)) {
+    in >> jobID_ >> jobTime_;
 
     size_t taskN;
     in >> taskN;
 
+    uint64_t estimate;
+    unsigned taskIndex;
+    double cpuRequest, memoryRequest, diskSpaceRequest;
+
     for (size_t i = 0; i < taskN; ++i) {
-        Task* task = new Task();
+        in >> taskIndex >> estimate >> cpuRequest >> memoryRequest >> diskSpaceRequest;
 
-        task->jobID = jobID;
-        in >> task->taskIndex >> task->estimate >> task->cpuRequest >> task->memoryRequest >> task->diskSpaceRequest;
-
-        taskManager->PutTask(task);
+        Task* task = new Task{jobID_, estimate, cpuRequest, memoryRequest, diskSpaceRequest, taskIndex};
+        taskManager_->PutTask(task);
     }
+}
+
+Job::~Job() {
+    delete taskManager_;
 }

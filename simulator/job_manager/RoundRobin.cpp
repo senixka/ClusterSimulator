@@ -4,37 +4,37 @@
 
 
 void RoundRobin::PutJob(Job* job) {
-    jobs.push_back(job);
+    jobs_.push_back(job);
 }
 
 Job* RoundRobin::GetJob() {
-    ASSERT(!jobs.empty());
+    ASSERT(!jobs_.empty());
 
-    Job* job = jobs.front();
-    jobs.pop_front();
+    Job* job = jobs_.front();
+    jobs_.pop_front();
     return job;
 }
 
 void RoundRobin::ReturnJob(Job* job, bool isModified) {
-    if (job->taskManager->TaskCount() == 0) {
+    if (job->taskManager_->TaskCount() == 0) {
         delete job;
         return;
     }
 
     if (isModified) {
-        jobs.push_back(job);
+        jobs_.push_back(job);
     } else {
         //jobs.push_front(job);
-        jobs.push_back(job);
+        jobs_.push_back(job);
     }
 }
 
 size_t RoundRobin::JobCount() {
-    return jobs.size();
+    return jobs_.size();
 }
 
 RoundRobin::~RoundRobin() {
-    for (Job* job : jobs) {
+    for (Job* job : jobs_) {
         delete job;
     }
 }

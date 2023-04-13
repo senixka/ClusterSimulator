@@ -19,5 +19,5 @@ public:
     ~InJobOrder();
 
 private:
-    std::list<Task*> tasks;
+    std::list<Task*> tasks_;
 };

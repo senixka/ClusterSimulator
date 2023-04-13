@@ -9,9 +9,9 @@ size_t Tetris::BestMachineIndex(const MachineManager::ReturnQueryType& machines,
     unsigned bestMachineIndex{0};
     double minAngle{10};
 
-    const auto& t_cpu = task->cpuRequest;
-    const auto& t_mem = task->memoryRequest;
-    const auto& t_disk = task->diskSpaceRequest;
+    const auto& t_cpu = task->cpuRequest_;
+    const auto& t_mem = task->memoryRequest_;
+    const auto& t_disk = task->diskSpaceRequest_;
 
     for (const auto& [machine_resources, machineIndex] : machines) {
         const auto& m_cpu = machine_resources.get<0>();

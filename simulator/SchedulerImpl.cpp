@@ -7,8 +7,8 @@
 #include <unordered_set>
 
 
-SchedulerImpl::SchedulerImpl(IPlacingStrategy* currentPlacingStrategy)
-    : placingStrategy(currentPlacingStrategy) {
+SchedulerImpl::SchedulerImpl(std::shared_ptr<IPlacingStrategy> placingStrategy)
+    : placingStrategy_(placingStrategy) {
 }
 
 void SchedulerImpl::OnJobSubmitted(Cluster& /*cluster*/) {
@@ -21,16 +21,16 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
     MachineManager::ReturnQueryType machines;
     std::unordered_set<Job*> noModification;
 
-    while (cluster.jobManager->JobCount() != 0) {
-        Job* job = cluster.jobManager->GetJob();
-        Task* task = job->taskManager->GetTask();
+    while (cluster.jobManager_->JobCount() != 0) {
+        Job* job = cluster.jobManager_->GetJob();
+        Task* task = job->taskManager_->GetTask();
 
         machines.clear();
-        cluster.machineManager->FindSuitableMachines(*task, machines);
+        cluster.machineManager_->FindSuitableMachines(*task, machines);
 
         if (machines.empty()) {
-            job->taskManager->ReturnTask(task);
-            cluster.jobManager->ReturnJob(job, false);
+            job->taskManager_->ReturnTask(task);
+            cluster.jobManager_->ReturnJob(job, false);
 
             if (noModification.find(job) == noModification.end()) {
                 noModification.insert(job);
@@ -38,15 +38,14 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
                 break;
             }
         } else {
-            task->machineIndex = placingStrategy->BestMachineIndex(machines, task);
-            task->eventTime = BoundedSum(cluster.time, task->estimate);
-            task->clusterEventType = ClusterEventType::TASK_FINISHED;
+            task->machineIndex_ = placingStrategy_->BestMachineIndex(machines, task);
+            task->eventTime_ = BoundedSum(cluster.time_, task->estimate_);
+            task->clusterEventType_ = ClusterEventType::TASK_FINISHED;
 
             cluster.PlaceTask(*task);
             cluster.PutEvent(task);
 
-            cluster.jobManager->ReturnJob(job, true);
-
+            cluster.jobManager_->ReturnJob(job, true);
             noModification.erase(job);
         }
     }

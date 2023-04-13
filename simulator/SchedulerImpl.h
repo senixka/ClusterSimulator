@@ -3,15 +3,17 @@
 #include "IScheduler.h"
 #include "placing_strategy/IPlacingStrategy.h"
 
+#include <memory>
+
 
 class SchedulerImpl : public IScheduler {
 public:
-    explicit SchedulerImpl(IPlacingStrategy* currentPlacingStrategy);
+    explicit SchedulerImpl(std::shared_ptr<IPlacingStrategy> placingStrategy);
 
     void OnJobSubmitted(Cluster& cluster) override;
     void OnTaskFinished(Cluster& cluster) override;
     void Schedule(Cluster& cluster) override;
 
 private:
-    IPlacingStrategy* placingStrategy{nullptr};
+    std::shared_ptr<IPlacingStrategy> placingStrategy_{nullptr};
 };

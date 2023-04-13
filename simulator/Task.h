@@ -3,12 +3,20 @@
 #include "ClusterEvent.h"
 
 
-struct Task : public ClusterEvent {
-    uint64_t jobID{0};
-    uint64_t estimate{0};
-    double cpuRequest{0};
-    double memoryRequest{0};
-    double diskSpaceRequest{0};
-    unsigned taskIndex{0};
-    unsigned machineIndex{UINT32_MAX};
+class Task : public ClusterEvent {
+public:
+    explicit Task(uint64_t jobID, uint64_t estimate, double cpuRequest,
+                  double memoryRequest, double diskSpaceRequest, unsigned taskIndex)
+      : jobID_(jobID), estimate_(estimate), cpuRequest_(cpuRequest),
+        memoryRequest_(memoryRequest), diskSpaceRequest_(diskSpaceRequest), taskIndex_(taskIndex) {
+    }
+
+public:
+    const uint64_t jobID_{0};
+    const uint64_t estimate_{0};
+    const double cpuRequest_{0};
+    const double memoryRequest_{0};
+    const double diskSpaceRequest_{0};
+    const unsigned taskIndex_{0};
+    unsigned machineIndex_{UINT32_MAX};
 };

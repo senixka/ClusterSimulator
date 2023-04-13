@@ -19,5 +19,5 @@ public:
     ~RoundRobin();
 
 private:
-    std::list<Job*> jobs;
+    std::list<Job*> jobs_;
 };

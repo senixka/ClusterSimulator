@@ -20,17 +20,17 @@ public:
     using rtree_3d = bg::index::rtree<std::pair<point_3d, size_t>, bg::index::quadratic<16>>;
     using ReturnQueryType = std::vector<std::pair<point_3d, size_t>>;
 
-private:
-    std::vector<Machine> machines;
-    rtree_3d tree;
-
 public:
-    MachineManager(const std::string& inputFilePath);
+    explicit MachineManager(const std::string& inputFilePath);
 
     void FindSuitableMachines(const Task& task, ReturnQueryType& result);
 
     void PlaceTaskOnMachine(const Task& task);
     void RemoveTaskFromMachine(const Task& task);
 
-    const std::vector<Machine>& GetAllMachines();
+    const std::vector<Machine>& GetAllMachines() const;
+
+private:
+    std::vector<Machine> machines_;
+    rtree_3d tree_;
 };

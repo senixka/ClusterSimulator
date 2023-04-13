@@ -11,21 +11,25 @@ enum ClusterEventType {
     UPDATE_STATISTICS = 3,
 };
 
+
 class ClusterEvent {
 public:
-    uint64_t eventTime{0};
-    ClusterEventType clusterEventType{ClusterEventType::RUN_SCHEDULER};
-
     ClusterEvent() = default;
-    ClusterEvent(uint64_t eTime, ClusterEventType eType) : eventTime(eTime), clusterEventType(eType) {
+    explicit ClusterEvent(uint64_t eventTime, ClusterEventType clusterEventType)
+        : eventTime_(eventTime), clusterEventType_(clusterEventType) {
     }
 
     virtual ~ClusterEvent() = default;
+
+public:
+    uint64_t eventTime_{0};
+    ClusterEventType clusterEventType_{ClusterEventType::RUN_SCHEDULER};
 };
+
 
 class ClusterEventPtrCompare {
 public:
-    bool operator() (const ClusterEvent* lhs, const ClusterEvent* rhs) {
-        return std::tie(lhs->eventTime, lhs->clusterEventType) > std::tie(rhs->eventTime, rhs->clusterEventType);
+    bool operator() (const ClusterEvent* lhs, const ClusterEvent* rhs) const {
+        return std::tie(lhs->eventTime_, lhs->clusterEventType_) > std::tie(rhs->eventTime_, rhs->clusterEventType_);
     }
 };

@@ -1,22 +1,17 @@
 #include "Cluster.h"
 
 #include "IScheduler.h"
+#include "Macro.h"
 
 #include <fstream>
 
-#ifndef NDEBUG
-#define PANIC(S) printf("PANIC: " S); abort()
-#else
-#define PANIC(S)
-#endif
 
+Cluster::Cluster(const std::string& inputFilePath, TaskManagerType taskManagerType, std::shared_ptr<IJobManager> jobManager,
+                 std::shared_ptr<IScheduler> scheduler, std::shared_ptr<MachineManager> machineManager, std::shared_ptr<Statistics> statistics)
+    : jobManager_(jobManager), scheduler_(scheduler), machineManager_(machineManager), statistics_(statistics) {
 
-Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManagerPtr, TaskManagerType taskManagerType,
-                 IJobManager* jobManagerPtr, IScheduler* schedulerPtr, Statistics* statisticsPtr)
-    : machineManager(machineManagerPtr), jobManager(jobManagerPtr), scheduler(schedulerPtr), statistics(statisticsPtr) {
-
-    for (const auto& machine : machineManager->GetAllMachines()) {
-        statistics->OnMachineAdded(machine);
+    for (const auto& machine : machineManager_->GetAllMachines()) {
+        statistics_->OnMachineAdded(machine);
     }
 
     // Task and Job input
@@ -28,43 +23,43 @@ Cluster::Cluster(const std::string& inputFilePath, MachineManager* machineManage
         fin >> nJob;
 
         // To test speed up only
-        // Job /= 30;
+        nJob /= 30;
 
-        statistics->nJobInSimulation = nJob;
+        statistics_->nJobInSimulation_ = nJob;
 
         for (size_t i = 0; i < nJob; ++i) {
             Job* job = new Job(taskManagerType, fin);
-            job->eventTime = job->jobTime;
-            job->clusterEventType = JOB_SUBMITTED;
+            job->eventTime_ = job->jobTime_;
+            job->clusterEventType_ = ClusterEventType::JOB_SUBMITTED;
 
-            statistics->nTaskInSimulation += job->taskManager->TaskCount();
-            clusterEvents.push(job);
+            statistics_->nTaskInSimulation_ += job->taskManager_->TaskCount();
+            clusterEvents_.push(job);
         }
 
         fin.close();
     }
 
-    clusterEvents.push(new ClusterEvent(0, ClusterEventType::RUN_SCHEDULER));
-    clusterEvents.push(new ClusterEvent(0, ClusterEventType::UPDATE_STATISTICS));
+    clusterEvents_.push(new ClusterEvent(0, ClusterEventType::RUN_SCHEDULER));
+    clusterEvents_.push(new ClusterEvent(0, ClusterEventType::UPDATE_STATISTICS));
 }
 
 Cluster::~Cluster() {
-    while (!clusterEvents.empty()) {
-        auto event = clusterEvents.top();
-        clusterEvents.pop();
+    while (!clusterEvents_.empty()) {
+        auto event = clusterEvents_.top();
+        clusterEvents_.pop();
 
         delete event;
     }
 }
 
 void Cluster::PutEvent(ClusterEvent* event) {
-    if (AtBound(event->eventTime)) [[unlikely]] {
-        assert(event->clusterEventType == ClusterEventType::TASK_FINISHED);
+    if (AtBound(event->eventTime_)) [[unlikely]] {
+        assert(event->clusterEventType_ == ClusterEventType::TASK_FINISHED);
 
         Task* task = reinterpret_cast<Task*>(event);
         delete task;
     } else [[likely]] {
-        clusterEvents.push(event);
+        clusterEvents_.push(event);
     }
 }
 
@@ -72,43 +67,43 @@ void Cluster::Run() {
     while (Update()) {
     }
 
-    statistics->OnSimulationFinished(time);
+    statistics_->OnSimulationFinished(time_);
 }
 
 bool Cluster::Update() {
-    if (statistics->nJobInSimulation == statistics->jobSubmittedCounter) {
+    if (statistics_->nJobInSimulation_ == statistics_->jobSubmittedCounter_) {
         return false;
     }
 
-    auto event = clusterEvents.top();
-    clusterEvents.pop();
-    time = event->eventTime;
+    auto event = clusterEvents_.top();
+    clusterEvents_.pop();
+    time_ = event->eventTime_;
 
-    if (event->clusterEventType == ClusterEventType::TASK_FINISHED) {
+    if (event->clusterEventType_ == ClusterEventType::TASK_FINISHED) {
         Task* task = reinterpret_cast<Task*>(event);
 
-        machineManager->RemoveTaskFromMachine(*task);
-        statistics->OnTaskFinished(time, *task);
-        scheduler->OnTaskFinished(*this);
+        machineManager_->RemoveTaskFromMachine(*task);
+        statistics_->OnTaskFinished(time_, *task);
+        scheduler_->OnTaskFinished(*this);
 
         delete task;
-    } else if (event->clusterEventType == ClusterEventType::JOB_SUBMITTED) {
+    } else if (event->clusterEventType_ == ClusterEventType::JOB_SUBMITTED) {
         Job* job = reinterpret_cast<Job*>(event);
 
-        jobManager->PutJob(job);
-        statistics->OnJobSubmitted(time, *job);
-        scheduler->OnJobSubmitted(*this);
-    } else if (event->clusterEventType == ClusterEventType::RUN_SCHEDULER) {
-        scheduler->Schedule(*this);
+        jobManager_->PutJob(job);
+        statistics_->OnJobSubmitted(time_, *job);
+        scheduler_->OnJobSubmitted(*this);
+    } else if (event->clusterEventType_ == ClusterEventType::RUN_SCHEDULER) {
+        scheduler_->Schedule(*this);
 
-        event->eventTime = BoundedSum(time, scheduleEachTime);
-        clusterEvents.push(event);
-    } else if (event->clusterEventType == ClusterEventType::UPDATE_STATISTICS) {
-        statistics->UpdateStats(time);
-        statistics->PrintStatistics();
+        event->eventTime_ = BoundedSum(time_, scheduleEachTime_);
+        clusterEvents_.push(event);
+    } else if (event->clusterEventType_ == ClusterEventType::UPDATE_STATISTICS) {
+        statistics_->UpdateStats(time_);
+        statistics_->PrintStatistics();
 
-        event->eventTime = BoundedSum(time, updateStatisticsEachTime);
-        clusterEvents.push(event);
+        event->eventTime_ = BoundedSum(time_, updateStatisticsEachTime_);
+        clusterEvents_.push(event);
     } else {
         PANIC("BAD EVENT TYPE");
     }
@@ -117,6 +112,6 @@ bool Cluster::Update() {
 }
 
 void Cluster::PlaceTask(const Task& task) const {
-    machineManager->PlaceTaskOnMachine(task);
-    statistics->OnTaskScheduled(time, task);
+    machineManager_->PlaceTaskOnMachine(task);
+    statistics_->OnTaskScheduled(time_, task);
 }
