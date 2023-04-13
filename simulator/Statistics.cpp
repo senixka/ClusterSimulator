@@ -143,8 +143,8 @@ void Statistics::PrintStatistics() const {
 }
 
 void Statistics::DumpStatistics() {
-    ASSERT(minANP_ >= 0);
-    ASSERT(maxANP_ <= 1);
+    ASSERT(minANP_ >= 0.0);
+    ASSERT(maxANP_ <= 1.0);
 
     std::cout << std::fixed << std::setprecision(10) << "MakeSpan: " << makeSpanTime_ << std::endl;
     std::cout << std::fixed << std::setprecision(10) << "PendingTaskCounter: " << currentPendingTaskCounter_ << std::endl;
