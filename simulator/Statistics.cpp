@@ -1,14 +1,9 @@
 #include "Statistics.h"
 
-#include "BoundedTime.h"
 #include "Macro.h"
 
 #include <cmath>
-#include <iomanip>
 #include <fstream>
-
-//#include "../matplotlibcpp.h"
-//namespace plt = matplotlibcpp;
 
 
 Statistics::Statistics(const std::string& outputFilePath)
@@ -156,6 +151,9 @@ void Statistics::DumpStatistics() {
     out << FIXED_PRC << "Slowdown\n" << simulationSlowdown2Norm_ << std::endl;
     out << FIXED_PRC << "MinANP\n" << minANP_ << std::endl;
     out << FIXED_PRC << "MaxANP\n" << maxANP_ << std::endl;
+    out << FIXED_PRC << "AverageUtilizationCPU\n" << averageUtilizationCPU_ << std::endl;
+    out << FIXED_PRC << "AverageUtilizationMemory\n" << averageUtilizationMemory_ << std::endl;
+    out << FIXED_PRC << "AverageUtilizationDisk\n" << averageUtilizationDisk_ << std::endl;
     out << FIXED_PRC << "TotalAvailableCPU\n" << totalAvailableCPU_ << std::endl;
     out << FIXED_PRC << "TotalAvailableMemory\n" << totalAvailableMemory_ << std::endl;
     out << FIXED_PRC << "TotalAvailableDiskSpace\n" << totalAvailableDisk_ << std::endl;

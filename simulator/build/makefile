@@ -5,7 +5,6 @@ CPP_BASIC = ../Cluster.cpp ../Job.cpp ../Machine.cpp ../MachineManager.cpp ../Sc
 
 CPP_FILES = ../main.cpp $(CPP_BASIC) $(CPP_PLACING_STRATEGY) $(CPP_TASK_MANAGER) $(CPP_JOB_MANAGER)
 
-LINK_PYTHON = -I /usr/include/python3.10 -lpython3.10
 BUILTIN_DEBUG_OFF = -DNDEBUG -DNS_BLOCK_ASSERTIONS
 DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS
 SANITIZE = -fsanitize=address,undefined
@@ -17,7 +16,7 @@ ReleaseASan:
 	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES)
 
 Slow:
-	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)
+	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES)
 
 SlowASan:
-	g++ -Wall -Wextra -O0 -g $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)
+	g++ -Wall -Wextra -O0 -g $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES)
