@@ -10,7 +10,7 @@
 
 class Experiment {
 public:
-    void Do(const std::string& taskAndJobFilePath, const std::string& machineFilePath,
+    void Do(const std::string& taskAndJobFilePath, const std::string& machineFilePath, const std::string& outputFilePath,
             const std::string& jobManagerName, const std::string& taskManagerName, const std::string& placingStrategyName) const;
 
 public:

@@ -12,7 +12,7 @@
 
 class Statistics {
 public:
-    explicit Statistics(const std::string& simulationName);
+    explicit Statistics(const std::string& outputFilePath);
     void UpdateStats(uint64_t currentTime);
     void OnJobSubmitted(uint64_t currentTime, const Job& job);
     void OnTaskScheduled(uint64_t currentTime, const Task& task);
@@ -71,5 +71,5 @@ public:
     std::vector<uint64_t> pendingTask_;
     std::vector<uint64_t> workingTask_;
 
-    const std::string simulationName_;
+    const std::string outputFilePath_;
 };

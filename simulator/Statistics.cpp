@@ -7,12 +7,12 @@
 #include <iomanip>
 #include <fstream>
 
-#include "../matplotlibcpp.h"
-namespace plt = matplotlibcpp;
+//#include "../matplotlibcpp.h"
+//namespace plt = matplotlibcpp;
 
 
-Statistics::Statistics(const std::string& simulationName)
-    : simulationName_(simulationName) {
+Statistics::Statistics(const std::string& outputFilePath)
+    : outputFilePath_(outputFilePath) {
 }
 
 void Statistics::UpdateStats(uint64_t currentTime) {
@@ -52,7 +52,7 @@ void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
     currentUsedMemory_ -= task.memoryRequest_;
     currentUsedDisk_ -= task.diskSpaceRequest_;
 
-    if (--jobUnfinishedTaskCount_[task.jobID_] == 0) {
+    if (--jobUnfinishedTaskCount_.at(task.jobID_) == 0) {
         jobEndTime_[task.jobID_] = currentTime;
         jobCompletionTime_.push_back(currentTime);
     }
@@ -81,7 +81,7 @@ void Statistics::OnSimulationFinished(uint64_t currentTime) {
     ////////////////////// Job's ANP ////////////////////////
     {
         for (const auto &[jobID, endTime] : jobEndTime_) {
-            jobANP_[jobID] = static_cast<long double>(jobMinEstimateTime_[jobID]) / (endTime - jobStartTime_[jobID]);
+            jobANP_[jobID] = static_cast<long double>(jobMinEstimateTime_.at(jobID)) / (endTime - jobStartTime_.at(jobID));
             minANP_ = std::min(minANP_, jobANP_[jobID]);
             maxANP_ = std::max(maxANP_, jobANP_[jobID]);
         }
@@ -146,52 +146,36 @@ void Statistics::DumpStatistics() {
     ASSERT(minANP_ >= 0.0);
     ASSERT(maxANP_ <= 1.0);
 
-    std::cout << std::fixed << std::setprecision(10) << "MakeSpan: " << makeSpanTime_ << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "PendingTaskCounter: " << currentPendingTaskCounter_ << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "SNP: " << simulationSNP_ << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "Unfairness: " << simulationUnfairness_ << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "Slowdown: " << simulationSlowdown2Norm_ << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "Min ANP: " << minANP_ << std::endl;
-    std::cout << std::fixed << std::setprecision(10) << "Max ANP: " << maxANP_ << std::endl;
+    std::ofstream out;
+    out.open(outputFilePath_);
 
-    std::for_each(utilizationMeasurementsTime_.begin(), utilizationMeasurementsTime_.end(), [](uint64_t& value) { value /= MICROS_IN_S; });
-    const auto& uTimes = utilizationMeasurementsTime_;
+    out << "MakeSpan\n" << makeSpanTime_ << std::endl;
+    out << "PendingTaskCounter\n" << currentPendingTaskCounter_ << std::endl;
+    out << FIXED_PRC << "SNP\n" << simulationSNP_ << std::endl;
+    out << FIXED_PRC << "Unfairness\n" << simulationUnfairness_ << std::endl;
+    out << FIXED_PRC << "Slowdown\n" << simulationSlowdown2Norm_ << std::endl;
+    out << FIXED_PRC << "MinANP\n" << minANP_ << std::endl;
+    out << FIXED_PRC << "MaxANP\n" << maxANP_ << std::endl;
+    out << FIXED_PRC << "TotalAvailableCPU\n" << totalAvailableCPU_ << std::endl;
+    out << FIXED_PRC << "TotalAvailableMemory\n" << totalAvailableMemory_ << std::endl;
+    out << FIXED_PRC << "TotalAvailableDiskSpace\n" << totalAvailableDisk_ << std::endl;
 
-    ///////////////////////// Task Pending vs Working /////////////////////////
 
-    plt::figure_size(1200, 500);
-    plt::title("Task Pending vs Working in Time");
-    plt::xlabel("Time (in seconds)");
-    plt::ylabel("Count");
+    out << "UtilizationMeasurementsTime UtilizationCPU UtilizationMemory UtilizationDisk PendingTask WorkingTask" << std::endl;
+    out << utilizationMeasurementsTime_.size() << std::endl;
 
-    plt::plot(uTimes, workingTask_, {{"label", "Working task"}});
-    plt::plot(uTimes, pendingTask_, {{"label", "Pending task"}});
-    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask_[0]}, {{"label", "Slowdown: " + std::to_string(simulationSlowdown2Norm_)}});
-    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask_[0]}, {{"label", "Unfairness: " + std::to_string(simulationUnfairness_)}});
-    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask_[0]}, {{"label", "SNP: " + std::to_string(simulationSNP_)}});
-    plt::plot(std::vector<uint64_t>{uTimes[0]}, std::vector<uint64_t>{pendingTask_[0]}, {{"label", "Min ANP: " + std::to_string(minANP_)}});
+    for (size_t i = 0; i < utilizationMeasurementsTime_.size(); ++i) {
+        out << utilizationMeasurementsTime_[i] << " ";
+        out << FIXED_PRC << utilizationCPU_[i] << " " << utilizationMemory_[i] << " " << utilizationDisk_[i] << " ";
+        out << pendingTask_[i] << " " << workingTask_[i] << std::endl;
+    }
 
-    plt::legend();
-    plt::savefig("../output/" + simulationName_ + "_cluster_pending_working.png");
-    plt::show();
+    out << "JobStartTime JobEndTime JobMinEstimateTime" << std::endl;
+    out << jobEndTime_.size() << std::endl;
 
-    //////////////////////////// Utilization //////////////////////////////
+    for (const auto &[jobID, endTime] : jobEndTime_) {
+        out << jobStartTime_.at(jobID) << " " << endTime << " " << jobMinEstimateTime_.at(jobID) << std::endl;
+    }
 
-    plt::figure_size(1200, 500);
-    plt::title("Cluster resource utilization in Time");
-    plt::xlabel("Time (in seconds)");
-    plt::ylabel("Resource (in percent)");
-
-    plt::plot(uTimes, utilizationCPU_, {{"label", "CPU"}});
-    plt::plot(uTimes, std::vector<float>(uTimes.size(), averageUtilizationCPU_), {{"label", "CPU AVG at " + std::to_string(averageUtilizationCPU_)}});
-
-    plt::plot(uTimes, utilizationMemory_, {{"label", "Memory"}});
-    plt::plot(uTimes, std::vector<float>(uTimes.size(), averageUtilizationMemory_), {{"label", "Memory AVG at " + std::to_string(averageUtilizationMemory_)}});
-
-    plt::plot(uTimes, utilizationDisk_, {{"label", "Disk"}});
-    plt::plot(uTimes, std::vector<float>(uTimes.size(), averageUtilizationDisk_), {{"label", "Disk AVG at " + std::to_string(averageUtilizationDisk_)}});
-
-    plt::legend();
-    plt::savefig("../output/" + simulationName_ + "_cluster_utilization.png");
-    plt::show();
+    out.close();
 }

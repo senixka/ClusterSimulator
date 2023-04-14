@@ -14,11 +14,14 @@
 #include <memory>
 
 
-void Experiment::Do(const std::string& taskAndJobFilePath, const std::string& machineFilePath,
+void Experiment::Do(const std::string& taskAndJobFilePath, const std::string& machineFilePath, const std::string& outputFilePath,
                     const std::string& jobManagerName, const std::string& taskManagerName, const std::string& placingStrategyName) const {
     ASSERT(nameToJobManagerType_.find(jobManagerName) != nameToJobManagerType_.end());
     ASSERT(nameToTaskManagerType_.find(taskManagerName) != nameToTaskManagerType_.end());
     ASSERT(nameToPlacingStrategyType_.find(placingStrategyName) != nameToPlacingStrategyType_.end());
+    ASSERT(!taskAndJobFilePath.empty());
+    ASSERT(!machineFilePath.empty());
+    ASSERT(!outputFilePath.empty());
 
     const JobManagerType jobManagerType{nameToJobManagerType_.at(jobManagerName)};
     const TaskManagerType taskManagerType{nameToTaskManagerType_.at(taskManagerName)};
@@ -29,7 +32,7 @@ void Experiment::Do(const std::string& taskAndJobFilePath, const std::string& ma
 
     auto scheduler = std::make_shared<SchedulerImpl>(placingStrategy);
     auto machineManager = std::make_shared<MachineManager>(machineFilePath);
-    auto statistics = std::make_shared<Statistics>(jobManagerName + "_" + taskManagerName + "_" + placingStrategyName);
+    auto statistics = std::make_shared<Statistics>(outputFilePath);
 
     Cluster cluster(taskAndJobFilePath, taskManagerType, jobManager, scheduler, machineManager, statistics);
     cluster.Run();

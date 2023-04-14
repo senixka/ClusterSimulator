@@ -3,7 +3,9 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
+#include <iomanip>
 
+#define FIXED_PRC std::fixed << std::setprecision(15)
 
 #ifndef PANIC_OFF
 #define PANIC(S) printf("PANIC: " S); abort()

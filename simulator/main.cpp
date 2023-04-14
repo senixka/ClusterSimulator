@@ -14,7 +14,7 @@ int main(int /*argc*/, char** /*argv*/) {
     // Experiment RoundRobin + InJobOrder + Random
     {
         Experiment experiment;
-        experiment.Do("../input/job_and_task.txt", "../input/machine.txt", "RoundRobin", "InJobOrder", "Random");
+        experiment.Do("../input/job_and_task.txt", "../input/machine.txt", "../output/AAA.txt", "RoundRobin", "InJobOrder", "Random");
     }
 
     return 0;

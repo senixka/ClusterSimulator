@@ -11,10 +11,10 @@ DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS
 SANITIZE = -fsanitize=address,undefined
 
 Release:
-	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(LINK_PYTHON)
+	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES)
 
 ReleaseASan:
-	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES)	$(LINK_PYTHON)
+	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES)
 
 Slow:
 	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES) $(LINK_PYTHON)
