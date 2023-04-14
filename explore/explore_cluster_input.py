@@ -134,7 +134,7 @@ def TaskWorkloadInClusterInput():
     ax.set_ylabel("Cpu")
     fig.tight_layout()
 
-    plt.savefig("./stat/input_task_distribution.png")
+    plt.savefig("./plots_of_input/input_task_distribution.png")
     plt.show()
 
     # ///////////////////////// Task working /////////////////////////
@@ -147,7 +147,7 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, statTaskCounter, label="Working task")
 
     plt.legend()
-    plt.savefig("./stat/input_working_task.png")
+    plt.savefig("./plots_of_input/input_working_task.png")
     plt.show()
 
     # //////////////////////////// Resource demand ///////////////////
@@ -165,7 +165,7 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, np.full_like(statTime, sumDisk), label="Machine Disk")
 
     plt.legend()
-    plt.savefig("./stat/input_task_resources.png")
+    plt.savefig("./plots_of_input/input_task_resources.png")
     plt.show()
 
     # //////////////////////////// Recourse ratio ////////////////////
@@ -179,7 +179,7 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, ratio, label="Ratio")
 
     plt.legend()
-    plt.savefig("./stat/input_ratio_cpu_memory.png")
+    plt.savefig("./plots_of_input/input_ratio_cpu_memory.png")
     plt.show()
 
 

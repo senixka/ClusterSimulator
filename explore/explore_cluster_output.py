@@ -89,7 +89,7 @@ def main():
     for filePath in GetFiles():
         metrics = GetMetricsFromFile(filePath)
         prefix = filePath.removesuffix('.txt').split('/')[-1]
-        BuildPlots(metrics, './plots/' + prefix)
+        BuildPlots(metrics, './plots_of_output/' + prefix)
 
 
 if __name__ == '__main__':

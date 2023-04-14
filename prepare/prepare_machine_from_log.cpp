@@ -40,7 +40,7 @@ int main() {
     out << values.size() << '\n';
 
     for (const auto& [key, value] : values) {
-        out << key.first << " " << key.second << " " << 0.5 << " " << value << '\n';
+        out << key.first << " " << key.second << " " << 1 << " " << value << '\n';
     }
 
     out.close();

@@ -1,21 +1,21 @@
 #include "Experiment.h"
 
+#include <string>
+#include <cstdlib>
+#include <iostream>
 
-void inline Init() {
-    std::srand(179);
-
-    char env[] = "PYTHONMALLOC=malloc";
-    putenv(env);
-}
 
 int main(int /*argc*/, char** /*argv*/) {
-    Init();
+    std::srand(179);
 
-    // Experiment RoundRobin + InJobOrder + Random
-    {
-        Experiment experiment;
-        experiment.Do("../input/job_and_task.txt", "../input/machine.txt", "../output/RoundRobin_InJobOrder_Random.txt", "RoundRobin", "InJobOrder", "Random");
-    }
+    std::string inputJobAndTaskFilePath, inputMachineFilePath, outputTxtFilePath;
+    std::cin >> inputJobAndTaskFilePath >> inputMachineFilePath >> outputTxtFilePath;
+
+    std::string jobManagerName, taskManagerName, placingStrategyName;
+    std::cin >> jobManagerName >> taskManagerName >> placingStrategyName;
+
+    Experiment experiment;
+    experiment.Do(inputJobAndTaskFilePath, inputMachineFilePath, outputTxtFilePath, jobManagerName, taskManagerName, placingStrategyName);
 
     return 0;
 }

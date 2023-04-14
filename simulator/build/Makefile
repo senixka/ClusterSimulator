@@ -8,15 +8,16 @@ CPP_FILES = ../main.cpp $(CPP_BASIC) $(CPP_PLACING_STRATEGY) $(CPP_TASK_MANAGER)
 BUILTIN_DEBUG_OFF = -DNDEBUG -DNS_BLOCK_ASSERTIONS
 DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS
 SANITIZE = -fsanitize=address,undefined
+OUT_NAME = -o simulator.out
 
 Release:
-	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES)
+	g++ -Wall -Wextra -O3 $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(OUT_NAME)
 
 ReleaseASan:
-	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES)
+	g++ -Wall -Wextra -O3 $(SANITIZE) $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(OUT_NAME)
 
 Slow:
-	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES)
+	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES) $(OUT_NAME)
 
 SlowASan:
-	g++ -Wall -Wextra -O0 -g $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES)
+	g++ -Wall -Wextra -O0 -g $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES) $(OUT_NAME)

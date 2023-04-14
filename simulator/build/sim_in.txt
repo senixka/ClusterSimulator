@@ -1,0 +1,6 @@
+../input/job_and_task_1.txt
+../input/machine.txt
+../output/RoundRobin_InJobOrder_Random_1.txt
+RoundRobin
+InJobOrder
+Random
