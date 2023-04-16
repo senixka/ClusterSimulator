@@ -10,21 +10,19 @@
 
 class Experiment {
 public:
-    void Do(const std::string& taskAndJobFilePath, const std::string& machineFilePath, const std::string& outputFilePath,
-            const std::string& jobManagerName, const std::string& taskManagerName, const std::string& placingStrategyName) const;
+    Experiment(const std::string& taskAndJobFilePath, const std::string& machineFilePath, const std::string& outputFilePath,
+               const std::string& jobManagerName, const std::string& taskManagerName, const std::string& placingStrategyName);
+
+    void Do();
+
+private:
+    bool experimentDone_{false};
 
 public:
-    const std::unordered_map<std::string, JobManagerType> nameToJobManagerType_{
-            {"RoundRobin", JobManagerType::RoundRobin},
-    };
-
-    const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerType_{
-            {"InJobOrder", TaskManagerType::InJobOrder},
-    };
-
-    const std::unordered_map<std::string, PlacingStrategyType> nameToPlacingStrategyType_{
-            {"Random", PlacingStrategyType::Random},
-            {"MinVolume", PlacingStrategyType::MinVolume},
-            {"Tetris", PlacingStrategyType::Tetris},
-    };
+    const std::string taskAndJobFilePath_;
+    const std::string machineFilePath_;
+    const std::string outputFilePath_;
+    const std::string jobManagerName_;
+    const std::string taskManagerName_;
+    const std::string placingStrategyName_;
 };

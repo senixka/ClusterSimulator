@@ -1,13 +1,7 @@
 #pragma once
 
 #include "IPlacingStrategy.h"
-
-
-enum PlacingStrategyType {
-    Random = 0,
-    MinVolume = 1,
-    Tetris = 2,
-};
+#include "../Registry.h"
 
 
 class FactoryPlacingStrategy {

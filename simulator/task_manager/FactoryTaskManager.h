@@ -1,11 +1,7 @@
 #pragma once
 
 #include "ITaskManager.h"
-
-
-enum TaskManagerType {
-    InJobOrder = 0,
-};
+#include "../Registry.h"
 
 
 class FactoryTaskManager {

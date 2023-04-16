@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-int main(int /*argc*/, char** /*argv*/) {
+int main() {
     std::srand(179);
 
     std::string inputJobAndTaskFilePath, inputMachineFilePath, outputTxtFilePath;
@@ -14,8 +14,8 @@ int main(int /*argc*/, char** /*argv*/) {
     std::string jobManagerName, taskManagerName, placingStrategyName;
     std::cin >> jobManagerName >> taskManagerName >> placingStrategyName;
 
-    Experiment experiment;
-    experiment.Do(inputJobAndTaskFilePath, inputMachineFilePath, outputTxtFilePath, jobManagerName, taskManagerName, placingStrategyName);
+    Experiment experiment(inputJobAndTaskFilePath, inputMachineFilePath, outputTxtFilePath, jobManagerName, taskManagerName, placingStrategyName);
+    experiment.Do();
 
     return 0;
 }

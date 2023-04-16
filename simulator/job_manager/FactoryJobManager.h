@@ -1,11 +1,7 @@
 #pragma once
 
 #include "IJobManager.h"
-
-
-enum JobManagerType {
-    RoundRobin = 0,
-};
+#include "../Registry.h"
 
 
 class FactoryJobManager {

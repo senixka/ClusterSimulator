@@ -23,7 +23,7 @@ Cluster::Cluster(const std::string& inputFilePath, TaskManagerType taskManagerTy
         fin >> nJob;
 
         // To test speed up only
-        nJob /= 30;
+        // nJob /= 30;
 
         statistics_->nJobInSimulation_ = nJob;
 
