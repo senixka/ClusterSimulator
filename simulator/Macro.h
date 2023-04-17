@@ -8,13 +8,13 @@
 #define FIXED_PRC std::fixed << std::setprecision(15)
 
 #ifndef PANIC_OFF
-#define PANIC(S) printf("PANIC: " S); abort()
+#define PANIC(S) printf("PANIC: " S); exit(25)
 #else
 #define PANIC(S)
 #endif
 
 #ifndef UNREACHABLE_OFF
-#define UNREACHABLE(S) printf("UNREACHABLE: " S); abort()
+#define UNREACHABLE(S) printf("UNREACHABLE: " S); exit(24)
 #else
 #define UNREACHABLE(S)
 #endif
@@ -23,7 +23,7 @@
 #define ASSERT(expr)                                                               \
 if (!static_cast<bool>(expr)) [[unlikely]] {                                       \
     printf("\nASSERT " #expr " In File: " __FILE__ " In Line: %i\n", __LINE__);    \
-    abort();                                                                       \
+    exit(23);                                                                      \
 };
 #else
 #define ASSERT(S)

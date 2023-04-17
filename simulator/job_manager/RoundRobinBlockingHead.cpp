@@ -1,13 +1,13 @@
-#include "RoundRobin.h"
+#include "RoundRobinBlockingHead.h"
 
 #include "../Macro.h"
 
 
-void RoundRobin::PutJob(Job* job) {
+void RoundRobinBlockingHead::PutJob(Job* job) {
     jobs_.push_back(job);
 }
 
-Job* RoundRobin::GetJob() {
+Job* RoundRobinBlockingHead::GetJob() {
     ASSERT(!jobs_.empty());
 
     Job* job = jobs_.front();
@@ -15,7 +15,7 @@ Job* RoundRobin::GetJob() {
     return job;
 }
 
-void RoundRobin::ReturnJob(Job* job, bool isModified) {
+void RoundRobinBlockingHead::ReturnJob(Job* job, bool isModified) {
     if (job->taskManager_->TaskCount() == 0) {
         delete job;
         return;
@@ -24,16 +24,15 @@ void RoundRobin::ReturnJob(Job* job, bool isModified) {
     if (isModified) {
         jobs_.push_back(job);
     } else {
-        //jobs.push_front(job);
-        jobs_.push_back(job);
+        jobs_.push_front(job);
     }
 }
 
-size_t RoundRobin::JobCount() {
+size_t RoundRobinBlockingHead::JobCount() {
     return jobs_.size();
 }
 
-RoundRobin::~RoundRobin() {
+RoundRobinBlockingHead::~RoundRobinBlockingHead() {
     for (Job* job : jobs_) {
         delete job;
     }

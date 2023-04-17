@@ -1,13 +1,12 @@
 #pragma once
 
 #include "IJobManager.h"
-
 #include "../Job.h"
 
 #include <list>
 
 
-class RoundRobin : public IJobManager {
+class RoundRobinBlockingHead : public IJobManager {
 public:
     void PutJob(Job* job) override;
 
@@ -16,7 +15,7 @@ public:
 
     size_t JobCount() override;
 
-    ~RoundRobin();
+    ~RoundRobinBlockingHead();
 
 private:
     std::list<Job*> jobs_;

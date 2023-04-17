@@ -168,7 +168,12 @@ int main() {
 
                 sleep(1);
 
-                std::string command = "xterm -e \"../../simulator/build/simulator.out < " + configFileName + "\"";
+                std::string command = "statusfile=$(mktemp);"
+                                      "xterm -e sh -c '../../simulator/build/simulator.out < " + configFileName + "; echo $? > '$statusfile;"
+                                      "status=$(cat $statusfile);"
+                                      "rm $statusfile;"
+                                      "exit $status;";
+
                 if (system(command.c_str()) != 0) {
                     WriteCrashReport("Error in system call", "crash_" + configFileName, experiments[experimentIndex]);
                     _exit(EXIT_SUCCESS);
@@ -224,8 +229,28 @@ int main() {
         }
     }
 
+    pid_t finishedPID;
     int status{0};
-    while (wait(&status) != -1) {
+
+    while ((finishedPID = wait(&status)) != -1) {
+        if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+            printf("Child with PID %jd finished\n", (intmax_t) finishedPID);
+            --currentWorkingProcCount;
+        } else {
+            printf("Child with PID %jd ", (intmax_t) finishedPID);
+
+            if (WIFEXITED(status)) {
+                printf("exited, status=%d\n", WEXITSTATUS(status));
+            } else if (WIFSIGNALED(status)) {
+                printf("killed by signal %d\n", WTERMSIG(status));
+            } else if (WIFSTOPPED(status)) {
+                printf("stopped by signal %d\n", WSTOPSIG(status));
+            } else if (WIFCONTINUED(status)) {
+                printf("continued\n");
+            }
+
+            printf("Bad child return\n");
+        }
     }
 
     return 0;

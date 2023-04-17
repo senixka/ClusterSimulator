@@ -5,11 +5,13 @@
 
 
 enum class JobManagerType {
-    RoundRobin = 0,
+    RoundRobinBlockingHead = 0,
+    RoundRobinNonBlockingHead = 1,
 };
 
 static const std::unordered_map<std::string, JobManagerType> nameToJobManagerType_{
-        {"RoundRobin", JobManagerType::RoundRobin},
+        {"RoundRobinBlockingHead", JobManagerType::RoundRobinBlockingHead},
+        {"RoundRobinNonBlockingHead", JobManagerType::RoundRobinNonBlockingHead},
 };
 
 
@@ -25,11 +27,13 @@ static const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerT
 enum class PlacingStrategyType {
     Random = 0,
     MinVolume = 1,
-    Tetris = 2,
+    MaxVolume = 2,
+    Tetris = 3,
 };
 
 static const std::unordered_map<std::string, PlacingStrategyType> nameToPlacingStrategyType_{
         {"Random", PlacingStrategyType::Random},
         {"MinVolume", PlacingStrategyType::MinVolume},
+        {"MaxVolume", PlacingStrategyType::MaxVolume},
         {"Tetris", PlacingStrategyType::Tetris},
 };

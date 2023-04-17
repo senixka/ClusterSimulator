@@ -1,17 +1,9 @@
-3
-
-SINGLE
-../../simulator/input/job_and_task.txt
-../../simulator/input/machine.txt
-../../simulator/output/jat_m_RoundRobin_InJobOrder_Random.txt
-RoundRobin
-InJobOrder
-Random
+4
 
 CARTESIAN
 1 ../../simulator/input/job_and_task.txt jat
 1 ../../simulator/input/machine.txt m
 ../../simulator/output/
-1 RoundRobin
+2 RoundRobinNonBlockingHead RoundRobinBlockingHead
 1 InJobOrder
-2 MinVolume Tetris
+4 Random MinVolume MaxVolume Tetris
