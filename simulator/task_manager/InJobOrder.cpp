@@ -3,6 +3,8 @@
 #include "../Macro.h"
 
 
+namespace task_manager {
+
 void InJobOrder::PutTask(Task* task) {
     tasks_.push_back(task);
 }
@@ -41,3 +43,5 @@ InJobOrder::~InJobOrder() {
         delete task;
     }
 }
+
+} // namespace task_manager

@@ -17,10 +17,14 @@ static const std::unordered_map<std::string, JobManagerType> nameToJobManagerTyp
 
 enum class TaskManagerType {
     InJobOrder = 0,
+    MinTimeFirst = 1,
+    MaxTimeFirst = 2,
 };
 
 static const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerType_{
         {"InJobOrder", TaskManagerType::InJobOrder},
+        {"MinTimeFirst", TaskManagerType::MinTimeFirst},
+        {"MaxTimeFirst", TaskManagerType::MaxTimeFirst},
 };
 
 

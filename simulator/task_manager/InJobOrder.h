@@ -6,6 +6,8 @@
 #include <list>
 
 
+namespace task_manager {
+
 class InJobOrder : public ITaskManager {
 public:
     void PutTask(Task* task) override;
@@ -21,3 +23,5 @@ public:
 private:
     std::list<Task*> tasks_;
 };
+
+} // namespace task_manager
