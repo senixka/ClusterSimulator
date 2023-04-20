@@ -6,7 +6,7 @@
 
 namespace job_manager::detail {
 
-class MinJobSubmitTimeFirstNonBlockingSetPtrCmp {
+class MinJobSubmitTimeFirstNonBlockingListPtrCmp {
 public:
     bool operator() (const Job* lhs, const Job* rhs) const {
         return lhs->jobTime_ < rhs->jobTime_;
@@ -18,6 +18,6 @@ public:
 
 namespace job_manager {
 
-using MinJobSubmitTimeFirstNonBlocking = class detail::AsSortedList<detail::MinJobSubmitTimeFirstNonBlockingSetPtrCmp>;
+using MinJobSubmitTimeFirstNonBlocking = class detail::AsSortedList<detail::MinJobSubmitTimeFirstNonBlockingListPtrCmp>;
 
 } // namespace job_manager

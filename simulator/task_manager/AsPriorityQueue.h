@@ -4,18 +4,16 @@
 #include "../Macro.h"
 #include "../BoundedTime.h"
 
-#include <vector>
-#include <algorithm>
+#include <list>
 
 
 namespace task_manager::detail {
 
-template<class PriorityQueuePtrCmp>
+template<class SortedListPtrCmp>
 class AsPriorityQueue : public ITaskManager {
 public:
     void PutTask(Task* task) override {
         tasks_.push_back(task);
-        std::push_heap(tasks_.begin(), tasks_.end(), cmp_);
 
         sumTaskEstimateTime_ = BoundedSum(sumTaskEstimateTime_, task->estimate_);
     }
@@ -23,23 +21,25 @@ public:
     Task* GetTask() override {
         ASSERT(!tasks_.empty());
 
-        std::pop_heap(tasks_.begin(), tasks_.end(), cmp_);
-        Task* task = tasks_.back();
-        tasks_.pop_back();
+        Task* task = tasks_.front();
+        tasks_.pop_front();
 
         sumTaskEstimateTime_ -= task->estimate_;
         return task;
     }
 
     void ReturnTask(Task* task) override {
-        tasks_.push_back(task);
-        std::push_heap(tasks_.begin(), tasks_.end(), cmp_);
+        tasks_.push_front(task);
 
         sumTaskEstimateTime_ = BoundedSum(sumTaskEstimateTime_, task->estimate_);
     }
 
     size_t TaskCount() override {
         return tasks_.size();
+    }
+
+    void Sort() override {
+        tasks_.sort(cmp_);
     }
 
     uint64_t SumTaskEstimateTime() override {
@@ -66,8 +66,8 @@ public:
     }
 
 private:
-    PriorityQueuePtrCmp cmp_;
-    std::vector<Task*> tasks_;
+    SortedListPtrCmp cmp_;
+    std::list<Task*> tasks_;
 
     uint64_t sumTaskEstimateTime_{0};
 };

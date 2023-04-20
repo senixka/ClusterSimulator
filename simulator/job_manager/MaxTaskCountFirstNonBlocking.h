@@ -6,7 +6,7 @@
 
 namespace job_manager::detail {
 
-class MaxTaskCountFirstNonBlockingSetPtrCmp {
+class MaxTaskCountFirstNonBlockingListPtrCmp {
 public:
     bool operator() (const Job* lhs, const Job* rhs) const {
         return lhs->taskManager_->TaskCount() > rhs->taskManager_->TaskCount();
@@ -18,6 +18,6 @@ public:
 
 namespace job_manager {
 
-using MaxTaskCountFirstNonBlocking = class detail::AsSortedList<detail::MaxTaskCountFirstNonBlockingSetPtrCmp>;
+using MaxTaskCountFirstNonBlocking = class detail::AsSortedList<detail::MaxTaskCountFirstNonBlockingListPtrCmp>;
 
 } // namespace job_manager

@@ -16,6 +16,7 @@ public:
     void ReturnTask(Task* task) override;
 
     size_t TaskCount() override;
+    void Sort() override;
 
     uint64_t SumTaskEstimateTime() override;
     uint64_t MaxTaskEstimateTime() override;

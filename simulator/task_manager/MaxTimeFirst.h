@@ -6,10 +6,10 @@
 
 namespace task_manager::detail {
 
-class MaxTimeFirstPriorityQueuePtrCmp {
+class MaxTimeFirstSortedListPtrCmp {
 public:
     bool operator()(const Task *lhs, const Task *rhs) const {
-        return lhs->estimate_ < rhs->estimate_;
+        return lhs->estimate_ > rhs->estimate_;
     }
 };
 
@@ -18,6 +18,6 @@ public:
 
 namespace task_manager {
 
-using MaxTimeFirst = class detail::AsPriorityQueue<detail::MaxTimeFirstPriorityQueuePtrCmp>;
+using MaxTimeFirst = class detail::AsPriorityQueue<detail::MaxTimeFirstSortedListPtrCmp>;
 
 } // namespace task_manager

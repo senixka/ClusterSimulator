@@ -8,7 +8,7 @@
 
 namespace job_manager::detail {
 
-template<class SetPtrCmp>
+template<class ListPtrCmp>
 class AsSortedList : public IJobManager {
 public:
     void PutJob(Job* job) override {
@@ -54,7 +54,7 @@ public:
     }
 
 private:
-    SetPtrCmp cmp_;
+    ListPtrCmp cmp_;
 
     std::list<Job*> jobs_;
     typename std::list<Job*>::iterator it_;

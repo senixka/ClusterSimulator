@@ -18,6 +18,8 @@ Job::Job(TaskManagerType taskManagerType, std::istream& in)
         Task* task = new Task{jobID_, estimate, cpuRequest, memoryRequest, diskSpaceRequest, taskIndex};
         taskManager_->PutTask(task);
     }
+
+    taskManager_->Sort();
 }
 
 Job::~Job() {

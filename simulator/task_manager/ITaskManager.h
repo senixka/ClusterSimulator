@@ -13,6 +13,7 @@ public:
     virtual void ReturnTask(Task* task) = 0;
 
     virtual size_t TaskCount() = 0;
+    virtual void Sort() = 0;
 
     virtual uint64_t SumTaskEstimateTime() = 0;
     virtual uint64_t MaxTaskEstimateTime() = 0;

@@ -6,7 +6,7 @@
 
 namespace job_manager::detail {
 
-class MaxSumTaskEstimateFirstNonBlockingSetPtrCmp {
+class MaxSumTaskEstimateFirstNonBlockingListPtrCmp {
 public:
     bool operator() (const Job* lhs, const Job* rhs) const {
         return lhs->taskManager_->SumTaskEstimateTime() > rhs->taskManager_->SumTaskEstimateTime();
@@ -18,6 +18,6 @@ public:
 
 namespace job_manager {
 
-using MaxSumTaskEstimateFirstNonBlocking = class detail::AsSortedList<detail::MaxSumTaskEstimateFirstNonBlockingSetPtrCmp>;
+using MaxSumTaskEstimateFirstNonBlocking = class detail::AsSortedList<detail::MaxSumTaskEstimateFirstNonBlockingListPtrCmp>;
 
 } // namespace job_manager

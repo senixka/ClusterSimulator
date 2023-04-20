@@ -32,6 +32,9 @@ size_t InJobOrder::TaskCount() {
     return tasks_.size();
 }
 
+void InJobOrder::Sort() {
+}
+
 uint64_t InJobOrder::SumTaskEstimateTime() {
     return sumTaskEstimateTime_;
 }
