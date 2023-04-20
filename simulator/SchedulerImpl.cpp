@@ -18,14 +18,13 @@ void SchedulerImpl::OnTaskFinished(Cluster& /*cluster*/) {
 }
 
 void SchedulerImpl::Schedule(Cluster& cluster) {
-    MachineManager::ReturnQueryType machines;
+    std::vector<const Machine*> machines;
     std::unordered_set<Job*> noModification;
 
     while (cluster.jobManager_->JobCount() != 0) {
         Job* job = cluster.jobManager_->GetJob();
         Task* task = job->taskManager_->GetTask();
 
-        machines.clear();
         cluster.machineManager_->FindSuitableMachines(*task, machines);
 
         if (machines.empty()) {

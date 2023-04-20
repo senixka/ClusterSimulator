@@ -14,7 +14,7 @@ namespace bgi = boost::geometry::index;
 
 
 class MachineManager {
-public:
+private:
     using point_3d = bg::model::point<double, 3, bg::cs::cartesian>;
     using box_3d = bg::model::box<point_3d>;
     using rtree_3d = bg::index::rtree<std::pair<point_3d, size_t>, bg::index::quadratic<16>>;
@@ -23,7 +23,7 @@ public:
 public:
     explicit MachineManager(const std::string& inputFilePath);
 
-    void FindSuitableMachines(const Task& task, ReturnQueryType& result);
+    void FindSuitableMachines(const Task& task, std::vector<const Machine*>& result);
 
     void PlaceTaskOnMachine(const Task& task);
     void RemoveTaskFromMachine(const Task& task);
@@ -32,5 +32,7 @@ public:
 
 private:
     std::vector<Machine> machines_;
+
     rtree_3d tree_;
+    ReturnQueryType innerQueryResults_;
 };

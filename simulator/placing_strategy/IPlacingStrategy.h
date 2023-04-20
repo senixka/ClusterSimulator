@@ -6,7 +6,7 @@
 
 class IPlacingStrategy {
 public:
-    virtual size_t BestMachineIndex(const MachineManager::ReturnQueryType& machines, const Task* task) = 0;
+    virtual unsigned BestMachineIndex(std::vector<const Machine*>& machines, const Task* task) = 0;
 
     virtual ~IPlacingStrategy() = default;
 };
