@@ -5,20 +5,38 @@
 
 
 enum class JobManagerType {
-    RoundRobinBlockingHead = 0,
-    RoundRobinNonBlockingHead = 1,
+    RoundRobinNonBlockingHead,
+    RoundRobinBlockingHead,
+
+    MinJobSubmitTimeFirstNonBlocking,
+    MaxJobSubmitTimeFirstNonBlocking,
+
+    MinSumTaskEstimateFirstNonBlocking,
+    MaxSumTaskEstimateFirstNonBlocking,
+
+    MinTaskCountFirstNonBlocking,
+    MaxTaskCountFirstNonBlocking,
 };
 
 static const std::unordered_map<std::string, JobManagerType> nameToJobManagerType_{
         {"RoundRobinBlockingHead", JobManagerType::RoundRobinBlockingHead},
         {"RoundRobinNonBlockingHead", JobManagerType::RoundRobinNonBlockingHead},
+
+        {"MinJobSubmitTimeFirstNonBlocking", JobManagerType::MinJobSubmitTimeFirstNonBlocking},
+        {"MaxJobSubmitTimeFirstNonBlocking", JobManagerType::MaxJobSubmitTimeFirstNonBlocking},
+
+        {"MinSumTaskEstimateFirstNonBlocking", JobManagerType::MinSumTaskEstimateFirstNonBlocking},
+        {"MaxSumTaskEstimateFirstNonBlocking", JobManagerType::MaxSumTaskEstimateFirstNonBlocking},
+
+        {"MinTaskCountFirstNonBlocking", JobManagerType::MinTaskCountFirstNonBlocking},
+        {"MaxTaskCountFirstNonBlocking", JobManagerType::MaxTaskCountFirstNonBlocking},
 };
 
 
 enum class TaskManagerType {
-    InJobOrder = 0,
-    MinTimeFirst = 1,
-    MaxTimeFirst = 2,
+    InJobOrder,
+    MinTimeFirst,
+    MaxTimeFirst,
 };
 
 static const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerType_{

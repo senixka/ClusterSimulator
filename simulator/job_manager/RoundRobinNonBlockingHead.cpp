@@ -3,6 +3,8 @@
 #include "../Macro.h"
 
 
+namespace job_manager {
+
 void RoundRobinNonBlockingHead::PutJob(Job* job) {
     jobs_.push_back(job);
 }
@@ -28,8 +30,13 @@ size_t RoundRobinNonBlockingHead::JobCount() {
     return jobs_.size();
 }
 
+void RoundRobinNonBlockingHead::NewSchedulingCycle() {
+}
+
 RoundRobinNonBlockingHead::~RoundRobinNonBlockingHead() {
     for (Job* job : jobs_) {
         delete job;
     }
 }
+
+} // namespace job_manager

@@ -11,6 +11,7 @@ public:
     virtual void ReturnJob(Job* job, bool isModified) = 0;
 
     virtual size_t JobCount() = 0;
+    virtual void NewSchedulingCycle() = 0;
 
     virtual ~IJobManager() = default;
 };

@@ -19,7 +19,9 @@ void SchedulerImpl::OnTaskFinished(Cluster& /*cluster*/) {
 
 void SchedulerImpl::Schedule(Cluster& cluster) {
     std::vector<const Machine*> machines;
-    std::unordered_set<Job*> noModification;
+    std::unordered_set<size_t> uselessJobID;
+
+    cluster.jobManager_->NewSchedulingCycle();
 
     while (cluster.jobManager_->JobCount() != 0) {
         Job* job = cluster.jobManager_->GetJob();
@@ -31,8 +33,8 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
             job->taskManager_->ReturnTask(task);
             cluster.jobManager_->ReturnJob(job, false);
 
-            if (noModification.find(job) == noModification.end()) {
-                noModification.insert(job);
+            if (uselessJobID.find(job->jobID_) == uselessJobID.end()) {
+                uselessJobID.insert(job->jobID_);
             } else {
                 break;
             }
@@ -45,7 +47,7 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
             cluster.PutEvent(task);
 
             cluster.jobManager_->ReturnJob(job, true);
-            noModification.erase(job);
+            uselessJobID.erase(job->jobID_);
         }
     }
 }
