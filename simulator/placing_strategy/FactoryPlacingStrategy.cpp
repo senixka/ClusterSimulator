@@ -8,9 +8,9 @@
 #include "MinMachineIndex.h"
 #include "Tetris.h"
 
-#include "priority_reorder/NoReorder.h"
-#include "priority_reorder/UsedFirst.h"
-#include "priority_reorder/UnusedFirst.h"
+#include "partition_policy/NoReorder.h"
+#include "partition_policy/UsedFirst.h"
+#include "partition_policy/UnusedFirst.h"
 
 #include "../Macro.h"
 
@@ -18,73 +18,73 @@
 IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStrategyType) {
     switch (placingStrategyType) {
         case PlacingStrategyType::Random_NoReorder:
-            return (new placing_strategy::Random<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::Random<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::Random_UsedFirst:
-            return (new placing_strategy::Random<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::Random<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::Random_UnusedFirst:
-            return (new placing_strategy::Random<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::Random<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::MinVolume_NoReorder:
-            return (new placing_strategy::MinVolume<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::MinVolume_UsedFirst:
-            return (new placing_strategy::MinVolume<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::MinVolume_UnusedFirst:
-            return (new placing_strategy::MinVolume<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::MaxVolume_NoReorder:
-            return (new placing_strategy::MaxVolume<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::MaxVolume_UsedFirst:
-            return (new placing_strategy::MaxVolume<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::MaxVolume_UnusedFirst:
-            return (new placing_strategy::MaxVolume<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::MinTaskCount_NoReorder:
-            return (new placing_strategy::MinTaskCount<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::MinTaskCount_UsedFirst:
-            return (new placing_strategy::MinTaskCount<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::MinTaskCount_UnusedFirst:
-            return (new placing_strategy::MinTaskCount<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::MaxTaskCount_NoReorder:
-            return (new placing_strategy::MaxTaskCount<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::MaxTaskCount_UsedFirst:
-            return (new placing_strategy::MaxTaskCount<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::MaxTaskCount_UnusedFirst:
-            return (new placing_strategy::MaxTaskCount<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::MinMachineIndex_NoReorder:
-            return (new placing_strategy::MinMachineIndex<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::MinMachineIndex_UsedFirst:
-            return (new placing_strategy::MinMachineIndex<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::MinMachineIndex_UnusedFirst:
-            return (new placing_strategy::MinMachineIndex<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::Tetris_NoReorder:
-            return (new placing_strategy::Tetris<placing_strategy::priority_reorder::NoReorder>{});
+            return (new placing_strategy::Tetris<placing_strategy::partition_policy::NoReorder>{});
 
         case PlacingStrategyType::Tetris_UsedFirst:
-            return (new placing_strategy::Tetris<placing_strategy::priority_reorder::UsedFirst>{});
+            return (new placing_strategy::Tetris<placing_strategy::partition_policy::UsedFirst>{});
 
         case PlacingStrategyType::Tetris_UnusedFirst:
-            return (new placing_strategy::Tetris<placing_strategy::priority_reorder::UnusedFirst>{});
+            return (new placing_strategy::Tetris<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         default:

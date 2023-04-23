@@ -3,9 +3,9 @@
 #include "../../Macro.h"
 
 
-namespace placing_strategy::priority_reorder {
+namespace placing_strategy::partition_policy {
 
-unsigned UnusedFirst::Reorder(std::vector<const Machine*> &machines) const {
+unsigned UnusedFirst::Partition(std::vector<const Machine*>& machines) {
     ASSERT(!machines.empty());
 
     unsigned first{0};
@@ -28,4 +28,4 @@ unsigned UnusedFirst::Reorder(std::vector<const Machine*> &machines) const {
     return first;
 }
 
-} // namespace placing_strategy::priority_reorder
+} // namespace placing_strategy::partition_policy

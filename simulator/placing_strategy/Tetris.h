@@ -8,13 +8,12 @@
 
 namespace placing_strategy {
 
-template<class PriorityReorder>
-class Tetris : public IPlacingStrategy {
-public:
+template<class PartitionPolicy>
+struct Tetris : public IPlacingStrategy {
     unsigned BestMachineIndex(std::vector<const Machine*>& machines, const Task* task) override {
         ASSERT(!machines.empty());
 
-        unsigned split = reorder_.Reorder(machines);
+        unsigned split = PartitionPolicy::Partition(machines);
         if (split == 0) {
             split = static_cast<unsigned>(machines.size());
         }
@@ -45,9 +44,6 @@ public:
 
         return bestMachineIndex;
     }
-
-private:
-    PriorityReorder reorder_;
 };
 
 } // namespace placing_strategy

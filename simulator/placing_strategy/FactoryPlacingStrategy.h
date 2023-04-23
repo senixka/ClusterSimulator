@@ -4,7 +4,6 @@
 #include "../Registry.h"
 
 
-class FactoryPlacingStrategy {
-public:
+struct FactoryPlacingStrategy {
     static IPlacingStrategy* Create(PlacingStrategyType placingStrategyType);
 };
