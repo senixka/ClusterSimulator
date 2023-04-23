@@ -4,7 +4,6 @@
 #include "../Registry.h"
 
 
-class FactoryTaskManager {
-public:
+struct FactoryTaskManager {
     static ITaskManager* Create(TaskManagerType taskManagerType);
 };

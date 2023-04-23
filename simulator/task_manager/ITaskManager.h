@@ -5,8 +5,7 @@
 #include <cstdlib>
 
 
-class ITaskManager {
-public:
+struct ITaskManager {
     virtual void PutTask(Task* task) = 0;
 
     virtual Task* GetTask() = 0;

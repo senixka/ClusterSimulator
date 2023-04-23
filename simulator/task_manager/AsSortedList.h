@@ -9,8 +9,8 @@
 
 namespace task_manager::detail {
 
-template<class SortedListPtrCmp>
-class AsPriorityQueue : public ITaskManager {
+template<class ComparePolicy>
+class AsSortedList : public ITaskManager {
 public:
     void PutTask(Task* task) override {
         tasks_.push_back(task);
@@ -39,7 +39,7 @@ public:
     }
 
     void Sort() override {
-        tasks_.sort(cmp_);
+        tasks_.sort(ComparePolicy::Compare);
     }
 
     uint64_t SumTaskEstimateTime() override {
@@ -59,16 +59,14 @@ public:
         return maxTaskEstimateTime;
     }
 
-    ~AsPriorityQueue() {
+    ~AsSortedList() {
         for (Task* task : tasks_) {
             delete task;
         }
     }
 
 private:
-    SortedListPtrCmp cmp_;
     std::list<Task*> tasks_;
-
     uint64_t sumTaskEstimateTime_{0};
 };
 

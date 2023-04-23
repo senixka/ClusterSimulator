@@ -1,14 +1,13 @@
 #pragma once
 
-#include "AsPriorityQueue.h"
+#include "AsSortedList.h"
 #include "../Task.h"
 
 
 namespace task_manager::detail {
 
-class MinTimeFirstSortedListPtrCmp {
-public:
-    bool operator() (const Task* lhs, const Task* rhs) const {
+struct MinTimeFirstPtrCmp {
+    static bool Compare(const Task* lhs, const Task* rhs) {
         return lhs->estimate_ < rhs->estimate_;
     }
 };
@@ -18,6 +17,6 @@ public:
 
 namespace task_manager {
 
-using MinTimeFirst = class detail::AsPriorityQueue<detail::MinTimeFirstSortedListPtrCmp>;
+using MinTimeFirst = class detail::AsSortedList<detail::MinTimeFirstPtrCmp>;
 
 } // namespace task_manager
