@@ -1,6 +1,6 @@
 #include "FactoryTaskManager.h"
 
-#include "InJobOrder.h"
+#include "InJobOrderB.h"
 #include "MinTaskTimeB.h"
 #include "MaxTaskTimeB.h"
 
@@ -9,8 +9,8 @@
 
 ITaskManager* FactoryTaskManager::Create(TaskManagerType taskManagerType) {
     switch (taskManagerType) {
-        case TaskManagerType::InJobOrder:
-            return (new task_manager::InJobOrder{});
+        case TaskManagerType::InJobOrderB:
+            return (new task_manager::InJobOrderB{});
 
         case TaskManagerType::MinTaskTimeB:
             return (new task_manager::MinTaskTimeB{});

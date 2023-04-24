@@ -34,13 +34,13 @@ static const std::unordered_map<std::string, JobManagerType> nameToJobManagerTyp
 
 
 enum class TaskManagerType {
-    InJobOrder,
+    InJobOrderB,
     MinTaskTimeB,
     MaxTaskTimeB,
 };
 
 static const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerType_{
-        {"InJobOrder", TaskManagerType::InJobOrder},
+        {"InJobOrderB", TaskManagerType::InJobOrderB},
         {"MinTaskTimeB", TaskManagerType::MinTaskTimeB},
         {"MaxTaskTimeB", TaskManagerType::MaxTaskTimeB},
 };

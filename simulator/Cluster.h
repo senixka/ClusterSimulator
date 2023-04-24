@@ -41,10 +41,10 @@ public:
     std::shared_ptr<IJobManager> jobManager_{nullptr};
 
     std::shared_ptr<IScheduler> scheduler_{nullptr};
-    const uint64_t scheduleEachTime_{1_S2MICROS};
+    const uint64_t scheduleEachTime_{500'000};
 
     std::shared_ptr<MachineManager> machineManager_{nullptr};
 
     std::shared_ptr<Statistics> statistics_{nullptr};
-    const uint64_t updateStatisticsEachTime_{10_S2MICROS};
+    const uint64_t updateStatisticsEachTime_{5_S2MICROS};
 };

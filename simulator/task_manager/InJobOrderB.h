@@ -8,7 +8,7 @@
 
 namespace task_manager {
 
-class InJobOrder : public ITaskManager {
+class InJobOrderB : public ITaskManager {
 public:
     void PutTask(Task* task) override;
 
@@ -21,7 +21,7 @@ public:
     unsigned __int128 SumTaskEstimateTime() override;
     uint64_t MaxTaskEstimateTime() override;
 
-    ~InJobOrder();
+    ~InJobOrderB();
 
 private:
     std::list<Task*> tasks_;

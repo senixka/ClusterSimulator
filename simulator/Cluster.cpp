@@ -73,7 +73,11 @@ void Cluster::Run() {
 }
 
 bool Cluster::Update() {
-    if (statistics_->nJobInSimulation_ == statistics_->jobSubmittedCounter_) {
+    if (statistics_->currentPendingTaskCounter_ > 600'000) [[unlikely]] {
+        return false;
+    }
+
+    if (statistics_->nJobInSimulation_ == statistics_->jobSubmittedCounter_) [[unlikely]] {
         return false;
     }
 

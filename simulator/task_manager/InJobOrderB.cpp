@@ -1,17 +1,17 @@
-#include "InJobOrder.h"
+#include "InJobOrderB.h"
 
 #include "../Macro.h"
 
 
 namespace task_manager {
 
-void InJobOrder::PutTask(Task* task) {
+void InJobOrderB::PutTask(Task* task) {
     tasks_.push_back(task);
 
     sumTaskEstimateTime_ += task->estimate_;
 }
 
-Task* InJobOrder::GetTask() {
+Task* InJobOrderB::GetTask() {
     ASSERT(!tasks_.empty());
 
     Task* task = tasks_.front();
@@ -21,24 +21,24 @@ Task* InJobOrder::GetTask() {
     return task;
 }
 
-void InJobOrder::ReturnTask(Task* task) {
+void InJobOrderB::ReturnTask(Task* task) {
     tasks_.push_front(task);
 
     sumTaskEstimateTime_ += task->estimate_;
 }
 
-size_t InJobOrder::TaskCount() {
+size_t InJobOrderB::TaskCount() {
     return tasks_.size();
 }
 
-void InJobOrder::Sort() {
+void InJobOrderB::Sort() {
 }
 
-unsigned __int128 InJobOrder::SumTaskEstimateTime() {
+unsigned __int128 InJobOrderB::SumTaskEstimateTime() {
     return sumTaskEstimateTime_;
 }
 
-uint64_t InJobOrder::MaxTaskEstimateTime() {
+uint64_t InJobOrderB::MaxTaskEstimateTime() {
     ASSERT(!tasks_.empty());
 
     uint64_t maxTaskEstimateTime = tasks_.front()->estimate_;
@@ -51,7 +51,7 @@ uint64_t InJobOrder::MaxTaskEstimateTime() {
     return maxTaskEstimateTime;
 }
 
-InJobOrder::~InJobOrder() {
+InJobOrderB::~InJobOrderB() {
     for (Task* task : tasks_) {
         delete task;
     }

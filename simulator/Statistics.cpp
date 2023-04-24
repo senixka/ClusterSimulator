@@ -23,6 +23,7 @@ void Statistics::UpdateStats(uint64_t currentTime) {
 
 void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
     ++jobSubmittedCounter_;
+    ++currentUnfinishedJobCounter_;
     currentPendingTaskCounter_ += job.taskManager_->TaskCount();
 
     jobStartTime_[job.jobID_] = currentTime;
@@ -50,6 +51,7 @@ void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
     if (--jobUnfinishedTaskCount_.at(task.jobID_) == 0) {
         jobEndTime_[task.jobID_] = currentTime;
         jobCompletionTime_.push_back(currentTime);
+        --currentUnfinishedJobCounter_;
     }
 }
 
@@ -132,8 +134,8 @@ void Statistics::PrintStatistics() const {
         printf("CPU: NO INFO  Memory: NO INFO  Disk: NO INFO\n");
     } else [[likely]] {
         printf("CPU: %7.3f%%  Memory: %7.3f%%  Disk: %7.3f%%  ", utilizationCPU_.back(), utilizationMemory_.back(), utilizationDisk_.back());
-        printf("Job submitted: %lu / %lu \tTask finished: %lu / %lu", jobSubmittedCounter_, nJobInSimulation_, taskFinishedCounter_, nTaskInSimulation_);
-        printf("\tTask working: %lu \tTask pending: %lu\n", currentWorkingTaskCounter_, currentPendingTaskCounter_);
+        printf("Job submitted: %lu / %lu  Task finished: %lu / %lu", jobSubmittedCounter_, nJobInSimulation_, taskFinishedCounter_, nTaskInSimulation_);
+        printf("  Task working: %lu  Task pending: %lu  Current Job: %lu\n", currentWorkingTaskCounter_, currentPendingTaskCounter_, currentUnfinishedJobCounter_);
     }
 }
 

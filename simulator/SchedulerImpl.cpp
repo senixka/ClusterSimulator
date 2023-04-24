@@ -11,7 +11,8 @@ SchedulerImpl::SchedulerImpl(std::shared_ptr<IPlacingStrategy> placingStrategy)
     : placingStrategy_(placingStrategy) {
 }
 
-void SchedulerImpl::OnJobSubmitted(Cluster& /*cluster*/) {
+void SchedulerImpl::OnJobSubmitted(Cluster& cluster) {
+    Schedule(cluster);
 }
 
 void SchedulerImpl::OnTaskFinished(Cluster& /*cluster*/) {
@@ -23,21 +24,16 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
 
     cluster.jobManager_->NewSchedulingCycle();
 
-    while (cluster.jobManager_->JobCount() != 0) {
-        Job* job = cluster.jobManager_->GetJob();
-        Task* task = job->taskManager_->GetTask();
+    const size_t jobCount = cluster.jobManager_->JobCount();
+    for (size_t i = 0; i < jobCount; ++i) {
+        Job *job = cluster.jobManager_->GetJob();
+        Task *task = job->taskManager_->GetTask();
 
         cluster.machineManager_->FindSuitableMachines(*task, machines);
 
         if (machines.empty()) {
             job->taskManager_->ReturnTask(task);
             cluster.jobManager_->ReturnJob(job, false);
-
-            if (uselessJobID.find(job->jobID_) == uselessJobID.end()) {
-                uselessJobID.insert(job->jobID_);
-            } else {
-                break;
-            }
         } else {
             task->machineIndex_ = placingStrategy_->BestMachineIndex(machines, task);
             task->eventTime_ = BoundedSum(cluster.time_, task->estimate_);
@@ -47,7 +43,6 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
             cluster.PutEvent(task);
 
             cluster.jobManager_->ReturnJob(job, true);
-            uselessJobID.erase(job->jobID_);
         }
     }
 }

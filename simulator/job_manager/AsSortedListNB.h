@@ -4,6 +4,8 @@
 #include "../Macro.h"
 
 #include <list>
+#include <vector>
+#include <algorithm>
 
 
 namespace job_manager::detail {
@@ -12,16 +14,14 @@ template<class ComparePolicy>
 class AsSortedListNB : public IJobManager {
 public:
     void PutJob(Job* job) override {
-        jobs_.push_back(job);
-
-        it_ = jobs_.begin();
+        modified_.push_back(job);
     }
 
     Job* GetJob() override {
-        ASSERT(!jobs_.empty());
+        ASSERT(JobCount() > 0);
 
         if (it_ == jobs_.end()) {
-            it_ = jobs_.begin();
+            NewSchedulingCycle();
         }
 
         Job* job = *it_;
@@ -29,21 +29,25 @@ public:
         return job;
     }
 
-    void ReturnJob(Job* job, bool /*isModified*/) override {
-        if (job->taskManager_->TaskCount() == 0) {
-            delete job;
-            return;
-        }
+    void ReturnJob(Job* job, bool isModified) override {
+        if (isModified) {
+            if (job->taskManager_->TaskCount() == 0) {
+                delete job;
+                return;
+            }
 
-        jobs_.insert(it_, job);
+            modified_.push_back(job);
+        } else {
+            jobs_.insert(it_, job);
+        }
     }
 
     size_t JobCount() override {
-        return jobs_.size();
+        return jobs_.size() + modified_.size();
     }
 
     void NewSchedulingCycle() override {
-        jobs_.sort(ComparePolicy::Compare);
+        MergeJobs();
         it_ = jobs_.begin();
     }
 
@@ -51,10 +55,41 @@ public:
         for (Job* job : jobs_) {
             delete job;
         }
+
+        for (Job* job : modified_){
+            delete job;
+        }
+    }
+
+private:
+    void MergeJobs() {
+        const size_t beforeSize = JobCount();
+
+        std::sort(modified_.begin(), modified_.end(), ComparePolicy::Compare);
+
+        auto j = jobs_.begin();
+        auto m = modified_.begin();
+
+        while (j != jobs_.end() && m != modified_.end()) {
+            if (ComparePolicy::Compare(*m, *j)) {
+                jobs_.insert(j, *m);
+                ++m;
+            } else {
+                ++j;
+            }
+        }
+
+        jobs_.insert(jobs_.end(), m, modified_.end());
+        modified_.clear();
+
+        ASSERT(beforeSize == JobCount());
+        ASSERT(std::is_sorted(jobs_.begin(), jobs_.end(), ComparePolicy::Compare));
     }
 
 private:
     std::list<Job*> jobs_;
+    std::vector<Job*> modified_;
+
     typename std::list<Job*>::iterator it_;
 };
 

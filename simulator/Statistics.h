@@ -68,6 +68,8 @@ public:
     uint64_t currentWorkingTaskCounter_{0};
     uint64_t currentPendingTaskCounter_{0};
 
+    uint64_t currentUnfinishedJobCounter_{0};
+
     std::vector<uint64_t> pendingTask_;
     std::vector<uint64_t> workingTask_;
 
