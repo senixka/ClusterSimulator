@@ -18,15 +18,14 @@ public:
     size_t TaskCount() override;
     void Sort() override;
 
-    uint64_t SumTaskEstimateTime() override;
+    unsigned __int128 SumTaskEstimateTime() override;
     uint64_t MaxTaskEstimateTime() override;
 
     ~InJobOrder();
 
 private:
     std::list<Task*> tasks_;
-
-    uint64_t sumTaskEstimateTime_{0};
+    unsigned __int128 sumTaskEstimateTime_{0};
 };
 
 } // namespace task_manager

@@ -1,6 +1,5 @@
 #include "InJobOrder.h"
 
-#include "../BoundedTime.h"
 #include "../Macro.h"
 
 
@@ -9,7 +8,7 @@ namespace task_manager {
 void InJobOrder::PutTask(Task* task) {
     tasks_.push_back(task);
 
-    sumTaskEstimateTime_ = BoundedSum(sumTaskEstimateTime_, task->estimate_);
+    sumTaskEstimateTime_ += task->estimate_;
 }
 
 Task* InJobOrder::GetTask() {
@@ -25,7 +24,7 @@ Task* InJobOrder::GetTask() {
 void InJobOrder::ReturnTask(Task* task) {
     tasks_.push_front(task);
 
-    sumTaskEstimateTime_ = BoundedSum(sumTaskEstimateTime_, task->estimate_);
+    sumTaskEstimateTime_ += task->estimate_;
 }
 
 size_t InJobOrder::TaskCount() {
@@ -35,7 +34,7 @@ size_t InJobOrder::TaskCount() {
 void InJobOrder::Sort() {
 }
 
-uint64_t InJobOrder::SumTaskEstimateTime() {
+unsigned __int128 InJobOrder::SumTaskEstimateTime() {
     return sumTaskEstimateTime_;
 }
 

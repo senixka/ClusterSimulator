@@ -2,7 +2,6 @@
 
 #include "ITaskManager.h"
 #include "../Macro.h"
-#include "../BoundedTime.h"
 
 #include <list>
 
@@ -15,7 +14,7 @@ public:
     void PutTask(Task* task) override {
         tasks_.push_back(task);
 
-        sumTaskEstimateTime_ = BoundedSum(sumTaskEstimateTime_, task->estimate_);
+        sumTaskEstimateTime_ += task->estimate_;
     }
 
     Task* GetTask() override {
@@ -31,7 +30,7 @@ public:
     void ReturnTask(Task* task) override {
         tasks_.push_front(task);
 
-        sumTaskEstimateTime_ = BoundedSum(sumTaskEstimateTime_, task->estimate_);
+        sumTaskEstimateTime_ += task->estimate_;
     }
 
     size_t TaskCount() override {
@@ -42,7 +41,7 @@ public:
         tasks_.sort(ComparePolicy::Compare);
     }
 
-    uint64_t SumTaskEstimateTime() override {
+    unsigned __int128 SumTaskEstimateTime() override {
         return sumTaskEstimateTime_;
     }
 
@@ -67,7 +66,7 @@ public:
 
 private:
     std::list<Task*> tasks_;
-    uint64_t sumTaskEstimateTime_{0};
+    unsigned __int128 sumTaskEstimateTime_{0};
 };
 
 } // namespace task_manager::detail

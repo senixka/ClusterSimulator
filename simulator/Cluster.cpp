@@ -56,7 +56,9 @@ void Cluster::PutEvent(ClusterEvent* event) {
     if (AtBound(event->eventTime_)) [[unlikely]] {
         assert(event->clusterEventType_ == ClusterEventType::TASK_FINISHED);
 
-        Task* task = reinterpret_cast<Task*>(event);
+        Task* task = dynamic_cast<Task*>(event);
+        ASSERT(task);
+
         delete task;
     } else [[likely]] {
         clusterEvents_.push(event);
@@ -80,7 +82,8 @@ bool Cluster::Update() {
     time_ = event->eventTime_;
 
     if (event->clusterEventType_ == ClusterEventType::TASK_FINISHED) {
-        Task* task = reinterpret_cast<Task*>(event);
+        Task* task = dynamic_cast<Task*>(event);
+        ASSERT(task);
 
         machineManager_->RemoveTaskFromMachine(*task);
         statistics_->OnTaskFinished(time_, *task);
@@ -88,7 +91,8 @@ bool Cluster::Update() {
 
         delete task;
     } else if (event->clusterEventType_ == ClusterEventType::JOB_SUBMITTED) {
-        Job* job = reinterpret_cast<Job*>(event);
+        Job* job = dynamic_cast<Job*>(event);
+        ASSERT(job);
 
         jobManager_->PutJob(job);
         statistics_->OnJobSubmitted(time_, *job);

@@ -18,10 +18,10 @@ ReleaseASan:
 	g++ -Wall -Wextra -Wconversion -O3 $(SANITIZE) $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(OUT_NAME)
 
 Slow:
-	g++ -Wall -Wextra -O0 -g $(DISABLE_NOTES) $(CPP_FILES) $(OUT_NAME)
+	g++ -Wall -Wextra -Wconversion -O0 -g $(DISABLE_NOTES) $(CPP_FILES) $(OUT_NAME)
 
 SlowASan:
-	g++ -Wall -Wextra -O0 -g $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES) $(OUT_NAME)
+	g++ -Wall -Wextra -Wconversion -O0 -g $(SANITIZE) $(DISABLE_NOTES) $(CPP_FILES) $(OUT_NAME)
 
 Profile:
-	g++ -Wall -Wextra -O3 -pg $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(OUT_NAME)
+	g++ -Wall -Wextra -Wconversion -O3 -pg $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(OUT_NAME)

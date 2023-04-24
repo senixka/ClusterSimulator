@@ -14,7 +14,7 @@ struct ITaskManager {
     virtual size_t TaskCount() = 0;
     virtual void Sort() = 0;
 
-    virtual uint64_t SumTaskEstimateTime() = 0;
+    virtual unsigned __int128 SumTaskEstimateTime() = 0;
     virtual uint64_t MaxTaskEstimateTime() = 0;
 
     virtual ~ITaskManager() = default;
