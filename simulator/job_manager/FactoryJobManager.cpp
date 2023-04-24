@@ -2,12 +2,12 @@
 
 #include "RoundRobinBlockingHead.h"
 #include "RoundRobinNonBlockingHead.h"
-#include "MinJobSubmitTimeFirstNonBlocking.h"
-#include "MaxJobSubmitTimeFirstNonBlocking.h"
-#include "MinSumTaskEstimateFirstNonBlocking.h"
-#include "MaxSumTaskEstimateFirstNonBlocking.h"
-#include "MinTaskCountFirstNonBlocking.h"
-#include "MaxTaskCountFirstNonBlocking.h"
+#include "MinJobSubmitTimeNB.h"
+#include "MaxJobSubmitTimeNB.h"
+#include "MinSumTaskEstimateNB.h"
+#include "MaxSumTaskEstimateNB.h"
+#include "MinTaskCountNB.h"
+#include "MaxTaskCountNB.h"
 
 #include "../Macro.h"
 
@@ -21,25 +21,25 @@ IJobManager *FactoryJobManager::Create(JobManagerType jobManagerType) {
             return (new job_manager::RoundRobinNonBlockingHead{});
 
 
-        case JobManagerType::MinJobSubmitTimeFirstNonBlocking:
-            return (new job_manager::MinJobSubmitTimeFirstNonBlocking{});
+        case JobManagerType::MinJobSubmitTimeNB:
+            return (new job_manager::MinJobSubmitTimeNB{});
 
-        case JobManagerType::MaxJobSubmitTimeFirstNonBlocking:
-            return (new job_manager::MaxJobSubmitTimeFirstNonBlocking{});
-
-
-        case JobManagerType::MinSumTaskEstimateFirstNonBlocking:
-            return (new job_manager::MinSumTaskEstimateFirstNonBlocking{});
-
-        case JobManagerType::MaxSumTaskEstimateFirstNonBlocking:
-            return (new job_manager::MaxSumTaskEstimateFirstNonBlocking{});
+        case JobManagerType::MaxJobSubmitTimeNB:
+            return (new job_manager::MaxJobSubmitTimeNB{});
 
 
-        case JobManagerType::MinTaskCountFirstNonBlocking:
-            return (new job_manager::MinTaskCountFirstNonBlocking{});
+        case JobManagerType::MinSumTaskEstimateNB:
+            return (new job_manager::MinSumTaskEstimateNB{});
 
-        case JobManagerType::MaxTaskCountFirstNonBlocking:
-            return (new job_manager::MaxTaskCountFirstNonBlocking {});
+        case JobManagerType::MaxSumTaskEstimateNB:
+            return (new job_manager::MaxSumTaskEstimateNB{});
+
+
+        case JobManagerType::MinTaskCountNB:
+            return (new job_manager::MinTaskCountNB{});
+
+        case JobManagerType::MaxTaskCountNB:
+            return (new job_manager::MaxTaskCountNB {});
 
 
         default:

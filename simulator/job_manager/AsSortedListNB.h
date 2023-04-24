@@ -8,8 +8,8 @@
 
 namespace job_manager::detail {
 
-template<class ListPtrCmp>
-class AsSortedList : public IJobManager {
+template<class ComparePolicy>
+class AsSortedListNB : public IJobManager {
 public:
     void PutJob(Job* job) override {
         jobs_.push_back(job);
@@ -43,19 +43,17 @@ public:
     }
 
     void NewSchedulingCycle() override {
-        jobs_.sort(cmp_);
+        jobs_.sort(ComparePolicy::Compare);
         it_ = jobs_.begin();
     }
 
-    ~AsSortedList() {
+    ~AsSortedListNB() {
         for (Job* job : jobs_) {
             delete job;
         }
     }
 
 private:
-    ListPtrCmp cmp_;
-
     std::list<Job*> jobs_;
     typename std::list<Job*>::iterator it_;
 };

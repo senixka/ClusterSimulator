@@ -4,7 +4,6 @@
 #include "../Registry.h"
 
 
-class FactoryJobManager {
-public:
+struct FactoryJobManager {
     static IJobManager* Create(JobManagerType jobManagerType);
 };

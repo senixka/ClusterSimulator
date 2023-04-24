@@ -1,12 +1,12 @@
 #pragma once
 
-#include "AsSortedList.h"
+#include "AsSortedListB.h"
 #include "../Task.h"
 
 
 namespace task_manager::detail {
 
-struct MaxTimeFirstPtrCmp {
+struct MaxTaskTimePtrCmp {
     static bool Compare(const Task* lhs, const Task* rhs) {
         return lhs->estimate_ > rhs->estimate_;
     }
@@ -17,6 +17,6 @@ struct MaxTimeFirstPtrCmp {
 
 namespace task_manager {
 
-using MaxTimeFirst = class detail::AsSortedList<detail::MaxTimeFirstPtrCmp>;
+using MaxTaskTimeB = class detail::AsSortedListB<detail::MaxTaskTimePtrCmp>;
 
 } // namespace task_manager

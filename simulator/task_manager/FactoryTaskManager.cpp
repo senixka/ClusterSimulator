@@ -1,8 +1,8 @@
 #include "FactoryTaskManager.h"
 
 #include "InJobOrder.h"
-#include "MinTimeFirst.h"
-#include "MaxTimeFirst.h"
+#include "MinTaskTimeB.h"
+#include "MaxTaskTimeB.h"
 
 #include "../Macro.h"
 
@@ -12,11 +12,11 @@ ITaskManager* FactoryTaskManager::Create(TaskManagerType taskManagerType) {
         case TaskManagerType::InJobOrder:
             return (new task_manager::InJobOrder{});
 
-        case TaskManagerType::MinTimeFirst:
-            return (new task_manager::MinTimeFirst{});
+        case TaskManagerType::MinTaskTimeB:
+            return (new task_manager::MinTaskTimeB{});
 
-        case TaskManagerType::MaxTimeFirst:
-            return (new task_manager::MaxTimeFirst{});
+        case TaskManagerType::MaxTaskTimeB:
+            return (new task_manager::MaxTaskTimeB{});
 
         default:
             UNREACHABLE("FactoryTaskManager");

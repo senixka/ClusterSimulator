@@ -3,8 +3,7 @@
 #include "../Job.h"
 
 
-class IJobManager {
-public:
+struct IJobManager {
     virtual void PutJob(Job* job) = 0;
 
     virtual Job* GetJob() = 0;

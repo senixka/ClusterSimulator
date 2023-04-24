@@ -10,7 +10,7 @@
 namespace task_manager::detail {
 
 template<class ComparePolicy>
-class AsSortedList : public ITaskManager {
+class AsSortedListB : public ITaskManager {
 public:
     void PutTask(Task* task) override {
         tasks_.push_back(task);
@@ -59,7 +59,7 @@ public:
         return maxTaskEstimateTime;
     }
 
-    ~AsSortedList() {
+    ~AsSortedListB() {
         for (Task* task : tasks_) {
             delete task;
         }

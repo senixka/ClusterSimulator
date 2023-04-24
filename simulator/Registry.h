@@ -8,41 +8,41 @@ enum class JobManagerType {
     RoundRobinNonBlockingHead,
     RoundRobinBlockingHead,
 
-    MinJobSubmitTimeFirstNonBlocking,
-    MaxJobSubmitTimeFirstNonBlocking,
+    MinJobSubmitTimeNB,
+    MaxJobSubmitTimeNB,
 
-    MinSumTaskEstimateFirstNonBlocking,
-    MaxSumTaskEstimateFirstNonBlocking,
+    MinSumTaskEstimateNB,
+    MaxSumTaskEstimateNB,
 
-    MinTaskCountFirstNonBlocking,
-    MaxTaskCountFirstNonBlocking,
+    MinTaskCountNB,
+    MaxTaskCountNB,
 };
 
 static const std::unordered_map<std::string, JobManagerType> nameToJobManagerType_{
         {"RoundRobinBlockingHead", JobManagerType::RoundRobinBlockingHead},
         {"RoundRobinNonBlockingHead", JobManagerType::RoundRobinNonBlockingHead},
 
-        {"MinJobSubmitTimeFirstNonBlocking", JobManagerType::MinJobSubmitTimeFirstNonBlocking},
-        {"MaxJobSubmitTimeFirstNonBlocking", JobManagerType::MaxJobSubmitTimeFirstNonBlocking},
+        {"MinJobSubmitTimeNB", JobManagerType::MinJobSubmitTimeNB},
+        {"MaxJobSubmitTimeNB", JobManagerType::MaxJobSubmitTimeNB},
 
-        {"MinSumTaskEstimateFirstNonBlocking", JobManagerType::MinSumTaskEstimateFirstNonBlocking},
-        {"MaxSumTaskEstimateFirstNonBlocking", JobManagerType::MaxSumTaskEstimateFirstNonBlocking},
+        {"MinSumTaskEstimateNB", JobManagerType::MinSumTaskEstimateNB},
+        {"MaxSumTaskEstimateNB", JobManagerType::MaxSumTaskEstimateNB},
 
-        {"MinTaskCountFirstNonBlocking", JobManagerType::MinTaskCountFirstNonBlocking},
-        {"MaxTaskCountFirstNonBlocking", JobManagerType::MaxTaskCountFirstNonBlocking},
+        {"MinTaskCountNB", JobManagerType::MinTaskCountNB},
+        {"MaxTaskCountNB", JobManagerType::MaxTaskCountNB},
 };
 
 
 enum class TaskManagerType {
     InJobOrder,
-    MinTimeFirst,
-    MaxTimeFirst,
+    MinTaskTimeB,
+    MaxTaskTimeB,
 };
 
 static const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerType_{
         {"InJobOrder", TaskManagerType::InJobOrder},
-        {"MinTimeFirst", TaskManagerType::MinTimeFirst},
-        {"MaxTimeFirst", TaskManagerType::MaxTimeFirst},
+        {"MinTaskTimeB", TaskManagerType::MinTaskTimeB},
+        {"MaxTaskTimeB", TaskManagerType::MaxTaskTimeB},
 };
 
 
