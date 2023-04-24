@@ -1,15 +1,15 @@
-#include "RoundRobinNonBlockingHead.h"
+#include "RoundRobinNB.h"
 
 #include "../Macro.h"
 
 
 namespace job_manager {
 
-void RoundRobinNonBlockingHead::PutJob(Job* job) {
+void RoundRobinNB::PutJob(Job* job) {
     jobs_.push_back(job);
 }
 
-Job* RoundRobinNonBlockingHead::GetJob() {
+Job* RoundRobinNB::GetJob() {
     ASSERT(!jobs_.empty());
 
     Job* job = jobs_.front();
@@ -17,7 +17,7 @@ Job* RoundRobinNonBlockingHead::GetJob() {
     return job;
 }
 
-void RoundRobinNonBlockingHead::ReturnJob(Job* job, bool /*isModified*/) {
+void RoundRobinNB::ReturnJob(Job* job, bool /*isModified*/) {
     if (job->taskManager_->TaskCount() == 0) {
         delete job;
         return;
@@ -26,14 +26,14 @@ void RoundRobinNonBlockingHead::ReturnJob(Job* job, bool /*isModified*/) {
     jobs_.push_back(job);
 }
 
-size_t RoundRobinNonBlockingHead::JobCount() {
+size_t RoundRobinNB::JobCount() {
     return jobs_.size();
 }
 
-void RoundRobinNonBlockingHead::NewSchedulingCycle() {
+void RoundRobinNB::NewSchedulingCycle() {
 }
 
-RoundRobinNonBlockingHead::~RoundRobinNonBlockingHead() {
+RoundRobinNB::~RoundRobinNB() {
     for (Job* job : jobs_) {
         delete job;
     }

@@ -12,6 +12,8 @@
 
 #include <cstdlib>
 #include <memory>
+#include <filesystem>
+#include <string_view>
 
 
 Experiment::Experiment(const std::string& taskAndJobFilePath, const std::string& machineFilePath, const std::string& outputFilePath,
@@ -21,9 +23,13 @@ Experiment::Experiment(const std::string& taskAndJobFilePath, const std::string&
     ASSERT(nameToJobManagerType_.find(jobManagerName_) != nameToJobManagerType_.end());
     ASSERT(nameToTaskManagerType_.find(taskManagerName_) != nameToTaskManagerType_.end());
     ASSERT(nameToPlacingStrategyType_.find(placingStrategyName_) != nameToPlacingStrategyType_.end());
-    ASSERT(!taskAndJobFilePath_.empty());
-    ASSERT(!machineFilePath_.empty());
-    ASSERT(!outputFilePath_.empty());
+
+    ASSERT(std::filesystem::exists(taskAndJobFilePath_));
+    ASSERT(std::filesystem::exists(machineFilePath_));
+
+    std::string_view prefix{outputFilePath_};
+    prefix.remove_suffix(prefix.size() - prefix.find_last_of('/', prefix.size()));
+    ASSERT(std::filesystem::exists(prefix));
 }
 
 void Experiment::Do() {

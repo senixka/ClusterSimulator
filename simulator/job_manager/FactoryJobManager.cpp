@@ -1,7 +1,7 @@
 #include "FactoryJobManager.h"
 
-#include "RoundRobinBlockingHead.h"
-#include "RoundRobinNonBlockingHead.h"
+#include "RoundRobinB.h"
+#include "RoundRobinNB.h"
 #include "MinJobSubmitTimeNB.h"
 #include "MaxJobSubmitTimeNB.h"
 #include "MinSumTaskEstimateNB.h"
@@ -14,11 +14,11 @@
 
 IJobManager *FactoryJobManager::Create(JobManagerType jobManagerType) {
     switch (jobManagerType) {
-        case JobManagerType::RoundRobinBlockingHead:
-            return (new job_manager::RoundRobinBlockingHead{});
+        case JobManagerType::RoundRobinB:
+            return (new job_manager::RoundRobinB{});
 
-        case JobManagerType::RoundRobinNonBlockingHead:
-            return (new job_manager::RoundRobinNonBlockingHead{});
+        case JobManagerType::RoundRobinNB:
+            return (new job_manager::RoundRobinNB{});
 
 
         case JobManagerType::MinJobSubmitTimeNB:

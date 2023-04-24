@@ -5,8 +5,8 @@
 
 
 enum class JobManagerType {
-    RoundRobinNonBlockingHead,
-    RoundRobinBlockingHead,
+    RoundRobinNB,
+    RoundRobinB,
 
     MinJobSubmitTimeNB,
     MaxJobSubmitTimeNB,
@@ -19,8 +19,8 @@ enum class JobManagerType {
 };
 
 static const std::unordered_map<std::string, JobManagerType> nameToJobManagerType_{
-        {"RoundRobinBlockingHead", JobManagerType::RoundRobinBlockingHead},
-        {"RoundRobinNonBlockingHead", JobManagerType::RoundRobinNonBlockingHead},
+        {"RoundRobinB", JobManagerType::RoundRobinB},
+        {"RoundRobinNB", JobManagerType::RoundRobinNB},
 
         {"MinJobSubmitTimeNB", JobManagerType::MinJobSubmitTimeNB},
         {"MaxJobSubmitTimeNB", JobManagerType::MaxJobSubmitTimeNB},

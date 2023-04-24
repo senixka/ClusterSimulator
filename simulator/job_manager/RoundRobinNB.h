@@ -8,7 +8,7 @@
 
 namespace job_manager {
 
-class RoundRobinNonBlockingHead : public IJobManager {
+class RoundRobinNB : public IJobManager {
 public:
     void PutJob(Job* job) override;
 
@@ -18,7 +18,7 @@ public:
     size_t JobCount() override;
     void NewSchedulingCycle() override;
 
-    ~RoundRobinNonBlockingHead();
+    ~RoundRobinNB();
 
 private:
     std::list<Job*> jobs_;
