@@ -137,17 +137,25 @@ void WriteCrashReport(const std::string& message, const std::string& outputFileP
 }
 
 int main() {
+    std::cout << "If you do not need console output for child processes, enter 0.\n"
+                 "To run child processes in separate xterm consoles, enter 1." << std::endl;
+
+    int childMode{0};
+    std::cin >> childMode;
+
     size_t procMax, currentWorkingProcCount{0};
     std::cin >> procMax;
-    printf("Using procMax = %lu\n", procMax);
+    std::cout << "Using procMax = " << procMax << std::endl;
 
     std::vector<Experiment> experiments;
     ReadInput(experiments);
 
-    printf("Prepare %lu experiments\n", experiments.size());
+    std::cout << "Experiments count = " << experiments.size() << std::endl;
 
     size_t experimentIndex{0};
     while (experimentIndex < experiments.size()) {
+        printf("Done %lu / %lu experiments\n", experimentIndex, experiments.size());
+
         if (currentWorkingProcCount < procMax) {
             const std::string configFileName = "sim_in_" + std::to_string(experimentIndex) + ".txt";
 
@@ -168,11 +176,15 @@ int main() {
 
                 sleep(1);
 
-                std::string command = "statusfile=$(mktemp);"
-                                      "xterm -e sh -c '../../simulator/build/simulator.out < " + configFileName + "; echo $? > '$statusfile;"
-                                      "status=$(cat $statusfile);"
-                                      "rm $statusfile;"
-                                      "exit $status;";
+                std::string command = "../../simulator/build/simulator.out < " + configFileName + " > /dev/null";
+                if (childMode == 1) {
+                    command =
+                        "statusfile=$(mktemp);"
+                        "xterm -e sh -c '../../simulator/build/simulator.out < " + configFileName + "; echo $? > '$statusfile;"
+                        "status=$(cat $statusfile);"
+                        "rm $statusfile;"
+                        "exit $status;";
+                }
 
                 if (system(command.c_str()) != 0) {
                     WriteCrashReport("Error in system call", "crash_" + configFileName, experiments[experimentIndex]);

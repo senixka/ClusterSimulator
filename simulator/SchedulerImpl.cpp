@@ -15,9 +15,6 @@ void SchedulerImpl::OnJobSubmitted(Cluster& cluster) {
     Schedule(cluster);
 }
 
-void SchedulerImpl::OnTaskFinished(Cluster& /*cluster*/) {
-}
-
 void SchedulerImpl::Schedule(Cluster& cluster) {
     std::vector<const Machine*> machines;
     std::unordered_set<size_t> uselessJobID;

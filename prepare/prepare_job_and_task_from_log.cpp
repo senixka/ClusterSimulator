@@ -1,4 +1,5 @@
 #include "../LogReader.h"
+#include "../simulator/Defines.h"
 
 #include <algorithm>
 #include <fstream>
@@ -24,9 +25,8 @@ class LightTask {
 public:
     uint64_t time;
     uint64_t estimate;
-    double cpuRequest{-1};
-    double memoryRequest{-1};
-    double diskSpaceRequest{-1};
+    unsigned cpuRequest{0};
+    unsigned memoryRequest{0};
     unsigned eventType;
 
     LightTask(const LightTask&) = default;
@@ -38,9 +38,8 @@ public:
     explicit LightTask(const TaskEvent& taskEvent)
         : time(taskEvent.time),
           estimate{0},
-          cpuRequest(static_cast<double>(taskEvent.cpuRequest.value_or(-1))),
-          memoryRequest(static_cast<double>(taskEvent.memoryRequest.value_or(-1))),
-          diskSpaceRequest(static_cast<double>(taskEvent.diskSpaceRequest.value_or(-1))),
+          cpuRequest(taskEvent.cpuRequest.value_or(0) * MACHINE_MAX_POSSIBLE_CPU + static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_CPU),
+          memoryRequest(taskEvent.memoryRequest.value_or(0) * MACHINE_MAX_POSSIBLE_MEMORY + static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_MEMORY),
           eventType(taskEvent.eventType) {
     }
 };
@@ -59,9 +58,11 @@ void JobPrepareAndDump(std::ostream& out, uint64_t outJobID, uint64_t jobTime, s
         }
 
         assert(mutation.size() == 1);
-        assert(mutation.back().cpuRequest >= 0);
-        assert(mutation.back().memoryRequest >= 0);
-        assert(mutation.back().diskSpaceRequest >= 0);
+        assert(mutation.back().cpuRequest > 0);
+        assert(mutation.back().cpuRequest <= MACHINE_MAX_POSSIBLE_CPU);
+
+        assert(mutation.back().memoryRequest > 0);
+        assert(mutation.back().memoryRequest <= MACHINE_MAX_POSSIBLE_MEMORY);
     }
 
     assert(!value.empty());
@@ -72,9 +73,7 @@ void JobPrepareAndDump(std::ostream& out, uint64_t outJobID, uint64_t jobTime, s
     uint64_t outTaskIndex{0};
     for (const auto& [taskIndex, events] : value) {
         const auto& task = events.front();
-
-        out << ++outTaskIndex << ' ' << task.estimate << ' '
-            << task.cpuRequest << ' ' << task.memoryRequest << ' ' << task.diskSpaceRequest << '\n';
+        out << ++outTaskIndex << ' ' << task.estimate << ' ' << task.cpuRequest << ' ' << task.memoryRequest << '\n';
     }
     out << '\n';
 }
@@ -135,6 +134,7 @@ int main() {
         std::string user;
 
         std::set<std::pair<JobID_t, unsigned>> badTask;
+        std::set<std::pair<JobID_t, unsigned>> emptyTask;
 
         while (log.NextTaskEvent(taskEvent)) {
             if (taskEvent.eventType >= TaskAndJobEventType::UPDATE_PENDING) {
@@ -148,6 +148,11 @@ int main() {
                 badTask.insert({key, taskEvent.taskIndex});
             }
 
+            LightTask lightTask{taskEvent};
+            if (lightTask.cpuRequest == 0 || lightTask.memoryRequest == 0) {
+                emptyTask.insert({key, taskEvent.taskIndex});
+            }
+
             if (taskEvent.eventType == TaskAndJobEventType::SUBMIT) {
                 taskEvents[key][taskEvent.taskIndex].clear();
             }
@@ -157,6 +162,15 @@ int main() {
         std::cout << "TASK WITH MISSING INFO: " << badTask.size() << std::endl;
 
         for (const auto &[key, taskIndex]: badTask) {
+            taskEvents[key].erase(taskIndex);
+            if (taskEvents[key].empty()) {
+                taskEvents.erase(key);
+            }
+        }
+
+        std::cout << "TASK WITH CPU OR MEM == 0 : " << emptyTask.size() << std::endl;
+
+        for (const auto &[key, taskIndex]: emptyTask) {
             taskEvents[key].erase(taskIndex);
             if (taskEvents[key].empty()) {
                 taskEvents.erase(key);

@@ -5,11 +5,11 @@
 
 namespace placing_strategy::partition_policy {
 
-unsigned UsedFirst::Partition(std::vector<const Machine*>& machines) {
+size_t UsedFirst::Partition(std::vector<const Machine*>& machines) {
     ASSERT(!machines.empty());
 
-    unsigned first{0};
-    const unsigned last = static_cast<unsigned>(machines.size());
+    size_t first{0};
+    const size_t last = machines.size();
 
     for (; first < last && machines[first]->currentTaskCount_ != 0; ++first) {
     }
@@ -18,7 +18,7 @@ unsigned UsedFirst::Partition(std::vector<const Machine*>& machines) {
         return first;
     }
 
-    for (unsigned i = first + 1; i != last; ++i) {
+    for (size_t i = first + 1; i != last; ++i) {
         if (machines[i]->currentTaskCount_ != 0) {
             std::swap(machines[first], machines[i]);
             ++first;

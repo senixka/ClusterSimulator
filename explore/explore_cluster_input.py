@@ -1,7 +1,17 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import numpy as np
 
+matplotlib.use('Agg')
+plt.ioff()
+
 UINT64_MAX = 18446744073709551615
+
+CPU_BUCKET_CNT, MEM_BUCKET_CNT = 15, 15
+MAX_CPU_VALUE, MAX_MEM_VALUE = 1000, 1000
+
+CPU_STEP = (MAX_CPU_VALUE + CPU_BUCKET_CNT - 1) // CPU_BUCKET_CNT
+MEM_STEP = (MAX_MEM_VALUE + MEM_BUCKET_CNT - 1) // MEM_BUCKET_CNT
 
 
 def BoundedSum(a, b):
@@ -26,47 +36,35 @@ def TaskWorkloadInClusterInput():
             taskCounter += nTask
 
             for j in range(nTask):
-                line = fin.readline().split()
-                taskIndex, taskEstimate = map(int, line[:2])
-                taskCpu, taskMem, taskDisk = map(float, line[2:])
+                taskIndex, taskEstimate, taskCpu, taskMem = map(int, fin.readline().split())
 
-                events.append((jobTime, False, taskCpu, taskMem, taskDisk))
-                events.append((BoundedSum(jobTime, taskEstimate), True, taskCpu, taskMem, taskDisk))
+                events.append((jobTime, False, taskCpu, taskMem))
+                events.append((BoundedSum(jobTime, taskEstimate), True, taskCpu, taskMem))
 
             fin.readline()
 
-    assert (taskCounter * 2 == len(events))
+    assert(taskCounter * 2 == len(events))
     events.sort()
     print('Events size:', len(events))
 
     # ///////////////////////// Stat Task /////////////////////////
 
-    taskDist = {}
-    currentCpu, currentMem, currentDisk, currentTaskCounter = 0, 0, 0, 0
-    statCpu, statMem, statDisk, statTime, statTaskCounter = [], [], [], [], []
+    Z = np.zeros((CPU_BUCKET_CNT, MEM_BUCKET_CNT))
+    currentCpu, currentMem, currentTaskCounter = 0, 0, 0
+    statCpu, statMem, statTime, statTaskCounter = [], [], [], []
     updateStatEach, nextUpdateTime = 1_000_000, 0
 
-    for time, isFinished, cpu, mem, disk in events:
+    for time, isFinished, cpu, mem in events:
         if isFinished:
             currentTaskCounter -= 1
-
             currentCpu -= cpu
             currentMem -= mem
-            currentDisk -= disk
         else:
             currentTaskCounter += 1
-
             currentCpu += cpu
             currentMem += mem
-            currentDisk += disk
 
-            cpuBucket = round(cpu, 1)
-            memBucket = round(mem, 1)
-
-            if (cpuBucket, memBucket) not in taskDist:
-                taskDist[(cpuBucket, memBucket)] = 1
-            else:
-                taskDist[(cpuBucket, memBucket)] += 1
+            Z[cpu // CPU_STEP][mem // MEM_STEP] += 1
 
         if time == UINT64_MAX:
             break
@@ -76,48 +74,34 @@ def TaskWorkloadInClusterInput():
             statTaskCounter.append(currentTaskCounter)
             statCpu.append(currentCpu)
             statMem.append(currentMem)
-            statDisk.append(currentDisk)
 
             nextUpdateTime += updateStatEach
 
+    Z.astype(int)
+
     # ///////////////////////// Stat Machines /////////////////////////
 
-    with open("../simulator/input/machine.txt", "r") as fin:
+    sumCpu, sumMem = 0, 0
+    with open("../simulator/input/machine_orig.txt", "r") as fin:
         machineN = int(fin.readline())
         machines = {}
 
-        for i in range(machineN):
-            cpu, mem, disk = map(float, fin.readline().split())
-            if (cpu, mem, disk) not in machines:
-                machines[(cpu, mem, disk)] = 1
+        for _ in range(machineN):
+            cpu, mem, cnt = map(int, fin.readline().split())
+            sumCpu += cpu * cnt
+            sumMem += mem * cnt
+
+            if (cpu, mem) not in machines:
+                machines[(cpu, mem)] = cnt
             else:
-                machines[(cpu, mem, disk)] += 1
-
-    # ///////////////////////// Machines /////////////////////////
-
-    sumCpu, sumMem, sumDisk = 0, 0, 0
-
-    print("cpu\tmemory\tdisk\tcount")
-    for key, value in machines.items():
-        print(f"{key[0]}\t{key[1]}\t{key[2]}\t{value}")
-        sumCpu += value * key[0]
-        sumMem += value * key[1]
-        sumDisk += value * key[2]
+                machines[(cpu, mem)] += cnt
 
     # ///////////////////////// Task distribution ////////////////////
 
-    xTicks = np.arange(0, 1.001, 0.1)
-    yTicks = np.arange(0, 1.001, 0.1)
-    xTickLabels = ['{:.1f}'.format(x) for x in xTicks]
-    yTickLabels = ['{:.1f}'.format(y) for y in yTicks]
-
-    Z = np.zeros((len(xTicks), len(yTicks)))
-    for i, cpu in enumerate(xTicks):
-        for j, mem in enumerate(yTicks):
-            if (cpu, mem) in taskDist:
-                Z[i, j] = int(taskDist[(cpu, mem)])
-
-    Z.astype(int)
+    xTicks = list(range(CPU_STEP // 2, MAX_CPU_VALUE + 1, CPU_STEP))
+    yTicks = list(range(MEM_STEP // 2, MAX_MEM_VALUE + 1, MEM_STEP))
+    xTickLabels = list(map(str, xTicks))
+    yTickLabels = list(map(str, yTicks))
 
     fig, ax = plt.subplots(figsize=(7, 7))
     ax.imshow(Z, cmap="YlGn")
@@ -127,7 +111,7 @@ def TaskWorkloadInClusterInput():
 
     for i in range(len(xTicks)):
         for j in range(len(yTicks)):
-            ax.text(j, i, int(Z[i, j]), ha="center", va="center", color="red", size="x-small")
+            ax.text(j, i, int(Z[i, j]), ha="center", va="center", color="red", size="xx-small")
 
     ax.set_title("Task count (in cpu/memory demand)")
     ax.set_xlabel("Memory")
@@ -135,7 +119,7 @@ def TaskWorkloadInClusterInput():
     fig.tight_layout()
 
     plt.savefig("./plots_of_input/input_task_distribution.png")
-    plt.show()
+    plt.close()
 
     # ///////////////////////// Task working /////////////////////////
 
@@ -148,7 +132,7 @@ def TaskWorkloadInClusterInput():
 
     plt.legend()
     plt.savefig("./plots_of_input/input_working_task.png")
-    plt.show()
+    plt.close()
 
     # //////////////////////////// Resource demand ///////////////////
 
@@ -161,12 +145,10 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, np.full_like(statTime, sumCpu), label="Machine CPU")
     plt.plot(statTime, statMem, label="Task Memory")
     plt.plot(statTime, np.full_like(statTime, sumMem), label="Machine Memory")
-    plt.plot(statTime, statDisk, label="Task Disk")
-    plt.plot(statTime, np.full_like(statTime, sumDisk), label="Machine Disk")
 
     plt.legend()
     plt.savefig("./plots_of_input/input_task_resources.png")
-    plt.show()
+    plt.close()
 
     # //////////////////////////// Recourse ratio ////////////////////
 
@@ -180,7 +162,7 @@ def TaskWorkloadInClusterInput():
 
     plt.legend()
     plt.savefig("./plots_of_input/input_ratio_cpu_memory.png")
-    plt.show()
+    plt.close()
 
 
 if __name__ == "__main__":

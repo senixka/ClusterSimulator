@@ -11,7 +11,6 @@ public:
     explicit SchedulerImpl(std::shared_ptr<IPlacingStrategy> placingStrategy);
 
     void OnJobSubmitted(Cluster& cluster) override;
-    void OnTaskFinished(Cluster& cluster) override;
     void Schedule(Cluster& cluster) override;
 
 private:

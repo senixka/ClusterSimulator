@@ -27,10 +27,11 @@ public:
     ~Cluster();
 
     void Run();
-    bool Update();
-
     void PutEvent(ClusterEvent*);
     void PlaceTask(const Task& task) const;
+
+private:
+    bool Update();
 
 public:
     using EventQueueType = std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare>;

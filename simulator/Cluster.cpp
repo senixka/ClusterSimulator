@@ -9,38 +9,46 @@
 Cluster::Cluster(const std::string& inputFilePath, TaskManagerType taskManagerType, std::shared_ptr<IJobManager> jobManager,
                  std::shared_ptr<IScheduler> scheduler, std::shared_ptr<MachineManager> machineManager, std::shared_ptr<Statistics> statistics)
     : jobManager_(jobManager), scheduler_(scheduler), machineManager_(machineManager), statistics_(statistics) {
+    printf("Start of Cluster construction\n");
 
-    for (const auto& machine : machineManager_->GetAllMachines()) {
+    const std::vector<Machine>& machines = machineManager_->GetAllMachines();
+    for (const auto& machine : machines) {
         statistics_->OnMachineAdded(machine);
     }
 
-    // Task and Job input
-    {
-        std::ifstream fin;
-        fin.open(inputFilePath);
+    printf("In Cluster, start of Job and Task construction\n");
 
-        size_t nJob;
-        fin >> nJob;
+    std::ifstream fin;
+    fin.open(inputFilePath);
 
-        // To test speed up only
-        // nJob /= 30;
+    size_t nJob;
+    fin >> nJob;
 
-        statistics_->nJobInSimulation_ = nJob;
+    // To test speed up only
+    // nJob /= 30;
 
-        for (size_t i = 0; i < nJob; ++i) {
-            Job* job = new Job(taskManagerType, fin);
-            job->eventTime_ = job->jobTime_;
-            job->clusterEventType_ = ClusterEventType::JOB_SUBMITTED;
+    for (size_t i = 0; i < nJob; ++i) {
+        Job* job = new Job(taskManagerType, fin);
+        job->eventTime_ = job->jobTime_;
+        job->clusterEventType_ = ClusterEventType::JOB_SUBMITTED;
 
-            statistics_->nTaskInSimulation_ += job->taskManager_->TaskCount();
+        if (!AtBound(job->eventTime_)) {
             clusterEvents_.push(job);
+            statistics_->nTaskInSimulation_ += job->taskManager_->TaskCount();
+            ++statistics->nJobInSimulation_;
+        } else {
+            delete job;
         }
-
-        fin.close();
     }
+
+    fin.close();
+
+    printf("In Cluster, end of Job and Task construction\n");
 
     clusterEvents_.push(new ClusterEvent(0, ClusterEventType::RUN_SCHEDULER));
     clusterEvents_.push(new ClusterEvent(0, ClusterEventType::UPDATE_STATISTICS));
+
+    printf("End of Cluster construction\n");
 }
 
 Cluster::~Cluster() {
@@ -54,12 +62,8 @@ Cluster::~Cluster() {
 
 void Cluster::PutEvent(ClusterEvent* event) {
     if (AtBound(event->eventTime_)) [[unlikely]] {
-        assert(event->clusterEventType_ == ClusterEventType::TASK_FINISHED);
-
-        Task* task = dynamic_cast<Task*>(event);
-        ASSERT(task);
-
-        delete task;
+        ASSERT(event->clusterEventType_ == ClusterEventType::TASK_FINISHED);
+        delete event;
     } else [[likely]] {
         clusterEvents_.push(event);
     }
@@ -68,7 +72,6 @@ void Cluster::PutEvent(ClusterEvent* event) {
 void Cluster::Run() {
     while (Update()) {
     }
-
     statistics_->OnSimulationFinished(time_);
 }
 
@@ -91,7 +94,6 @@ bool Cluster::Update() {
 
         machineManager_->RemoveTaskFromMachine(*task);
         statistics_->OnTaskFinished(time_, *task);
-        scheduler_->OnTaskFinished(*this);
 
         delete task;
     } else if (event->clusterEventType_ == ClusterEventType::JOB_SUBMITTED) {
@@ -121,5 +123,5 @@ bool Cluster::Update() {
 
 void Cluster::PlaceTask(const Task& task) const {
     machineManager_->PlaceTaskOnMachine(task);
-    statistics_->OnTaskScheduled(time_, task);
+    statistics_->OnTaskScheduled(task);
 }

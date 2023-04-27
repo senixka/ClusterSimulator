@@ -13,9 +13,9 @@ struct Random : public IPlacingStrategy {
     unsigned BestMachineIndex(std::vector<const Machine*>& machines, const Task* /*task*/) override {
         ASSERT(!machines.empty());
 
-        unsigned split = PartitionPolicy::Partition(machines);
+        size_t split = PartitionPolicy::Partition(machines);
         if (split == 0) {
-            split = static_cast<unsigned>(machines.size());
+            split = machines.size();
         }
 
         return machines[std::rand() % split]->machineIndex_;

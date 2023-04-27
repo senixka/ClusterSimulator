@@ -8,7 +8,7 @@
 #include "MinMachineIndex.h"
 #include "Tetris.h"
 
-#include "partition_policy/NoReorder.h"
+#include "partition_policy/NoPartition.h"
 #include "partition_policy/UsedFirst.h"
 #include "partition_policy/UnusedFirst.h"
 
@@ -17,8 +17,8 @@
 
 IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStrategyType) {
     switch (placingStrategyType) {
-        case PlacingStrategyType::Random_NoReorder:
-            return (new placing_strategy::Random<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::Random_NoPartition:
+            return (new placing_strategy::Random<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::Random_UsedFirst:
             return (new placing_strategy::Random<placing_strategy::partition_policy::UsedFirst>{});
@@ -27,8 +27,8 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::Random<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MinVolume_NoReorder:
-            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::MinVolume_NoPartition:
+            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::MinVolume_UsedFirst:
             return (new placing_strategy::MinVolume<placing_strategy::partition_policy::UsedFirst>{});
@@ -37,8 +37,8 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::MinVolume<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MaxVolume_NoReorder:
-            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::MaxVolume_NoPartition:
+            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::MaxVolume_UsedFirst:
             return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::UsedFirst>{});
@@ -47,8 +47,8 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MinTaskCount_NoReorder:
-            return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::MinTaskCount_NoPartition:
+            return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::MinTaskCount_UsedFirst:
             return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::UsedFirst>{});
@@ -57,8 +57,8 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::MinTaskCount<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MaxTaskCount_NoReorder:
-            return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::MaxTaskCount_NoPartition:
+            return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::MaxTaskCount_UsedFirst:
             return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::UsedFirst>{});
@@ -67,8 +67,8 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::MaxTaskCount<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MinMachineIndex_NoReorder:
-            return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::MinMachineIndex_NoPartition:
+            return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::MinMachineIndex_UsedFirst:
             return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::UsedFirst>{});
@@ -77,8 +77,8 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::MinMachineIndex<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::Tetris_NoReorder:
-            return (new placing_strategy::Tetris<placing_strategy::partition_policy::NoReorder>{});
+        case PlacingStrategyType::Tetris_NoPartition:
+            return (new placing_strategy::Tetris<placing_strategy::partition_policy::NoPartition>{});
 
         case PlacingStrategyType::Tetris_UsedFirst:
             return (new placing_strategy::Tetris<placing_strategy::partition_policy::UsedFirst>{});

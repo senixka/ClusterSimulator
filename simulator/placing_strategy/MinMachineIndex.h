@@ -11,14 +11,14 @@ struct MinMachineIndex : public IPlacingStrategy {
     unsigned BestMachineIndex(std::vector<const Machine*>& machines, const Task* /*task*/) override {
         ASSERT(!machines.empty());
 
-        unsigned split = PartitionPolicy::Partition(machines);
+        size_t split = PartitionPolicy::Partition(machines);
         if (split == 0) {
-            split = static_cast<unsigned>(machines.size());
+            split = machines.size();
         }
 
         unsigned bestMachineIndex{machines[0]->machineIndex_};
 
-        for (unsigned i = 0; i < split; ++i) {
+        for (size_t i = 1; i < split; ++i) {
             const Machine* machine = machines[i];
 
             if (machine->machineIndex_ < bestMachineIndex) {

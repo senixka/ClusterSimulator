@@ -1,4 +1,5 @@
 #include "../LogReader.h"
+#include "../simulator/Defines.h"
 
 #include <algorithm>
 #include <fstream>
@@ -9,7 +10,7 @@
 
 
 int main() {
-    const std::string outputFilePath = "../../simulator/input/machine.txt";
+    const std::string outputFilePath = "../../simulator/input/machine_orig.txt";
     const std::string inputLogDir = "../../google_cluster_trace_log/";
 
     LogReader log(inputLogDir);
@@ -40,7 +41,8 @@ int main() {
     out << values.size() << '\n';
 
     for (const auto& [key, value] : values) {
-        out << key.first << " " << key.second << " " << 1 << " " << value << '\n';
+        out << static_cast<unsigned>(key.first * MACHINE_MAX_POSSIBLE_CPU) << ' '
+            << static_cast<unsigned>(key.second * MACHINE_MAX_POSSIBLE_MEMORY) << ' ' << value << '\n';
     }
 
     out.close();

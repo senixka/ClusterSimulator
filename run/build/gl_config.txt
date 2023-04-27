@@ -1,9 +1,55 @@
-4
+0
+
+64
 
 CARTESIAN
 1 ../../simulator/input/job_and_task.txt jat
-1 ../../simulator/input/machine.txt m
+2 ../../simulator/input/machine_orig.txt mo ../../simulator/input/machine_orig.txt mg
 ../../simulator/output/
-2 RoundRobinNonBlockingHead RoundRobinBlockingHead
-1 InJobOrder
-4 Random MinVolume MaxVolume Tetris
+
+8
+RoundRobinNB
+RoundRobinB
+
+MinJobSubmitTimeNB
+MaxJobSubmitTimeNB
+
+MinSumTaskEstimateNB
+MaxSumTaskEstimateNB
+
+MinTaskCountNB
+MaxTaskCountNB
+
+3
+InJobOrderB
+MinTaskTimeB
+MaxTaskTimeB
+
+21
+Random_NoPartition
+Random_UsedFirst
+Random_UnusedFirst
+
+MinVolume_NoPartition
+MinVolume_UsedFirst
+MinVolume_UnusedFirst
+
+MaxVolume_NoPartition
+MaxVolume_UsedFirst
+MaxVolume_UnusedFirst
+
+MinTaskCount_NoPartition
+MinTaskCount_UsedFirst
+MinTaskCount_UnusedFirst
+
+MaxTaskCount_NoPartition
+MaxTaskCount_UsedFirst
+MaxTaskCount_UnusedFirst
+
+MinMachineIndex_NoPartition
+MinMachineIndex_UsedFirst
+MinMachineIndex_UnusedFirst
+
+Tetris_NoPartition
+Tetris_UsedFirst
+Tetris_UnusedFirst

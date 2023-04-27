@@ -47,61 +47,61 @@ static const std::unordered_map<std::string, TaskManagerType> nameToTaskManagerT
 
 
 enum class PlacingStrategyType {
-    Random_NoReorder,
+    Random_NoPartition,
     Random_UsedFirst,
     Random_UnusedFirst,
 
-    MinVolume_NoReorder,
+    MinVolume_NoPartition,
     MinVolume_UsedFirst,
     MinVolume_UnusedFirst,
 
-    MaxVolume_NoReorder,
+    MaxVolume_NoPartition,
     MaxVolume_UsedFirst,
     MaxVolume_UnusedFirst,
 
-    MinTaskCount_NoReorder,
+    MinTaskCount_NoPartition,
     MinTaskCount_UsedFirst,
     MinTaskCount_UnusedFirst,
 
-    MaxTaskCount_NoReorder,
+    MaxTaskCount_NoPartition,
     MaxTaskCount_UsedFirst,
     MaxTaskCount_UnusedFirst,
 
-    MinMachineIndex_NoReorder,
+    MinMachineIndex_NoPartition,
     MinMachineIndex_UsedFirst,
     MinMachineIndex_UnusedFirst,
 
-    Tetris_NoReorder,
+    Tetris_NoPartition,
     Tetris_UsedFirst,
     Tetris_UnusedFirst,
 };
 
 static const std::unordered_map<std::string, PlacingStrategyType> nameToPlacingStrategyType_{
-        {"Random_NoReorder", PlacingStrategyType::Random_NoReorder},
+        {"Random_NoPartition", PlacingStrategyType::Random_NoPartition},
         {"Random_UsedFirst", PlacingStrategyType::Random_UsedFirst},
         {"Random_UnusedFirst", PlacingStrategyType::Random_UnusedFirst},
 
-        {"MinVolume_NoReorder", PlacingStrategyType::MinVolume_NoReorder},
+        {"MinVolume_NoPartition", PlacingStrategyType::MinVolume_NoPartition},
         {"MinVolume_UsedFirst", PlacingStrategyType::MinVolume_UsedFirst},
         {"MinVolume_UnusedFirst", PlacingStrategyType::MinVolume_UnusedFirst},
 
-        {"MaxVolume_NoReorder", PlacingStrategyType::MaxVolume_NoReorder},
+        {"MaxVolume_NoPartition", PlacingStrategyType::MaxVolume_NoPartition},
         {"MaxVolume_UsedFirst", PlacingStrategyType::MaxVolume_UsedFirst},
         {"MaxVolume_UnusedFirst", PlacingStrategyType::MaxVolume_UnusedFirst},
 
-        {"MinTaskCount_NoReorder", PlacingStrategyType::MinTaskCount_NoReorder},
+        {"MinTaskCount_NoPartition", PlacingStrategyType::MinTaskCount_NoPartition},
         {"MinTaskCount_UsedFirst", PlacingStrategyType::MinTaskCount_UsedFirst},
         {"MinTaskCount_UnusedFirst", PlacingStrategyType::MinTaskCount_UnusedFirst},
 
-        {"MaxTaskCount_NoReorder", PlacingStrategyType::MaxTaskCount_NoReorder},
+        {"MaxTaskCount_NoPartition", PlacingStrategyType::MaxTaskCount_NoPartition},
         {"MaxTaskCount_UsedFirst", PlacingStrategyType::MaxTaskCount_UsedFirst},
         {"MaxTaskCount_UnusedFirst", PlacingStrategyType::MaxTaskCount_UnusedFirst},
 
-        {"MinMachineIndex_NoReorder", PlacingStrategyType::MinMachineIndex_NoReorder},
+        {"MinMachineIndex_NoPartition", PlacingStrategyType::MinMachineIndex_NoPartition},
         {"MinMachineIndex_UsedFirst", PlacingStrategyType::MinMachineIndex_UsedFirst},
         {"MinMachineIndex_UnusedFirst", PlacingStrategyType::MinMachineIndex_UnusedFirst},
 
-        {"Tetris_NoReorder", PlacingStrategyType::Tetris_NoReorder},
+        {"Tetris_NoPartition", PlacingStrategyType::Tetris_NoPartition},
         {"Tetris_UsedFirst", PlacingStrategyType::Tetris_UsedFirst},
         {"Tetris_UnusedFirst", PlacingStrategyType::Tetris_UnusedFirst},
 };

@@ -1,11 +1,14 @@
 #include "MachineManager.h"
 
 #include "Macro.h"
+#include "Defines.h"
 
 #include <fstream>
 
 
 MachineManager::MachineManager(const std::string& inputFilePath) {
+    printf("Start of MachineManager construction\n");
+
     std::ifstream in;
     in.open(inputFilePath);
 
@@ -13,25 +16,32 @@ MachineManager::MachineManager(const std::string& inputFilePath) {
     in >> nConfig;
 
     size_t nMachine;
-    double machineCpu, machineMemory, machineDisk;
-    unsigned machineIndex{0};
+    unsigned machineIndex{0}, machineCpu, machineMemory;
 
     for (size_t i = 0; i < nConfig; ++i) {
-        in >> machineCpu >> machineMemory >> machineDisk >> nMachine;
+        in >> machineCpu >> machineMemory >> nMachine;
 
         for (size_t j = 0; j < nMachine; ++j) {
-            machines_.push_back({machineIndex, 0, machineCpu, machineMemory, machineDisk});
-
-            point_3d point(machineCpu, machineMemory, machineDisk);
-            tree_.insert({point, machineIndex++});
-
-            ASSERT(machines_.back().machineIndex_ == machineIndex - 1);
+            machines_.emplace_back(Machine(machineIndex++, 0, machineCpu, machineMemory));
         }
     }
+
+    std::vector<tree_entry> entries;
+    entries.reserve(machines_.size());
+
+    for (const auto& m : machines_) {
+        entries.push_back({{m.availableCpu_, m.availableMemory_}, m.machineIndex_});
+    }
+
+    printf("In MachineManager, start of rtree construction\n");
+    tree_ = std::move(rtree_2d(entries.begin(), entries.end()));
+    printf("In MachineManager, end of rtree construction\n");
+
+    printf("End of MachineManager construction\n");
 }
 
 void MachineManager::FindSuitableMachines(const Task& task, std::vector<const Machine*>& result) {
-    box_3d query_box({task.cpuRequest_, task.memoryRequest_, task.diskSpaceRequest_}, {1, 1, 1});
+    box_2d query_box({task.cpuRequest_, task.memoryRequest_}, {MACHINE_MAX_POSSIBLE_CPU, MACHINE_MAX_POSSIBLE_MEMORY});
 
     innerQueryResults_.clear();
     tree_.query(bgi::intersects(query_box), std::back_inserter(innerQueryResults_));
@@ -43,23 +53,19 @@ void MachineManager::FindSuitableMachines(const Task& task, std::vector<const Ma
 }
 
 void MachineManager::PlaceTaskOnMachine(const Task& task) {
-    auto [oldCpu, oldMemory, oldDisk] = machines_[task.machineIndex_].GetResources();
-    tree_.remove({{oldCpu, oldMemory, oldDisk}, task.machineIndex_});
+    Machine& m = machines_[task.machineIndex_];
 
-    machines_[task.machineIndex_].PlaceTask(task);
-
-    auto [newCpu, newMemory, newDisk] = machines_[task.machineIndex_].GetResources();
-    tree_.insert({{newCpu, newMemory, newDisk}, task.machineIndex_});
+    tree_.remove({{m.availableCpu_, m.availableMemory_}, m.machineIndex_});
+    m.PlaceTask(task);
+    tree_.insert({{m.availableCpu_, m.availableMemory_}, m.machineIndex_});
 }
 
 void MachineManager::RemoveTaskFromMachine(const Task& task) {
-    auto [oldCpu, oldMemory, oldDisk] = machines_[task.machineIndex_].GetResources();
-    tree_.remove({{oldCpu, oldMemory, oldDisk}, task.machineIndex_});
+    Machine& m = machines_[task.machineIndex_];
 
-    machines_[task.machineIndex_].RemoveTask(task);
-
-    auto [newCpu, newMemory, newDisk] = machines_[task.machineIndex_].GetResources();
-    tree_.insert({{newCpu, newMemory, newDisk}, task.machineIndex_});
+    tree_.remove({{m.availableCpu_, m.availableMemory_}, m.machineIndex_});
+    m.RemoveTask(task);
+    tree_.insert({{m.availableCpu_, m.availableMemory_}, m.machineIndex_});
 }
 
 const std::vector<Machine>& MachineManager::GetAllMachines() const {

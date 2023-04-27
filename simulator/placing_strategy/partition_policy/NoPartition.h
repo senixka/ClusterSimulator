@@ -5,8 +5,8 @@
 
 namespace placing_strategy::partition_policy {
 
-struct NoReorder {
-    static unsigned Partition(std::vector<const Machine*>& machines);
+struct NoPartition {
+    static size_t Partition(std::vector<const Machine*>& machines);
 };
 
 } // namespace placing_strategy::partition_policy
