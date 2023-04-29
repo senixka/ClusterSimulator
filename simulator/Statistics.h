@@ -34,11 +34,11 @@ public:
     std::vector<uint64_t> utilizationMemoryNumerator_;
     std::vector<uint64_t> utilizationMeasurementsTime_;
 
-    std::unordered_map<uint64_t, uint64_t> jobStartTime_;
-    std::unordered_map<uint64_t, uint64_t> jobEndTime_;
+    std::unordered_map<unsigned, uint64_t> jobStartTime_;
+    std::unordered_map<unsigned, uint64_t> jobEndTime_;
 
-    std::unordered_map<uint64_t, uint64_t> jobUnfinishedTaskCount_;
-    std::unordered_map<uint64_t, uint64_t> jobIdealEstimateTime_;
+    std::unordered_map<unsigned, uint64_t> jobUnfinishedTaskCount_;
+    std::unordered_map<unsigned, uint64_t> jobIdealEstimateTime_;
 
     std::vector<uint64_t> pendingTask_;
     std::vector<uint64_t> workingTask_;

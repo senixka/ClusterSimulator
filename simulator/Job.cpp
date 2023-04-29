@@ -1,7 +1,5 @@
 #include "Job.h"
 
-#include "Defines.h"
-
 
 Job::Job(TaskManagerType taskManagerType, std::istream& in)
     : taskManager_(FactoryTaskManager::Create(taskManagerType)) {
@@ -16,7 +14,7 @@ Job::Job(TaskManagerType taskManagerType, std::istream& in)
     for (size_t i = 0; i < taskN; ++i) {
         in >> taskIndex >> estimate >> cpuRequest >> memoryRequest;
 
-        Task* task = new Task(jobID_, estimate, cpuRequest, memoryRequest, taskIndex);
+        Task* task = new Task(estimate, cpuRequest, memoryRequest, jobID_, taskIndex);
         taskManager_->PutTask(task);
     }
 

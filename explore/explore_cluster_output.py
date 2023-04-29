@@ -3,10 +3,13 @@ import matplotlib.pyplot as plt
 import matplotlib
 import decimal
 from decimal import Decimal
+from concurrent.futures import ThreadPoolExecutor
+
 
 matplotlib.use('Agg')
 plt.ioff()
 
+OUT_PREC = 20
 
 def GetFiles():
     dirPath = '../simulator/output/'
@@ -103,7 +106,7 @@ def BuildStats(metrics: dict, outputPathPrefix: str):
     with open(outputPathPrefix + '_stat.txt', 'w') as fout:
         for name in ['AvgCpuUtilization', 'AvgMemoryUtilization', 'SNP', 'Unfairness', 'SlowdownNorm2']:
             fout.write(name + '\n')
-            fout.write(str(metrics[name])[:20] + '\n')
+            fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
         for name in ['MakeSpan', 'TotalAvailableCPU', 'TotalAvailableMemory', 'PendingTaskCounter',
                      'UnfinishedJobCounter', 'nJobInSimulation', 'nTaskInSimulation', 'TaskFinishedCounter']:
@@ -123,9 +126,9 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
 
     plt.plot(mTimes, metrics['WorkingTask'], label='Working task')
     plt.plot(mTimes, metrics['PendingTask'], label='Pending task')
-    plt.plot(mTimes[0], metrics['PendingTask'][0], label='SlowdownNorm2: ' + str(metrics['SlowdownNorm2']))
-    plt.plot(mTimes[0], metrics['PendingTask'][0], label='Unfairness: ' + str(metrics['Unfairness']))
-    plt.plot(mTimes[0], metrics['PendingTask'][0], label='SNP: ' + str(metrics['SNP']))
+    plt.plot(mTimes[0], metrics['PendingTask'][0], label='SlowdownNorm2: ' + str(metrics['SlowdownNorm2'])[:OUT_PREC])
+    plt.plot(mTimes[0], metrics['PendingTask'][0], label='Unfairness: ' + str(metrics['Unfairness'])[:OUT_PREC])
+    plt.plot(mTimes[0], metrics['PendingTask'][0], label='SNP: ' + str(metrics['SNP'])[:OUT_PREC])
 
     plt.legend()
     plt.savefig(outputPathPrefix + '_pending_working.png')
@@ -140,33 +143,49 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
 
     plt.plot(mTimes, metrics['UtilizationCPU'], label='CPU')
     plt.plot([mTimes[0], mTimes[-1]], [metrics['AvgCpuUtilization']] * 2,
-             label='CPU AVG ' + str(metrics['AvgCpuUtilization']))
+             label='CPU AVG ' + str(metrics['AvgCpuUtilization'])[:OUT_PREC])
 
     plt.plot(mTimes, metrics['UtilizationMemory'], label='Memory')
     plt.plot([mTimes[0], mTimes[-1]], [metrics['AvgMemoryUtilization']] * 2,
-             label='Memory AVG ' + str(metrics['AvgMemoryUtilization']))
+             label='Memory AVG ' + str(metrics['AvgMemoryUtilization'])[:OUT_PREC])
 
     plt.legend()
     plt.savefig(outputPathPrefix + '_utilization.png')
     plt.close()
 
 
+def Worker(filePath: str, subDir: str, removeInput: int):
+    print('Process path:', filePath)
+
+    prefix = filePath[:-len('.txt')].split('/')[-1]
+
+    metrics = GetMetricsFromFile(filePath)
+    BuildStats(metrics, './stats_of_output/' + subDir + '/' + prefix)
+    BuildPlots(metrics, './plots_of_output/' + subDir + '/' + prefix)
+
+    if removeInput == 1:
+        os.remove(filePath)
+
+    print('End of process:', filePath)
+
+
 def main():
+    executor = ThreadPoolExecutor(max_workers=int(input('Enter max thread count: ').strip()))
+
+    subDir = input('Enter output sub dir name: ').strip()
+    assert(len(subDir) > 0)
+
+    os.mkdir('./stats_of_output/' + subDir)
+    os.mkdir('./plots_of_output/' + subDir)
+
+    removeInput = int(input('Enter 1 to remove input after use, 0 otherwise: '))
+
     for filePath in GetFiles():
         if not filePath.endswith('.txt'):
             continue
-        print('---> Current path:', filePath)
+        executor.submit(Worker, filePath, subDir, removeInput)
 
-        prefix = filePath[:-len('.txt')].split('/')[-1]
-
-        print('Init metrics')
-        metrics = GetMetricsFromFile(filePath)
-
-        print('Build stats')
-        BuildStats(metrics, './stats_of_output/' + prefix)
-
-        print('Build plots')
-        BuildPlots(metrics, './plots_of_output/' + prefix)
+    executor.shutdown(wait=True, cancel_futures=False)
 
 
 if __name__ == '__main__':

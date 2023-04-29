@@ -25,24 +25,23 @@ struct Tetris : public IPlacingStrategy {
         }
 
         unsigned bestMachineIndex{0};
-        double minAngle{10};
+        double minAngle{10}, currentAngle;
 
         const unsigned t_cpu = task->cpuRequest_;
         const unsigned t_mem = task->memoryRequest_;
-        const double t_norm{std::sqrt(t_cpu * t_cpu + t_mem * t_mem)};
 
         for (size_t i = 0; i < split; ++i) {
             const Machine* m = machines[i];
-
             const unsigned m_cpu{m->availableCpu_}, m_mem{m->availableMemory_};
 
-            const double dot_product = m_cpu * t_cpu + m_mem * t_mem;
-            const double m_norm{std::sqrt(m_cpu * m_cpu + m_mem * m_mem)};
+            if (m_cpu * t_mem >= m_mem * t_cpu) {
+                currentAngle = std::atan2(m_cpu * t_mem - m_mem * t_cpu, m_cpu * t_cpu + m_mem * t_mem);
+            } else {
+                currentAngle = std::atan2(m_mem * t_cpu - m_cpu * t_mem, m_cpu * t_cpu + m_mem * t_mem);
+            }
 
-            const double angle = std::acos(dot_product / (m_norm * t_norm));
-
-            if (angle < minAngle) {
-                minAngle = angle;
+            if (currentAngle < minAngle) {
+                minAngle = currentAngle;
                 bestMachineIndex = m->machineIndex_;
             }
         }

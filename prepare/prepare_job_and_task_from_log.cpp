@@ -41,6 +41,8 @@ public:
           cpuRequest(taskEvent.cpuRequest.value_or(0) * MACHINE_MAX_POSSIBLE_CPU + static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_CPU),
           memoryRequest(taskEvent.memoryRequest.value_or(0) * MACHINE_MAX_POSSIBLE_MEMORY + static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_MEMORY),
           eventType(taskEvent.eventType) {
+        cpuRequest = std::max(cpuRequest, 1u);
+        memoryRequest = std::max(memoryRequest, 1u);
     }
 };
 
@@ -134,7 +136,6 @@ int main() {
         std::string user;
 
         std::set<std::pair<JobID_t, unsigned>> badTask;
-        std::set<std::pair<JobID_t, unsigned>> emptyTask;
 
         while (log.NextTaskEvent(taskEvent)) {
             if (taskEvent.eventType >= TaskAndJobEventType::UPDATE_PENDING) {
@@ -148,11 +149,6 @@ int main() {
                 badTask.insert({key, taskEvent.taskIndex});
             }
 
-            LightTask lightTask{taskEvent};
-            if (lightTask.cpuRequest == 0 || lightTask.memoryRequest == 0) {
-                emptyTask.insert({key, taskEvent.taskIndex});
-            }
-
             if (taskEvent.eventType == TaskAndJobEventType::SUBMIT) {
                 taskEvents[key][taskEvent.taskIndex].clear();
             }
@@ -162,15 +158,6 @@ int main() {
         std::cout << "TASK WITH MISSING INFO: " << badTask.size() << std::endl;
 
         for (const auto &[key, taskIndex]: badTask) {
-            taskEvents[key].erase(taskIndex);
-            if (taskEvents[key].empty()) {
-                taskEvents.erase(key);
-            }
-        }
-
-        std::cout << "TASK WITH CPU OR MEM == 0 : " << emptyTask.size() << std::endl;
-
-        for (const auto &[key, taskIndex]: emptyTask) {
             taskEvents[key].erase(taskIndex);
             if (taskEvents[key].empty()) {
                 taskEvents.erase(key);

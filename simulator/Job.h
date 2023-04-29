@@ -16,8 +16,8 @@ public:
     ~Job();
 
 public:
-    uint64_t jobTime_{0};
-    uint64_t jobID_{0};
-    std::string user_;
     ITaskManager* taskManager_{nullptr};
+
+    uint64_t jobTime_{0};
+    unsigned jobID_{0};
 };
