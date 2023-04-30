@@ -1,5 +1,5 @@
 CPP_JOB_MANAGER = ../job_manager/FactoryJobManager.cpp
-CPP_TASK_MANAGER = ../task_manager/FactoryTaskManager.cpp ../task_manager/InJobOrderB.cpp
+CPP_TASK_MANAGER = ../task_manager/FactoryTaskManager.cpp ../task_manager/RoundRobinNB.cpp
 CPP_PLACING_STRATEGY = ../placing_strategy/FactoryPlacingStrategy.cpp
 CPP_PARTITION_POLICY = ../placing_strategy/partition_policy/NoPartition.cpp ../placing_strategy/partition_policy/UsedFirst.cpp ../placing_strategy/partition_policy/UnusedFirst.cpp
 CPP_BASIC = ../Cluster.cpp ../Job.cpp ../MachineManager.cpp ../SchedulerImpl.cpp ../Statistics.cpp ../Experiment.cpp

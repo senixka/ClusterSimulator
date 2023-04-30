@@ -27,17 +27,18 @@ void SchedulerImpl::Schedule(Cluster& cluster) {
         cluster.machineManager_->FindSuitableMachines(*task, machines);
 
         if (machines.empty()) {
-            job->taskManager_->ReturnTask(task);
+            job->taskManager_->ReturnTask(task, false);
             cluster.jobManager_->ReturnJob(job, false);
         } else {
             task->machineIndex_ = placingStrategy_->BestMachineIndex(machines, task);
             task->eventTime_ = BoundedSum(cluster.time_, task->estimate_);
             task->clusterEventType_ = ClusterEventType::TASK_FINISHED;
 
+            job->taskManager_->ReturnTask(task, true);
+            cluster.jobManager_->ReturnJob(job, true);
+
             cluster.PlaceTask(*task);
             cluster.PutEvent(task);
-
-            cluster.jobManager_->ReturnJob(job, true);
         }
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AsSortedListB.h"
+#include "AsSortedListNB.h"
 #include "../Task.h"
 
 
@@ -17,6 +17,6 @@ struct MinTaskTimePtrCmp {
 
 namespace task_manager {
 
-using MinTaskTimeB = class detail::AsSortedListB<detail::MinTaskTimePtrCmp>;
+using MinTaskTimeNB = class detail::AsSortedListNB<detail::MinTaskTimePtrCmp>;
 
 } // namespace task_manager

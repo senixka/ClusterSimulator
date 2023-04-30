@@ -9,28 +9,33 @@
 namespace task_manager::detail {
 
 template<class ComparePolicy>
-class AsSortedListB : public ITaskManager {
+class AsSortedListNB : public ITaskManager {
 public:
     void PutTask(Task* task) override {
         tasks_.push_back(task);
-
         sumTaskEstimateTime_ += task->estimate_;
     }
 
     Task* GetTask() override {
-        ASSERT(!tasks_.empty());
-
-        Task* task = tasks_.front();
-        tasks_.pop_front();
-
-        sumTaskEstimateTime_ -= task->estimate_;
-        return task;
+        ASSERT(it_ != tasks_.end());
+        return *it_;
     }
 
-    void ReturnTask(Task* task) override {
-        tasks_.push_front(task);
+    void ReturnTask(Task* task, bool isScheduled) override {
+        if (isScheduled) {
+            it_ = tasks_.erase(it_);
+            sumTaskEstimateTime_ -= task->estimate_;
+        } else {
+            ++it_;
+        }
 
-        sumTaskEstimateTime_ += task->estimate_;
+        if (it_ == tasks_.end()) {
+            it_ = tasks_.begin();
+        }
+    }
+
+    void NewSchedulingCycle() override {
+        it_ = tasks_.begin();
     }
 
     size_t TaskCount() override {
@@ -39,6 +44,7 @@ public:
 
     void Sort() override {
         tasks_.sort(ComparePolicy::Compare);
+        it_ = tasks_.begin();
     }
 
     unsigned __int128 SumTaskEstimateTime() override {
@@ -58,7 +64,7 @@ public:
         return maxTaskEstimateTime;
     }
 
-    ~AsSortedListB() {
+    ~AsSortedListNB() {
         for (Task* task : tasks_) {
             delete task;
         }
@@ -66,6 +72,7 @@ public:
 
 private:
     std::list<Task*> tasks_;
+    typename std::list<Task*>::iterator it_;
     unsigned __int128 sumTaskEstimateTime_{0};
 };
 

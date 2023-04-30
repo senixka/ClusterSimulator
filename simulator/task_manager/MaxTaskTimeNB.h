@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AsSortedListB.h"
+#include "AsSortedListNB.h"
 #include "../Task.h"
 
 
@@ -17,6 +17,6 @@ struct MaxTaskTimePtrCmp {
 
 namespace task_manager {
 
-using MaxTaskTimeB = class detail::AsSortedListB<detail::MaxTaskTimePtrCmp>;
+using MaxTaskTimeNB = class detail::AsSortedListNB<detail::MaxTaskTimePtrCmp>;
 
 } // namespace task_manager

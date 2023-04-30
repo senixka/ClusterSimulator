@@ -9,7 +9,9 @@ struct ITaskManager {
     virtual void PutTask(Task* task) = 0;
 
     virtual Task* GetTask() = 0;
-    virtual void ReturnTask(Task* task) = 0;
+    virtual void ReturnTask(Task* task, bool isScheduled) = 0;
+
+    virtual void NewSchedulingCycle() = 0;
 
     virtual size_t TaskCount() = 0;
     virtual void Sort() = 0;

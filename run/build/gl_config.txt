@@ -4,31 +4,79 @@
 
 CARTESIAN
 1 ../../simulator/input/job_and_task.txt jat
-2 ../../simulator/input/machine_orig.txt mo ../../simulator/input/machine_orig.txt mg
+1 ../../simulator/input/machine_orig.txt mo
 ../../simulator/output/
 
-8
-RoundRobinNB
-RoundRobinB
+24
+RoundRobinNB_1
+RoundRobinNB_10
+RoundRobinNB_100
 
-MinJobSubmitTimeNB
-MaxJobSubmitTimeNB
+RoundRobinB_1
+RoundRobinB_10
+RoundRobinB_100
 
-MinSumTaskEstimateNB
-MaxSumTaskEstimateNB
+MinJobSubmitTimeNB_1
+MinJobSubmitTimeNB_10
+MinJobSubmitTimeNB_100
 
-MinTaskCountNB
-MaxTaskCountNB
+MaxJobSubmitTimeNB_1
+MaxJobSubmitTimeNB_10
+MaxJobSubmitTimeNB_100
+
+MinSumTaskEstimateNB_1
+MinSumTaskEstimateNB_10
+MinSumTaskEstimateNB_100
+
+MaxSumTaskEstimateNB_1
+MaxSumTaskEstimateNB_10
+MaxSumTaskEstimateNB_100
+
+MinTaskCountNB_1
+MinTaskCountNB_10
+MinTaskCountNB_100
+
+MaxTaskCountNB_1
+MaxTaskCountNB_10
+MaxTaskCountNB_100
 
 3
-InJobOrderB
-MinTaskTimeB
-MaxTaskTimeB
+RoundRobinNB
+MinTaskTimeNB
+MaxTaskTimeNB
 
-21
+39
+Tetris_NoPartition
+Tetris_UsedFirst
+Tetris_UnusedFirst
+
 Random_NoPartition
 Random_UsedFirst
 Random_UnusedFirst
+
+MinCPU_NoPartition
+MinCPU_UsedFirst
+MinCPU_UnusedFirst
+
+MaxCPU_NoPartition
+MaxCPU_UsedFirst
+MaxCPU_UnusedFirst
+
+MinSum_NoPartition
+MinSum_UsedFirst
+MinSum_UnusedFirst
+
+MaxSum_NoPartition
+MaxSum_UsedFirst
+MaxSum_UnusedFirst
+
+MinMemory_NoPartition
+MinMemory_UsedFirst
+MinMemory_UnusedFirst
+
+MaxMemory_NoPartition
+MaxMemory_UsedFirst
+MaxMemory_UnusedFirst
 
 MinVolume_NoPartition
 MinVolume_UsedFirst
@@ -49,7 +97,3 @@ MaxTaskCount_UnusedFirst
 MinMachineIndex_NoPartition
 MinMachineIndex_UsedFirst
 MinMachineIndex_UnusedFirst
-
-Tetris_NoPartition
-Tetris_UsedFirst
-Tetris_UnusedFirst

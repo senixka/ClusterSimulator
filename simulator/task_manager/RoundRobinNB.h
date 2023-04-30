@@ -8,12 +8,14 @@
 
 namespace task_manager {
 
-class InJobOrderB : public ITaskManager {
+class RoundRobinNB : public ITaskManager {
 public:
     void PutTask(Task* task) override;
 
     Task* GetTask() override;
-    void ReturnTask(Task* task) override;
+    void ReturnTask(Task* task, bool isScheduled) override;
+
+    void NewSchedulingCycle() override;
 
     size_t TaskCount() override;
     void Sort() override;
@@ -21,10 +23,11 @@ public:
     unsigned __int128 SumTaskEstimateTime() override;
     uint64_t MaxTaskEstimateTime() override;
 
-    ~InJobOrderB();
+    ~RoundRobinNB();
 
 private:
     std::list<Task*> tasks_;
+    typename std::list<Task*>::iterator it_;
     unsigned __int128 sumTaskEstimateTime_{0};
 };
 
