@@ -1,9 +1,10 @@
+import multiprocessing
 import os
 import matplotlib.pyplot as plt
 import matplotlib
 import decimal
 from decimal import Decimal
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
 
 
 matplotlib.use('Agg')
@@ -155,23 +156,26 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
 
 
 def Worker(filePath: str, subDir: str, removeInput: int):
-    print('Process path:', filePath)
+    print(f'Process path: {filePath}')
 
     prefix = filePath[:-len('.txt')].split('/')[-1]
 
+    print(f'Metrics from file: {filePath}')
     metrics = GetMetricsFromFile(filePath)
+
+    print(f'Build stats: {filePath}')
     BuildStats(metrics, './stats_of_output/' + subDir + '/' + prefix)
+
+    print(f'Build plots: {filePath}')
     BuildPlots(metrics, './plots_of_output/' + subDir + '/' + prefix)
 
     if removeInput == 1:
         os.remove(filePath)
 
-    print('End of process:', filePath)
+    print(f'End of process: {filePath}')
 
 
 def main():
-    executor = ThreadPoolExecutor(max_workers=int(input('Enter max thread count: ').strip()))
-
     subDir = input('Enter output sub dir name: ').strip()
     assert(len(subDir) > 0)
 
@@ -180,12 +184,15 @@ def main():
 
     removeInput = int(input('Enter 1 to remove input after use, 0 otherwise: '))
 
+    pool = multiprocessing.Pool(int(input('Enter max thread count: ').strip()))
+
     for filePath in GetFiles():
         if not filePath.endswith('.txt'):
             continue
-        executor.submit(Worker, filePath, subDir, removeInput)
+        pool.apply_async(Worker, [filePath, subDir, removeInput])
 
-    executor.shutdown(wait=True, cancel_futures=False)
+    pool.close()
+    pool.join()
 
 
 if __name__ == '__main__':
