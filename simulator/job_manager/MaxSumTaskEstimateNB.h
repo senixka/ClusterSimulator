@@ -17,6 +17,8 @@ struct MaxSumTaskEstimatePtrCmp {
 
 namespace job_manager {
 
-using MaxSumTaskEstimateNB = class detail::AsSortedListNB<detail::MaxSumTaskEstimatePtrCmp>;
+using MaxSumTaskEstimateNB_1 = class detail::AsSortedListNB<detail::MaxSumTaskEstimatePtrCmp, 1u>;
+using MaxSumTaskEstimateNB_10 = class detail::AsSortedListNB<detail::MaxSumTaskEstimatePtrCmp, 10u>;
+using MaxSumTaskEstimateNB_100 = class detail::AsSortedListNB<detail::MaxSumTaskEstimatePtrCmp, 100u>;
 
 } // namespace job_manager

@@ -17,6 +17,8 @@ struct MaxJobSubmitTimePtrCmp {
 
 namespace job_manager {
 
-using MaxJobSubmitTimeNB = class detail::AsSortedListNB<detail::MaxJobSubmitTimePtrCmp>;
+using MaxJobSubmitTimeNB_1 = class detail::AsSortedListNB<detail::MaxJobSubmitTimePtrCmp, 1u>;
+using MaxJobSubmitTimeNB_10 = class detail::AsSortedListNB<detail::MaxJobSubmitTimePtrCmp, 10u>;
+using MaxJobSubmitTimeNB_100 = class detail::AsSortedListNB<detail::MaxJobSubmitTimePtrCmp, 100u>;
 
 } // namespace job_manager

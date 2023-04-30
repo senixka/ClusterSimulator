@@ -1,10 +1,10 @@
-CPP_JOB_MANAGER = ../job_manager/FactoryJobManager.cpp ../job_manager/RoundRobinB.cpp ../job_manager/RoundRobinNB.cpp
+CPP_JOB_MANAGER = ../job_manager/FactoryJobManager.cpp
 CPP_TASK_MANAGER = ../task_manager/FactoryTaskManager.cpp ../task_manager/InJobOrderB.cpp
 CPP_PLACING_STRATEGY = ../placing_strategy/FactoryPlacingStrategy.cpp
-CPP_PRIORITY_REORDER = ../placing_strategy/partition_policy/NoPartition.cpp ../placing_strategy/partition_policy/UsedFirst.cpp ../placing_strategy/partition_policy/UnusedFirst.cpp
+CPP_PARTITION_POLICY = ../placing_strategy/partition_policy/NoPartition.cpp ../placing_strategy/partition_policy/UsedFirst.cpp ../placing_strategy/partition_policy/UnusedFirst.cpp
 CPP_BASIC = ../Cluster.cpp ../Job.cpp ../MachineManager.cpp ../SchedulerImpl.cpp ../Statistics.cpp ../Experiment.cpp
 
-CPP_FILES = ../main.cpp $(CPP_BASIC) $(CPP_PLACING_STRATEGY) $(CPP_TASK_MANAGER) $(CPP_JOB_MANAGER) $(CPP_PRIORITY_REORDER)
+CPP_FILES = ../main.cpp $(CPP_BASIC) $(CPP_PLACING_STRATEGY) $(CPP_TASK_MANAGER) $(CPP_JOB_MANAGER) $(CPP_PARTITION_POLICY)
 
 BUILTIN_DEBUG_OFF = -DNDEBUG -DNS_BLOCK_ASSERTIONS
 DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS

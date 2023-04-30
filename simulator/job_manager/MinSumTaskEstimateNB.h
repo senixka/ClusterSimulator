@@ -17,6 +17,8 @@ struct MinSumTaskEstimatePtrCmp {
 
 namespace job_manager {
 
-using MinSumTaskEstimateNB = class detail::AsSortedListNB<detail::MinSumTaskEstimatePtrCmp>;
+using MinSumTaskEstimateNB_1 = class detail::AsSortedListNB<detail::MinSumTaskEstimatePtrCmp, 1u>;
+using MinSumTaskEstimateNB_10 = class detail::AsSortedListNB<detail::MinSumTaskEstimatePtrCmp, 10u>;
+using MinSumTaskEstimateNB_100 = class detail::AsSortedListNB<detail::MinSumTaskEstimatePtrCmp, 100u>;
 
 } // namespace job_manager

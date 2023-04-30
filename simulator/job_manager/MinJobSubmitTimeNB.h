@@ -17,6 +17,8 @@ struct MinJobSubmitTimePtrCmp {
 
 namespace job_manager {
 
-using MinJobSubmitTimeNB = class detail::AsSortedListNB<detail::MinJobSubmitTimePtrCmp>;
+using MinJobSubmitTimeNB_1 = class detail::AsSortedListNB<detail::MinJobSubmitTimePtrCmp, 1u>;
+using MinJobSubmitTimeNB_10 = class detail::AsSortedListNB<detail::MinJobSubmitTimePtrCmp, 10u>;
+using MinJobSubmitTimeNB_100 = class detail::AsSortedListNB<detail::MinJobSubmitTimePtrCmp, 100u>;
 
 } // namespace job_manager

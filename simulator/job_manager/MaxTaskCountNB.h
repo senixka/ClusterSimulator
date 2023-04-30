@@ -17,6 +17,8 @@ struct MaxTaskCountPtrCmp {
 
 namespace job_manager {
 
-using MaxTaskCountNB = class detail::AsSortedListNB<detail::MaxTaskCountPtrCmp>;
+using MaxTaskCountNB_1 = class detail::AsSortedListNB<detail::MaxTaskCountPtrCmp, 1u>;
+using MaxTaskCountNB_10 = class detail::AsSortedListNB<detail::MaxTaskCountPtrCmp, 10u>;
+using MaxTaskCountNB_100 = class detail::AsSortedListNB<detail::MaxTaskCountPtrCmp, 100u>;
 
 } // namespace job_manager

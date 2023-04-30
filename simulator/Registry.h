@@ -5,31 +5,71 @@
 
 
 enum class JobManagerType {
-    RoundRobinNB,
-    RoundRobinB,
+    RoundRobinNB_1,
+    RoundRobinNB_10,
+    RoundRobinNB_100,
 
-    MinJobSubmitTimeNB,
-    MaxJobSubmitTimeNB,
+    RoundRobinB_1,
+    RoundRobinB_10,
+    RoundRobinB_100,
 
-    MinSumTaskEstimateNB,
-    MaxSumTaskEstimateNB,
+    MinJobSubmitTimeNB_1,
+    MinJobSubmitTimeNB_10,
+    MinJobSubmitTimeNB_100,
 
-    MinTaskCountNB,
-    MaxTaskCountNB,
+    MaxJobSubmitTimeNB_1,
+    MaxJobSubmitTimeNB_10,
+    MaxJobSubmitTimeNB_100,
+
+    MinSumTaskEstimateNB_1,
+    MinSumTaskEstimateNB_10,
+    MinSumTaskEstimateNB_100,
+
+    MaxSumTaskEstimateNB_1,
+    MaxSumTaskEstimateNB_10,
+    MaxSumTaskEstimateNB_100,
+
+    MinTaskCountNB_1,
+    MinTaskCountNB_10,
+    MinTaskCountNB_100,
+
+    MaxTaskCountNB_1,
+    MaxTaskCountNB_10,
+    MaxTaskCountNB_100,
 };
 
 static const std::unordered_map<std::string, JobManagerType> nameToJobManagerType_{
-        {"RoundRobinB", JobManagerType::RoundRobinB},
-        {"RoundRobinNB", JobManagerType::RoundRobinNB},
+        {"RoundRobinB_1", JobManagerType::RoundRobinB_1},
+        {"RoundRobinB_10", JobManagerType::RoundRobinB_10},
+        {"RoundRobinB_100", JobManagerType::RoundRobinB_100},
 
-        {"MinJobSubmitTimeNB", JobManagerType::MinJobSubmitTimeNB},
-        {"MaxJobSubmitTimeNB", JobManagerType::MaxJobSubmitTimeNB},
+        {"RoundRobinNB_1", JobManagerType::RoundRobinNB_1},
+        {"RoundRobinNB_10", JobManagerType::RoundRobinNB_10},
+        {"RoundRobinNB_100", JobManagerType::RoundRobinNB_100},
 
-        {"MinSumTaskEstimateNB", JobManagerType::MinSumTaskEstimateNB},
-        {"MaxSumTaskEstimateNB", JobManagerType::MaxSumTaskEstimateNB},
+        {"MinJobSubmitTimeNB_1", JobManagerType::MinJobSubmitTimeNB_1},
+        {"MinJobSubmitTimeNB_10", JobManagerType::MinJobSubmitTimeNB_10},
+        {"MinJobSubmitTimeNB_100", JobManagerType::MinJobSubmitTimeNB_100},
 
-        {"MinTaskCountNB", JobManagerType::MinTaskCountNB},
-        {"MaxTaskCountNB", JobManagerType::MaxTaskCountNB},
+        {"MaxJobSubmitTimeNB_1", JobManagerType::MaxJobSubmitTimeNB_1},
+        {"MaxJobSubmitTimeNB_10", JobManagerType::MaxJobSubmitTimeNB_10},
+        {"MaxJobSubmitTimeNB_100", JobManagerType::MaxJobSubmitTimeNB_100},
+
+        {"MinSumTaskEstimateNB_1", JobManagerType::MinSumTaskEstimateNB_1},
+        {"MinSumTaskEstimateNB_10", JobManagerType::MinSumTaskEstimateNB_10},
+        {"MinSumTaskEstimateNB_100", JobManagerType::MinSumTaskEstimateNB_100},
+
+        {"MaxSumTaskEstimateNB_1", JobManagerType::MaxSumTaskEstimateNB_1},
+        {"MaxSumTaskEstimateNB_10", JobManagerType::MaxSumTaskEstimateNB_10},
+        {"MaxSumTaskEstimateNB_100", JobManagerType::MaxSumTaskEstimateNB_100},
+
+        {"MinTaskCountNB_1", JobManagerType::MinTaskCountNB_1},
+        {"MinTaskCountNB_10", JobManagerType::MinTaskCountNB_10},
+        {"MinTaskCountNB_100", JobManagerType::MinTaskCountNB_100},
+
+        {"MaxTaskCountNB_1", JobManagerType::MaxTaskCountNB_1},
+        {"MaxTaskCountNB_10", JobManagerType::MaxTaskCountNB_10},
+        {"MaxTaskCountNB_100", JobManagerType::MaxTaskCountNB_100},
 };
 
 

@@ -17,6 +17,8 @@ struct MinTaskCountPtrCmp {
 
 namespace job_manager {
 
-using MinTaskCountNB = class detail::AsSortedListNB<detail::MinTaskCountPtrCmp>;
+using MinTaskCountNB_1 = class detail::AsSortedListNB<detail::MinTaskCountPtrCmp, 1u>;
+using MinTaskCountNB_10 = class detail::AsSortedListNB<detail::MinTaskCountPtrCmp, 10u>;
+using MinTaskCountNB_100 = class detail::AsSortedListNB<detail::MinTaskCountPtrCmp, 100u>;
 
 } // namespace job_manager

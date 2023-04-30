@@ -25,7 +25,7 @@ Cluster::Cluster(const std::string& inputFilePath, TaskManagerType taskManagerTy
     fin >> nJob;
 
     // To test speed up only
-    nJob /= 25;
+    // nJob /= 25;
 
     for (size_t i = 0; i < nJob; ++i) {
         Job* job = new Job(taskManagerType, fin);

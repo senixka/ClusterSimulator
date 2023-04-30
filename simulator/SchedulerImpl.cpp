@@ -17,12 +17,10 @@ void SchedulerImpl::OnJobSubmitted(Cluster& cluster) {
 
 void SchedulerImpl::Schedule(Cluster& cluster) {
     std::vector<const Machine*> machines;
-    std::unordered_set<size_t> uselessJobID;
 
     cluster.jobManager_->NewSchedulingCycle();
 
-    const size_t jobCount = cluster.jobManager_->JobCount();
-    for (size_t i = 0; i < jobCount; ++i) {
+    while (cluster.jobManager_->IsThereSomethingElse()) {
         Job *job = cluster.jobManager_->GetJob();
         Task *task = job->taskManager_->GetTask();
 
