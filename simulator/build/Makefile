@@ -10,7 +10,7 @@ BUILTIN_DEBUG_OFF = -DNDEBUG -DNS_BLOCK_ASSERTIONS
 DISABLE_NOTES = -DBOOST_ALLOW_DEPRECATED_HEADERS
 SANITIZE = -fsanitize=address,undefined
 OUT_NAME = -o simulator.out
-WARN = -Wall -Wextra -Wconversion
+WARN = -Wall -Wextra -Wconversion -Werror
 
 Release:
 	g++-11 -march=native -mtune=native -O3 $(WARN) $(DISABLE_NOTES) $(BUILTIN_DEBUG_OFF) $(CPP_FILES) $(OUT_NAME)
