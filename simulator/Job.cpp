@@ -1,21 +1,18 @@
 #include "Job.h"
 
 
-Job::Job(TaskManagerType taskManagerType, std::istream& in)
-    : taskManager_(FactoryTaskManager::Create(taskManagerType)) {
-    in >> jobID_ >> jobTime_;
+Job::Job(TaskManagerType taskManagerType, std::istream& in, unsigned jobID)
+    : taskManager_(FactoryTaskManager::Create(taskManagerType)), jobID_(jobID) {
+    size_t kEntries;
+    in >> jobTime_ >> kEntries;
 
-    size_t taskN;
-    in >> taskN;
+    for (size_t i = 0; i < kEntries; ++i) {
+        size_t kTask;
+        uint64_t estimate;
+        unsigned cpuRequest, memoryRequest;
 
-    uint64_t estimate;
-    unsigned taskIndex, cpuRequest, memoryRequest;
-
-    for (size_t i = 0; i < taskN; ++i) {
-        in >> taskIndex >> estimate >> cpuRequest >> memoryRequest;
-
-        Task* task = new Task(estimate, cpuRequest, memoryRequest, jobID_, taskIndex);
-        taskManager_->PutTask(task);
+        in >> kTask >> estimate >> cpuRequest >> memoryRequest;
+        taskManager_->NewTasks(kTask, estimate, cpuRequest, memoryRequest, jobID_);
     }
 
     taskManager_->Sort();

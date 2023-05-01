@@ -4,18 +4,21 @@
 #include "../Task.h"
 
 #include <list>
+#include <vector>
 
 
 namespace task_manager {
 
 class RoundRobinNB : public ITaskManager {
 public:
-    void PutTask(Task* task) override;
+    void NewTasks(size_t kTask,
+                  uint64_t estimate, unsigned cpuRequest, unsigned memoryRequest, unsigned jobID) override;
 
     Task* GetTask() override;
     void ReturnTask(Task* task, bool isScheduled) override;
 
     void NewSchedulingCycle() override;
+    bool IsThereSomethingElse() override;
 
     size_t TaskCount() override;
     void Sort() override;
@@ -26,8 +29,13 @@ public:
     ~RoundRobinNB();
 
 private:
-    std::list<Task*> tasks_;
-    typename std::list<Task*>::iterator it_;
+    std::list<std::vector<Task*>> tasks_;
+    typename decltype(tasks_)::iterator it_;
+
+    size_t currentIter_{0};
+    size_t currentSize_{0};
+
+    size_t taskCount_{0};
     unsigned __int128 sumTaskEstimateTime_{0};
 };
 

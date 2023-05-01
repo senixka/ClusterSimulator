@@ -7,10 +7,8 @@
 
 class Task : public ClusterEvent {
 public:
-    explicit Task(uint64_t estimate, unsigned cpuRequest, unsigned memoryRequest,
-                  unsigned jobID, unsigned taskIndex)
-             : estimate_(estimate), cpuRequest_(cpuRequest), memoryRequest_(memoryRequest),
-               jobID_(jobID), taskIndex_(taskIndex) {
+    explicit Task(uint64_t estimate, unsigned cpuRequest, unsigned memoryRequest, unsigned jobID)
+             : estimate_(estimate), cpuRequest_(cpuRequest), memoryRequest_(memoryRequest), jobID_(jobID) {
         ASSERT(1 <= cpuRequest_);
         ASSERT(cpuRequest_ <= MACHINE_MAX_POSSIBLE_CPU);
 
@@ -23,6 +21,5 @@ public:
     const unsigned cpuRequest_{0};
     const unsigned memoryRequest_{0};
     const unsigned jobID_{0};
-    const unsigned taskIndex_{0};
     unsigned machineIndex_{UINT32_MAX};
 };

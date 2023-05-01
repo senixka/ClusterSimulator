@@ -12,12 +12,12 @@
 
 class Job : public ClusterEvent {
 public:
-    explicit Job(TaskManagerType taskManagerType, std::istream& in);
+    explicit Job(TaskManagerType taskManagerType, std::istream& in, unsigned jobID);
     ~Job();
 
 public:
     ITaskManager* taskManager_{nullptr};
 
     uint64_t jobTime_{0};
-    unsigned jobID_{0};
+    const unsigned jobID_{0};
 };

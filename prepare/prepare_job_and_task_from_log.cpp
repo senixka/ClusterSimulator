@@ -12,19 +12,13 @@
 #include <unordered_map>
 #include <unordered_set>
 
-
-using JobID_t = std::pair<uint64_t, std::string>;
-struct JobID_t_hash {
-    std::size_t operator() (const JobID_t & p) const {
-        return p.first;
-    }
-};
+// Convert origin_time (which is in microseconds) to new_time = origin_time / TIME_SCALE
+static const uint64_t TIME_SCALE{1'000'000};
 
 
-class LightTask {
-public:
+struct LightTask {
     uint64_t time;
-    uint64_t estimate;
+    uint64_t estimate; // Microseconds
     unsigned cpuRequest{0};
     unsigned memoryRequest{0};
     unsigned eventType;
@@ -47,7 +41,33 @@ public:
 };
 
 
-void JobPrepareAndDump(std::ostream& out, uint64_t outJobID, uint64_t jobTime, std::map<unsigned, std::list<LightTask>>& value) {
+using JobID_t = std::pair<uint64_t, std::string>;
+//                          ^-- jobID      ^-- user
+struct JobID_t_hash {
+    std::size_t operator() (const JobID_t & p) const {
+        return p.first;
+    }
+};
+
+
+using TaskSpec_t = std::tuple<uint64_t, unsigned, unsigned>;
+//                             ^- estimate  ^- cpu   ^-memory
+
+struct OutJob {
+    JobID_t jobID;
+    std::map<TaskSpec_t, size_t> tasks;
+
+    OutJob() = default;
+
+    OutJob(const OutJob&) = default;
+    OutJob& operator=(const OutJob&) = default;
+
+    OutJob(OutJob&&) = delete;
+    OutJob& operator=(OutJob&&) = delete;
+};
+
+
+void JobPrepare(OutJob& job, std::map<unsigned, std::list<LightTask>>& value, size_t& veryFastTaskCounter) {
     for (auto& [taskIndex, mutation] : value) {
         if (mutation.back().eventType <= TaskAndJobEventType::SCHEDULE) {
             mutation.back().estimate = UINT64_MAX;
@@ -66,19 +86,36 @@ void JobPrepareAndDump(std::ostream& out, uint64_t outJobID, uint64_t jobTime, s
         assert(mutation.back().memoryRequest > 0);
         assert(mutation.back().memoryRequest <= MACHINE_MAX_POSSIBLE_MEMORY);
     }
-
     assert(!value.empty());
 
-    out << outJobID << ' ' << jobTime << '\n';
-    out << value.size() << '\n';
+    for (auto& [taskIndex, mutation] : value) {
+        LightTask& task = mutation.front();
+        TaskSpec_t key;
 
-    uint64_t outTaskIndex{0};
-    for (const auto& [taskIndex, events] : value) {
-        const auto& task = events.front();
-        out << ++outTaskIndex << ' ' << task.estimate << ' ' << task.cpuRequest << ' ' << task.memoryRequest << '\n';
+        if (task.estimate != UINT64_MAX) {
+            key = {task.estimate / TIME_SCALE, task.cpuRequest, task.memoryRequest};
+            //                   ^-- convert Micro- to Milli- seconds
+        } else {
+            key = {UINT64_MAX, task.cpuRequest, task.memoryRequest};
+        }
+
+        if (0 < std::get<0>(key)) {
+            ++job.tasks[key];
+        } else {
+            ++veryFastTaskCounter;
+        }
+    }
+}
+
+void JobDump(std::ofstream& out, OutJob& job, uint64_t jobTime) {
+    out << jobTime << ' ' << job.tasks.size() << '\n';
+
+    for (const auto& [spec, count] : job.tasks) {
+        out << count << ' ' << std::get<0>(spec) << ' ' << std::get<1>(spec) << ' ' << std::get<2>(spec) << '\n';
     }
     out << '\n';
 }
+
 
 int main() {
     const std::string outputFilePath = "../../simulator/input/job_and_task.txt";
@@ -87,6 +124,7 @@ int main() {
     LogReader log(inputLogDir);
 
     std::unordered_map<JobID_t, uint64_t, JobID_t_hash> jobSubmitTime;
+    //                             ^-- Microseconds
     {
         const JobID_t badJobKey{6253771429, "01B/AOjE02qBWt8YtZ1JWy7IG5LIf1FU6YSPUvJmcgA="}; // Reuse of JobID
         std::unordered_set<JobID_t, JobID_t_hash> jobWithMissingInfo;
@@ -185,14 +223,34 @@ int main() {
 
 
     {
+        size_t veryFastTaskCounter{0};
+        std::list<OutJob> jobs;
+
+        for (auto& [key, value]: taskEvents) {
+            OutJob job;
+            job.jobID = key;
+            JobPrepare(job, value, veryFastTaskCounter);
+
+            if (job.tasks.size() > 0) {
+                jobs.push_back(job);
+            }
+        }
+
+        std::cout << "VERY FAST TASK COUNTER: " << veryFastTaskCounter << std::endl;
+
         std::ofstream fout;
         fout.open(outputFilePath);
 
-        fout << taskEvents.size() << "\n\n";
+        fout << jobs.size() << "\n\n";
 
-        uint64_t outJobID{0};
-        for (auto &[key, value] : taskEvents) {
-            JobPrepareAndDump(fout, ++outJobID, jobSubmitTime[key], value);
+        uint64_t lastJobTime{0};
+        for (auto& outJob : jobs) {
+            assert(jobSubmitTime[outJob.jobID] != UINT64_MAX);
+
+            assert(lastJobTime <= jobSubmitTime[outJob.jobID]);
+            lastJobTime = jobSubmitTime[outJob.jobID];
+
+            JobDump(fout, outJob, jobSubmitTime[outJob.jobID] / TIME_SCALE);
         }
 
         fout.close();

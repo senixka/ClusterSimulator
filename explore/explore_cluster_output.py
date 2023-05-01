@@ -68,6 +68,16 @@ def BuildStats(metrics: dict, outputPathPrefix: str):
     metrics['AvgCpuUtilization'] = Decimal(sumCpuNumerator) / Decimal(eventCnt * metrics['TotalAvailableCPU'])
     metrics['AvgMemoryUtilization'] = Decimal(sumMemoryNumerator) / Decimal(eventCnt * metrics['TotalAvailableMemory'])
 
+    # ////////////////////// Average Pending, Working //////////////
+    sumPending, sumWorking, eventCnt = 0, 0, 0
+    for pending, working in zip(metrics['PendingTask'], metrics['WorkingTask']):
+        sumPending += pending
+        sumWorking += working
+        eventCnt += 1
+
+    metrics['AvgPendingTask'] = Decimal(sumPending) / Decimal(eventCnt)
+    metrics['AvgWorkingTask'] = Decimal(sumWorking) / Decimal(eventCnt)
+
     # ////////////////////// Job's ANP ////////////////////////
     metrics['JobANP'] = []
     for jobStartTime, jobEndTime, jobIdleTime in zip(metrics['JobStartTime'], metrics['JobEndTime'],
@@ -105,7 +115,8 @@ def BuildStats(metrics: dict, outputPathPrefix: str):
 
     # ////////////////////// Write out /////////////////////
     with open(outputPathPrefix + '_stat.txt', 'w') as fout:
-        for name in ['AvgCpuUtilization', 'AvgMemoryUtilization', 'SNP', 'Unfairness', 'SlowdownNorm2']:
+        for name in ['AvgCpuUtilization', 'AvgMemoryUtilization', 'AvgPendingTask', 'AvgWorkingTask',
+                     'SNP', 'Unfairness', 'SlowdownNorm2']:
             fout.write(name + '\n')
             fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
@@ -126,7 +137,10 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
     plt.ylabel('Task count')
 
     plt.plot(mTimes, metrics['WorkingTask'], label='Working task')
+    plt.plot(mTimes[0], metrics['PendingTask'][0], label='AvgWorkingTask: ' + str(metrics['AvgWorkingTask'])[:OUT_PREC])
     plt.plot(mTimes, metrics['PendingTask'], label='Pending task')
+    plt.plot(mTimes[0], metrics['PendingTask'][0], label='AvgPendingTask: ' + str(metrics['AvgPendingTask'])[:OUT_PREC])
+
     plt.plot(mTimes[0], metrics['PendingTask'][0], label='SlowdownNorm2: ' + str(metrics['SlowdownNorm2'])[:OUT_PREC])
     plt.plot(mTimes[0], metrics['PendingTask'][0], label='Unfairness: ' + str(metrics['Unfairness'])[:OUT_PREC])
     plt.plot(mTimes[0], metrics['PendingTask'][0], label='SNP: ' + str(metrics['SNP'])[:OUT_PREC])

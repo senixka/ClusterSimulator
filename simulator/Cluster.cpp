@@ -23,12 +23,13 @@ Cluster::Cluster(const std::string& inputFilePath, TaskManagerType taskManagerTy
 
     size_t nJob;
     fin >> nJob;
+    ASSERT(nJob < UINT32_MAX);
 
     // To test speed up only
     // nJob /= 25;
 
     for (size_t i = 0; i < nJob; ++i) {
-        Job* job = new Job(taskManagerType, fin);
+        Job* job = new Job(taskManagerType, fin, static_cast<unsigned>(i + 1));
         job->eventTime_ = job->jobTime_;
         job->clusterEventType_ = ClusterEventType::JOB_SUBMITTED;
 

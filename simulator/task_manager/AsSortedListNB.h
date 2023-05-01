@@ -4,33 +4,46 @@
 #include "../Macro.h"
 
 #include <list>
+#include <vector>
 
 
 namespace task_manager::detail {
 
+
 template<class ComparePolicy>
 class AsSortedListNB : public ITaskManager {
 public:
-    void PutTask(Task* task) override {
-        tasks_.push_back(task);
-        sumTaskEstimateTime_ += task->estimate_;
+    void NewTasks(size_t kTask,
+                  uint64_t estimate, unsigned cpuRequest, unsigned memoryRequest, unsigned jobID) override {
+        ASSERT(kTask != 0);
+
+        taskCount_ += kTask;
+        tasks_.push_back(std::move(std::vector<Task*>(kTask)));
+
+        for (size_t i = 0; i < kTask; ++i) {
+            Task* task = new Task(estimate, cpuRequest, memoryRequest, jobID);
+
+            tasks_.back()[i] = task;
+            sumTaskEstimateTime_ += task->estimate_;
+        }
     }
 
     Task* GetTask() override {
-        ASSERT(it_ != tasks_.end());
-        return *it_;
+        ASSERT(it_ != tasks_.end() && !it_->empty());
+        return it_->back();
     }
 
     void ReturnTask(Task* task, bool isScheduled) override {
         if (isScheduled) {
-            it_ = tasks_.erase(it_);
+            it_->pop_back();
             sumTaskEstimateTime_ -= task->estimate_;
+            --taskCount_;
+
+            if (it_->empty()) {
+                it_ = tasks_.erase(it_);
+            }
         } else {
             ++it_;
-        }
-
-        if (it_ == tasks_.end()) {
-            it_ = tasks_.begin();
         }
     }
 
@@ -38,8 +51,12 @@ public:
         it_ = tasks_.begin();
     }
 
+    bool IsThereSomethingElse() override {
+        return it_ != tasks_.end();
+    }
+
     size_t TaskCount() override {
-        return tasks_.size();
+        return taskCount_;
     }
 
     void Sort() override {
@@ -54,25 +71,27 @@ public:
     uint64_t MaxTaskEstimateTime() override {
         ASSERT(!tasks_.empty());
 
-        uint64_t maxTaskEstimateTime = tasks_.front()->estimate_;
-        for (Task* task : tasks_) {
-            if (maxTaskEstimateTime < task->estimate_) {
-                maxTaskEstimateTime = task->estimate_;
-            }
+        uint64_t maxTaskEstimateTime{0};
+        for (const auto& entry : tasks_) {
+            maxTaskEstimateTime = std::max(maxTaskEstimateTime, entry.front()->estimate_);
         }
 
         return maxTaskEstimateTime;
     }
 
     ~AsSortedListNB() {
-        for (Task* task : tasks_) {
-            delete task;
+        for (const auto& entry : tasks_) {
+            for (Task* task : entry) {
+                delete task;
+            }
         }
     }
 
 private:
-    std::list<Task*> tasks_;
-    typename std::list<Task*>::iterator it_;
+    std::list<std::vector<Task*>> tasks_;
+    typename decltype(tasks_)::iterator it_;
+
+    size_t taskCount_{0};
     unsigned __int128 sumTaskEstimateTime_{0};
 };
 

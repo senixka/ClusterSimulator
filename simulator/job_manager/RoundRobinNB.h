@@ -13,25 +13,31 @@ class RoundRobinNB : public IJobManager {
 public:
     void PutJob(Job* job) override {
         jobs_.push_back(job);
+        it_ = jobs_.begin();
     }
 
     Job* GetJob() override {
         ASSERT(it_ != jobs_.end());
+        ASSERT((*it_)->taskManager_->IsThereSomethingElse());
+
         return *it_;
     }
 
     void ReturnJob(Job* job, bool /*isModified*/) override {
+        ++currentIter_;
+
         if (job->taskManager_->TaskCount() == 0) {
             it_ = jobs_.erase(it_);
+
+            ASSERT(currentSize_ >= currentIter_);
+            currentIter_ += (currentSize_ - currentIter_) / currentTaskCount_;
+
             delete job;
         } else {
             ++it_;
         }
 
-        if (it_ == jobs_.end()) {
-            it_ = jobs_.begin();
-            ++currentRound_;
-        }
+        FindNextIt();
     }
 
     size_t JobCount() override {
@@ -39,12 +45,20 @@ public:
     }
 
     void NewSchedulingCycle() override {
-        it_ = jobs_.begin();
-        currentRound_ = 0;
+        for (Job* job : jobs_) {
+            job->taskManager_->NewSchedulingCycle();
+        }
+
+        isNextIterValid = true;
+        currentIter_ = 0;
+        currentTaskCount_ = JobCount();
+        currentSize_ = JobCount() * kRounds;
+
+        FindNextIt();
     }
 
     bool IsThereSomethingElse() override {
-        return !jobs_.empty() && currentRound_ < kRounds;
+        return currentIter_ < currentSize_ && isNextIterValid;
     }
 
     ~RoundRobinNB() {
@@ -54,9 +68,38 @@ public:
     }
 
 private:
-    unsigned currentRound_{0};
+    void FindNextIt() {
+        const size_t size = jobs_.size();
+        if (size == 0) {
+            isNextIterValid = false;
+            return;
+        }
+
+        for (size_t i = 0; i < size; ++i) {
+            if (it_ == jobs_.end()) {
+                it_ = jobs_.begin();
+            }
+
+            if (!(*it_)->taskManager_->IsThereSomethingElse()) {
+                ++it_;
+                ++currentIter_;
+            } else {
+                return;
+            }
+        }
+
+        isNextIterValid = false;
+    }
+
+
+private:
+    size_t currentIter_{0};
+    size_t currentSize_{0};
+    size_t currentTaskCount_{0};
+    bool isNextIterValid{true};
+
     std::list<Job*> jobs_;
-    typename std::list<Job*>::iterator it_;
+    typename std::list<Job*>::iterator it_{jobs_.begin()};
 };
 
 } // namespace job_manager::detail

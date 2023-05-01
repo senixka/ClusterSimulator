@@ -7,14 +7,10 @@ CARTESIAN
 1 ../../simulator/input/machine_orig.txt mo
 ../../simulator/output/
 
-24
+21
 RoundRobinNB_1
 RoundRobinNB_10
 RoundRobinNB_100
-
-RoundRobinB_1
-RoundRobinB_10
-RoundRobinB_100
 
 MinJobSubmitTimeNB_1
 MinJobSubmitTimeNB_10

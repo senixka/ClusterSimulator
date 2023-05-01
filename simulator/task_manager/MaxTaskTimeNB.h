@@ -7,8 +7,8 @@
 namespace task_manager::detail {
 
 struct MaxTaskTimePtrCmp {
-    static bool Compare(const Task* lhs, const Task* rhs) {
-        return lhs->estimate_ > rhs->estimate_;
+    static bool Compare (const std::vector<Task*>& lhs, const std::vector<Task*>& rhs) {
+        return lhs.front()->estimate_ > rhs.front()->estimate_;
     }
 };
 

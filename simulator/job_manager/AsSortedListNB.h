@@ -25,8 +25,7 @@ public:
     void ReturnJob(Job* job, bool isModified) override {
         if (job->taskManager_->TaskCount() == 0) {
             it_ = jobs_.erase(it_);
-            isCurrentJobModified_ = false;
-            currentJobIter_ = 0;
+            PrepareCurrentJob();
 
             delete job;
             return;
@@ -34,7 +33,7 @@ public:
 
         isCurrentJobModified_ |= isModified;
 
-        if (++currentJobIter_ >= kIterPerJob) {
+        if (++currentJobIter_ >= kIterPerJob || !job->taskManager_->IsThereSomethingElse()) {
             if (isCurrentJobModified_) {
                 modified_.push_back(job);
                 it_ = jobs_.erase(it_);
@@ -42,8 +41,7 @@ public:
                 ++it_;
             }
 
-            isCurrentJobModified_ = false;
-            currentJobIter_ = 0;
+            PrepareCurrentJob();
         }
     }
 
@@ -55,8 +53,7 @@ public:
         MergeJobs();
 
         it_ = jobs_.begin();
-        isCurrentJobModified_ = false;
-        currentJobIter_ = 0;
+        PrepareCurrentJob();
     }
 
     bool IsThereSomethingElse() override {
@@ -74,6 +71,14 @@ public:
     }
 
 private:
+    void inline PrepareCurrentJob() {
+        if (it_ != jobs_.end()) {
+            (*it_)->taskManager_->NewSchedulingCycle();
+        }
+        isCurrentJobModified_ = false;
+        currentJobIter_ = 0;
+    }
+
     void MergeJobs() {
         const size_t beforeSize = JobCount();
 
