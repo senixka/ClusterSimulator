@@ -12,6 +12,7 @@ plt.ioff()
 
 OUT_PREC = 20
 
+
 def GetFiles():
     dirPath = '../simulator/output/'
     files = []
@@ -129,11 +130,11 @@ def BuildStats(metrics: dict, outputPathPrefix: str):
 def BuildPlots(metrics: dict, outputPathPrefix: str):
     mTimes = metrics['UtilizationMeasurementsTime']
 
-    ######################## Task Pending vs Working ######################
+    # ////////////////////// Task Pending vs Working //////////////////////
 
     plt.figure(figsize=(12, 5))
     plt.title(outputPathPrefix.split('/')[-1] + '_pending_working')
-    plt.xlabel('Time (in microseconds)')
+    plt.xlabel('Time (in seconds)')
     plt.ylabel('Task count')
 
     plt.plot(mTimes, metrics['WorkingTask'], label='Working task')
@@ -149,11 +150,11 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
     plt.savefig(outputPathPrefix + '_pending_working.png')
     plt.close()
 
-    ############################ Utilization ##############################
+    # ////////////////////// Utilization //////////////////////
 
     plt.figure(figsize=(12, 5))
     plt.title(outputPathPrefix.split('/')[-1] + '_utilization')
-    plt.xlabel('Time (in microseconds)')
+    plt.xlabel('Time (in seconds)')
     plt.ylabel('Resource (in percent)')
 
     plt.plot(mTimes, metrics['UtilizationCPU'], label='CPU')

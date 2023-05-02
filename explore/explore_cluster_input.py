@@ -31,15 +31,16 @@ def TaskWorkloadInClusterInput():
         events = []
 
         for i in range(jobN):
-            jobSize, jobTime = map(int, fin.readline().split())
-            nTask = int(fin.readline())
-            taskCounter += nTask
+            jobTime, entryCount = map(int, fin.readline().split())
 
-            for j in range(nTask):
-                taskIndex, taskEstimate, taskCpu, taskMem = map(int, fin.readline().split())
+            for j in range(entryCount):
+                taskCount, taskEstimate, taskCpu, taskMem = map(int, fin.readline().split())
 
-                events.append((jobTime, False, taskCpu, taskMem))
-                events.append((BoundedSum(jobTime, taskEstimate), True, taskCpu, taskMem))
+                taskCounter += taskCount
+
+                for k in range(taskCount):
+                    events.append((jobTime, False, taskCpu, taskMem))
+                    events.append((BoundedSum(jobTime, taskEstimate), True, taskCpu, taskMem))
 
             fin.readline()
 
@@ -52,7 +53,7 @@ def TaskWorkloadInClusterInput():
     Z = np.zeros((CPU_BUCKET_CNT, MEM_BUCKET_CNT))
     currentCpu, currentMem, currentTaskCounter = 0, 0, 0
     statCpu, statMem, statTime, statTaskCounter = [], [], [], []
-    updateStatEach, nextUpdateTime = 1_000_000, 0
+    updateStatEach, nextUpdateTime = 10, 0
 
     for time, isFinished, cpu, mem in events:
         if isFinished:
@@ -138,7 +139,7 @@ def TaskWorkloadInClusterInput():
 
     plt.figure(figsize=(12, 5))
     plt.title("Task resource demand in Time")
-    plt.xlabel("Time (in microseconds)")
+    plt.xlabel("Time (in seconds)")
     plt.ylabel("Unit")
 
     plt.plot(statTime, statCpu, label="Task CPU")
@@ -154,7 +155,7 @@ def TaskWorkloadInClusterInput():
 
     plt.figure(figsize=(12, 5))
     plt.title("Cpu / Memory")
-    plt.xlabel("Time (in microseconds)")
+    plt.xlabel("Time (in seconds)")
     plt.ylabel("Ratio")
 
     ratio = [statCpu[i] / statMem[i] for i in range(len(statCpu))]
