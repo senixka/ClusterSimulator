@@ -37,6 +37,27 @@ def GetStats(dirPath: str):
     return metrics
 
 
+def PrintBest(metrics: list, kBest: int):
+    metrics = metrics.copy()
+    namesASC = ['AvgPendingTask', 'Unfairness', 'SlowdownNorm2', 'UnfinishedJobCounter', 'PendingTaskCounter']
+    namesDESC = ['AvgCpuUtilization', 'AvgMemoryUtilization', 'AvgWorkingTask', 'SNP', 'TaskFinishedCounter']
+
+    maxMakeSpan = max([x['MakeSpan'] for x in metrics])
+    metrics = list(filter(lambda x: x['MakeSpan'] == maxMakeSpan, metrics))
+    algoNames = set()
+
+    for name in namesASC + namesDESC:
+        metrics.sort(key=lambda x: x[name], reverse=(name in namesDESC))
+        print('--------------', name, '--------------')
+        for i in range(kBest):
+            print(metrics[i]['Algorithm'], metrics[i][name])
+            algoNames.add(metrics[i]['Algorithm'])
+        print()
+
+    print('-------------- Best algorithms --------------')
+    print(*algoNames, sep='\n')
+
+
 def Main():
     # Init metrics
     subDir = input('Enter output sub dir name: ').strip()
@@ -47,11 +68,13 @@ def Main():
 
     metrics = GetStats(dirPath)
 
-    # Push metrics to sheets
+    # Push metrics to csv
     with open('./stats_of_output/' + subDir + '.csv', 'w', newline='') as fout:
         writer = csv.DictWriter(fout, metrics[0].keys())
         writer.writeheader()
         writer.writerows(metrics)
+
+    PrintBest(metrics, 10)
 
 
 if __name__ == '__main__':
