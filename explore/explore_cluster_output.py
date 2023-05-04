@@ -32,7 +32,12 @@ def NumberType(value: str):
 def GetMetricsFromFile(inputFilePath: str):
     metrics = {}
     with open(inputFilePath, 'r') as fin:
-        for _ in range(8):
+        for _ in range(3):
+            name = fin.readline().strip()
+            value = fin.readline().strip()
+            metrics[name] = value
+
+        for _ in range(9):
             name = fin.readline().strip()
             value = NumberType(fin.readline().strip())
             metrics[name] = value
@@ -116,12 +121,16 @@ def BuildStats(metrics: dict, outputPathPrefix: str):
 
     # ////////////////////// Write out /////////////////////
     with open(outputPathPrefix + '_stat.txt', 'w') as fout:
+        for name in ['JobManagerName', 'TaskManagerName', 'PlacingStrategyName']:
+            fout.write(name + '\n')
+            fout.write(str(metrics[name]) + '\n')
+
         for name in ['AvgCpuUtilization', 'AvgMemoryUtilization', 'AvgPendingTask', 'AvgWorkingTask',
                      'SNP', 'Unfairness', 'SlowdownNorm2']:
             fout.write(name + '\n')
             fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
-        for name in ['MakeSpan', 'TotalAvailableCPU', 'TotalAvailableMemory', 'PendingTaskCounter',
+        for name in ['MakeSpan', 'MaxPendingTask', 'TotalAvailableCPU', 'TotalAvailableMemory', 'PendingTaskCounter',
                      'UnfinishedJobCounter', 'nJobInSimulation', 'nTaskInSimulation', 'TaskFinishedCounter']:
             fout.write(name + '\n')
             fout.write(str(metrics[name]) + '\n')
