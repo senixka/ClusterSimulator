@@ -26,6 +26,7 @@ int main() {
     }
 
     std::map<std::pair<long double, long double>, size_t> values;
+    size_t totalMachine{0};
 
     for (const auto& [key, value] : machines) {
         if (!value.cpu.has_value() || !value.memory.has_value()) {
@@ -33,16 +34,19 @@ int main() {
         }
 
         ++values[{value.cpu.value(), value.memory.value()}];
+        ++totalMachine;
     }
+
 
     std::ofstream out;
     out.open(outputFilePath);
 
-    out << values.size() << '\n';
+    out << totalMachine << ' ' << values.size() << '\n';
 
     for (const auto& [key, value] : values) {
-        out << static_cast<unsigned>(key.first * MACHINE_MAX_POSSIBLE_CPU) << ' '
-            << static_cast<unsigned>(key.second * MACHINE_MAX_POSSIBLE_MEMORY) << ' ' << value << '\n';
+        out << value << ' '
+            << static_cast<unsigned>(key.first * MACHINE_MAX_POSSIBLE_CPU) << ' '
+            << static_cast<unsigned>(key.second * MACHINE_MAX_POSSIBLE_MEMORY) << '\n';
     }
 
     out.close();

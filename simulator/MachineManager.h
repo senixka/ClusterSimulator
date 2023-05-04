@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Defines.h"
 #include "Machine.h"
 #include "Task.h"
 
@@ -15,12 +16,11 @@ namespace bgi = boost::geometry::index;
 
 class MachineManager {
 private:
-    using point_2d = bg::model::point<unsigned, 2, bg::cs::cartesian>;
+    using point_2d = bg::model::point<ResourceT, 2, bg::cs::cartesian>;
     using box_2d = bg::model::box<point_2d>;
 
     // https://www.boost.org/doc/libs/1_57_0/libs/geometry/doc/html/geometry/spatial_indexes/introduction.html
-    // https://groups.google.com/g/boost-list/c/pPgWc2Wf2Bo
-    using tree_entry = std::pair<point_2d, size_t>;
+    using tree_entry = std::pair<point_2d, unsigned>;
     using rtree_2d = bg::index::rtree<tree_entry, bg::index::quadratic<16>>;
     using ReturnQueryType = std::vector<tree_entry>;
 

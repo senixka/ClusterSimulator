@@ -3,18 +3,6 @@
 #include <cstdint>
 #include <limits>
 
-#define MICROS_IN_S 1'000'000LLU
-#define MILLI_IN_S 1'000LLU
-
-static_assert(sizeof(uint64_t) == sizeof(unsigned long long));
-
-constexpr auto operator""_S2MICROS(unsigned long long value) {
-    return value * MICROS_IN_S;
-}
-
-constexpr auto operator""_S2MILLIS(unsigned long long value) {
-    return value * MILLI_IN_S;
-}
 
 template<typename T>
 inline T BoundedSum(T a, T b) {

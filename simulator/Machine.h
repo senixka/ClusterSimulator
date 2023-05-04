@@ -9,10 +9,8 @@
 
 class Machine {
 public:
-    explicit Machine(unsigned machineIndex, size_t currentTaskCount,
-                     unsigned availableCpu, unsigned availableMemory)
-             : machineIndex_(machineIndex), currentTaskCount_(currentTaskCount),
-               availableCpu_(availableCpu), availableMemory_(availableMemory) {
+    explicit Machine(unsigned machineIndex, ResourceT availableCpu, ResourceT availableMemory)
+             : machineIndex_(machineIndex), availableCpu_(availableCpu), availableMemory_(availableMemory) {
         ASSERT(availableCpu_ <= MACHINE_MAX_POSSIBLE_CPU);
         ASSERT(availableMemory_ <= MACHINE_MAX_POSSIBLE_MEMORY);
     }
@@ -23,7 +21,7 @@ public:
     }
 
     inline void PlaceTask(const Task& task) {
-        ASSERT(IsTaskPlaceable(task));
+        ASSERT(IsTaskPlaceable(task) && currentTaskCount_ < UINT32_MAX);
 
         ++currentTaskCount_;
 
@@ -42,8 +40,8 @@ public:
 
 public:
     const unsigned machineIndex_{0};
-    size_t currentTaskCount_{0};
+    unsigned currentTaskCount_{0};
 
-    unsigned availableCpu_{0};
-    unsigned availableMemory_{0};
+    ResourceT availableCpu_{0};
+    ResourceT availableMemory_{0};
 };

@@ -27,7 +27,7 @@ public:
             it_ = jobs_.erase(it_);
             PrepareCurrentJob();
 
-            delete job;
+            Job::Delete(job);
             return;
         }
 
@@ -45,10 +45,6 @@ public:
         }
     }
 
-    size_t JobCount() override {
-        return jobs_.size() + modified_.size();
-    }
-
     void NewSchedulingCycle() override {
         MergeJobs();
 
@@ -62,11 +58,11 @@ public:
 
     ~AsSortedListNB() {
         for (Job* job : jobs_) {
-            delete job;
+            Job::Delete(job);
         }
 
         for (Job* job : modified_){
-            delete job;
+            Job::Delete(job);
         }
     }
 
@@ -80,7 +76,7 @@ private:
     }
 
     void MergeJobs() {
-        const size_t beforeSize = JobCount();
+        const size_t beforeSize = jobs_.size() + modified_.size();
 
         std::sort(modified_.begin(), modified_.end(), ComparePolicy::Compare);
 
@@ -99,7 +95,7 @@ private:
         jobs_.insert(jobs_.end(), m, modified_.end());
         modified_.clear();
 
-        ASSERT(beforeSize == JobCount());
+        ASSERT(beforeSize == jobs_.size() && modified_.size() == 0);
         ASSERT(std::is_sorted(jobs_.begin(), jobs_.end(), ComparePolicy::Compare));
     }
 

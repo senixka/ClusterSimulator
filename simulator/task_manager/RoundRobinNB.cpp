@@ -5,18 +5,17 @@
 
 namespace task_manager {
 
-void RoundRobinNB::NewTasks(size_t kTask,
-                            uint64_t estimate, unsigned cpuRequest, unsigned memoryRequest, unsigned jobID) {
-    ASSERT(kTask != 0);
+void RoundRobinNB::NewTasks(unsigned nTask,
+                            BoundedTimeT estimate, ResourceT cpuRequest, ResourceT memoryRequest, JobIdT jobID) {
+    ASSERT(nTask != 0);
+    ASSERT(static_cast<uint64_t>(taskCount_) + nTask < static_cast<uint64_t>(UINT32_MAX));
 
-    taskCount_ += kTask;
-    tasks_.push_back(std::move(std::vector<Task*>(kTask)));
+    taskCount_ += nTask;
+    tasks_.push_back(std::move(std::vector<Task*>(nTask)));
 
-    for (size_t i = 0; i < kTask; ++i) {
-        Task* task = new Task(estimate, cpuRequest, memoryRequest, jobID);
-
-        tasks_.back()[i] = task;
-        sumTaskEstimateTime_ += task->estimate_;
+    for (unsigned i = 0; i < nTask; ++i) {
+        tasks_.back()[i] = Task::New(estimate, cpuRequest, memoryRequest, jobID);
+        sumTaskEstimateTime_ += estimate;
     }
 }
 
@@ -47,14 +46,14 @@ void RoundRobinNB::ReturnTask(Task* task, bool isScheduled) {
 
 void RoundRobinNB::NewSchedulingCycle() {
     currentIter_ = 0;
-    currentSize_ = TaskCount();
+    currentSize_ = taskCount_;
 }
 
 bool RoundRobinNB::IsThereSomethingElse() {
     return currentIter_ < currentSize_;
 }
 
-size_t RoundRobinNB::TaskCount() {
+unsigned RoundRobinNB::TaskCount() {
     return taskCount_;
 }
 
@@ -62,17 +61,17 @@ void RoundRobinNB::Sort() {
     it_ = tasks_.begin();
 
     currentIter_ = 0;
-    currentSize_ = TaskCount();
+    currentSize_ = taskCount_;
 }
 
-unsigned __int128 RoundRobinNB::SumTaskEstimateTime() {
+uint64_t RoundRobinNB::SumTaskEstimateTime() {
     return sumTaskEstimateTime_;
 }
 
-uint64_t RoundRobinNB::MaxTaskEstimateTime() {
+BoundedTimeT RoundRobinNB::MaxTaskEstimateTime() {
     ASSERT(!tasks_.empty());
 
-    uint64_t maxTaskEstimateTime{0};
+    BoundedTimeT maxTaskEstimateTime{0};
     for (const auto& entry : tasks_) {
         maxTaskEstimateTime = std::max(maxTaskEstimateTime, entry.front()->estimate_);
     }
@@ -83,7 +82,7 @@ uint64_t RoundRobinNB::MaxTaskEstimateTime() {
 RoundRobinNB::~RoundRobinNB() {
     for (const auto& entry : tasks_) {
         for (Task* task : entry) {
-            delete task;
+            Task::Delete(task);
         }
     }
 }

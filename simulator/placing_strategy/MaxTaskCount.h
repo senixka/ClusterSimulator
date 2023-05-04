@@ -17,7 +17,7 @@ struct MaxTaskCount : public IPlacingStrategy {
         }
 
         unsigned bestMachineIndex{machines[0]->machineIndex_};
-        size_t maxTaskCount{machines[0]->currentTaskCount_};
+        unsigned maxTaskCount{machines[0]->currentTaskCount_};
 
         for (size_t i = 1; i < split; ++i) {
             const Machine* machine = machines[i];

@@ -17,8 +17,8 @@ static const uint64_t TIME_SCALE{1'000'000};
 
 
 struct LightTask {
-    uint64_t time;
-    uint64_t estimate; // Microseconds
+    uint64_t time{0};
+    uint64_t estimate{0}; // Microseconds
     unsigned cpuRequest{0};
     unsigned memoryRequest{0};
     unsigned eventType;
@@ -32,8 +32,10 @@ struct LightTask {
     explicit LightTask(const TaskEvent& taskEvent)
         : time(taskEvent.time),
           estimate{0},
-          cpuRequest(taskEvent.cpuRequest.value_or(0) * MACHINE_MAX_POSSIBLE_CPU + static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_CPU),
-          memoryRequest(taskEvent.memoryRequest.value_or(0) * MACHINE_MAX_POSSIBLE_MEMORY + static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_MEMORY),
+          cpuRequest(static_cast<unsigned>(taskEvent.cpuRequest.value_or(0) * MACHINE_MAX_POSSIBLE_CPU +
+                                           static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_CPU)),
+          memoryRequest(static_cast<unsigned>(taskEvent.memoryRequest.value_or(0) * MACHINE_MAX_POSSIBLE_MEMORY +
+                                              static_cast<long double>(0.5) / MACHINE_MAX_POSSIBLE_MEMORY)),
           eventType(taskEvent.eventType) {
         cpuRequest = std::max(cpuRequest, 1u);
         memoryRequest = std::max(memoryRequest, 1u);
@@ -64,6 +66,15 @@ struct OutJob {
 
     OutJob(OutJob&&) = delete;
     OutJob& operator=(OutJob&&) = delete;
+
+    size_t TaskCount() const {
+        size_t taskCount{0};
+        for (const auto& [spec, nTask] : tasks) {
+            taskCount += nTask;
+        }
+
+        return taskCount;
+    }
 };
 
 
@@ -94,9 +105,9 @@ void JobPrepare(OutJob& job, std::map<unsigned, std::list<LightTask>>& value, si
 
         if (task.estimate != UINT64_MAX) {
             key = {task.estimate / TIME_SCALE, task.cpuRequest, task.memoryRequest};
-            //                   ^-- convert Micro- to Milli- seconds
+            assert(std::get<0>(key) < UINT32_MAX);
         } else {
-            key = {UINT64_MAX, task.cpuRequest, task.memoryRequest};
+            key = {UINT32_MAX, task.cpuRequest, task.memoryRequest};
         }
 
         if (0 < std::get<0>(key)) {
@@ -107,10 +118,12 @@ void JobPrepare(OutJob& job, std::map<unsigned, std::list<LightTask>>& value, si
     }
 }
 
-void JobDump(std::ofstream& out, OutJob& job, uint64_t jobTime) {
+void JobDump(std::ofstream& out, const OutJob& job, uint64_t jobTime) {
+    assert(jobTime < UINT32_MAX);
     out << jobTime << ' ' << job.tasks.size() << '\n';
 
     for (const auto& [spec, count] : job.tasks) {
+        assert(std::get<0>(spec) <= UINT32_MAX);
         out << count << ' ' << std::get<0>(spec) << ' ' << std::get<1>(spec) << ' ' << std::get<2>(spec) << '\n';
     }
     out << '\n';
@@ -120,6 +133,10 @@ void JobDump(std::ofstream& out, OutJob& job, uint64_t jobTime) {
 int main() {
     const std::string outputFilePath = "../../simulator/input/job_and_task.txt";
     const std::string inputLogDir = "../../google_cluster_trace_log/";
+
+    const std::string sliceOutputFilePrefix = "../../simulator/input/job_and_task_slice_";
+    const unsigned kSplits = 10;
+    const unsigned sliceDuration = 7 * 24 * 60 * 60; // As output time_scale (now it is seconds)
 
     LogReader log(inputLogDir);
 
@@ -171,8 +188,6 @@ int main() {
         log.VerboseFileProgress(true);
 
         TaskEvent taskEvent;
-        std::string user;
-
         std::set<std::pair<JobID_t, unsigned>> badTask;
 
         while (log.NextTaskEvent(taskEvent)) {
@@ -187,10 +202,11 @@ int main() {
                 badTask.insert({key, taskEvent.taskIndex});
             }
 
+            assert(taskEvent.taskIndex < UINT32_MAX);
             if (taskEvent.eventType == TaskAndJobEventType::SUBMIT) {
-                taskEvents[key][taskEvent.taskIndex].clear();
+                taskEvents[key][static_cast<unsigned>(taskEvent.taskIndex)].clear();
             }
-            taskEvents[key][taskEvent.taskIndex].emplace_back(taskEvent);
+            taskEvents[key][static_cast<unsigned>(taskEvent.taskIndex)].emplace_back(taskEvent);
         }
 
         std::cout << "TASK WITH MISSING INFO: " << badTask.size() << std::endl;
@@ -222,9 +238,10 @@ int main() {
     }
 
 
+    std::list<OutJob> jobs;
     {
+        // Prepare tasks in Job
         size_t veryFastTaskCounter{0};
-        std::list<OutJob> jobs;
 
         for (auto& [key, value]: taskEvents) {
             OutJob job;
@@ -238,22 +255,83 @@ int main() {
 
         std::cout << "VERY FAST TASK COUNTER: " << veryFastTaskCounter << std::endl;
 
-        std::ofstream fout;
-        fout.open(outputFilePath);
-
-        fout << jobs.size() << "\n\n";
-
-        uint64_t lastJobTime{0};
-        for (auto& outJob : jobs) {
+        // Count tasks and scale Job time
+        uint64_t lastJobTime{0}, taskCounter{0};
+        for (const auto& outJob : jobs) {
             assert(jobSubmitTime[outJob.jobID] != UINT64_MAX);
+            assert(jobSubmitTime[outJob.jobID] / TIME_SCALE < UINT32_MAX);
+
+            jobSubmitTime[outJob.jobID] /= TIME_SCALE;
 
             assert(lastJobTime <= jobSubmitTime[outJob.jobID]);
             lastJobTime = jobSubmitTime[outJob.jobID];
 
-            JobDump(fout, outJob, jobSubmitTime[outJob.jobID] / TIME_SCALE);
+            taskCounter += outJob.TaskCount();
+        }
+        assert(taskCounter < UINT32_MAX);
+
+
+        // Write data to job_and_task file
+        std::ofstream fout;
+        fout.open(outputFilePath);
+
+        fout << jobs.size() << ' ' << taskCounter << "\n\n";
+
+        for (auto& outJob : jobs) {
+            JobDump(fout, outJob, jobSubmitTime[outJob.jobID]);
         }
 
         fout.close();
+    }
+
+    const unsigned shift = static_cast<unsigned>(jobSubmitTime[jobs.back().jobID] -
+                                                (jobSubmitTime[jobs.front().jobID] + sliceDuration)) / kSplits;
+    {
+        std::list<OutJob>::iterator left{jobs.begin()}, right{jobs.begin()};
+        size_t nJob{0}, nTask{0};
+
+        {
+            uint64_t rightTime = jobSubmitTime[left->jobID] + sliceDuration;
+            for (; right != jobs.end() && jobSubmitTime[right->jobID] < rightTime; ++right) {
+                ++nJob;
+                nTask += right->TaskCount();
+            }
+        }
+
+
+        std::ofstream fout;
+
+        for (unsigned i = 0; i < kSplits; ++i) {
+            fout.open(sliceOutputFilePrefix + std::to_string(i) + ".txt");
+            fout << nJob << ' ' << nTask << "\n\n";
+
+            for (auto it = left; it != right; ++it) {
+                JobDump(fout, *it, jobSubmitTime[it->jobID] - jobSubmitTime[left->jobID]);
+            }
+
+            fout.close();
+
+            uint64_t nextLeftTime = jobSubmitTime[left->jobID] + shift;
+            for (; left != right && jobSubmitTime[left->jobID] < nextLeftTime; ++left) {
+                --nJob;
+                nTask -= left->TaskCount();
+            }
+
+            if (left == right) {
+                assert(nTask == 0);
+                assert(nJob == 0);
+            }
+
+            if (left == jobs.end()) {
+                break;
+            }
+
+            uint64_t rightTime = jobSubmitTime[left->jobID] + sliceDuration;
+            for (; right != jobs.end() && jobSubmitTime[right->jobID] < rightTime; ++right) {
+                ++nJob;
+                nTask += right->TaskCount();
+            }
+        }
     }
 
     return 0;

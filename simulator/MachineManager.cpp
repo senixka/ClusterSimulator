@@ -1,9 +1,9 @@
 #include "MachineManager.h"
 
 #include "Macro.h"
-#include "Defines.h"
 
 #include <fstream>
+#include <limits>
 
 
 MachineManager::MachineManager(const std::string& inputFilePath) {
@@ -12,30 +12,39 @@ MachineManager::MachineManager(const std::string& inputFilePath) {
     std::ifstream in;
     in.open(inputFilePath);
 
-    size_t nConfig;
-    in >> nConfig;
+    size_t totalMachine, nConfig;
+    in >> totalMachine >> nConfig;
 
-    size_t nMachine;
-    unsigned machineIndex{0}, machineCpu, machineMemory;
+    ASSERT(totalMachine < UINT32_MAX);
 
+    machines_.reserve(totalMachine);
+
+    unsigned machineIndex{0};
     for (size_t i = 0; i < nConfig; ++i) {
-        in >> machineCpu >> machineMemory >> nMachine;
+        uint64_t nMachine, machineCpu, machineMemory;
+        in >> nMachine >> machineCpu >> machineMemory;
 
-        for (size_t j = 0; j < nMachine; ++j) {
-            machines_.emplace_back(Machine(machineIndex++, 0, machineCpu, machineMemory));
+        ASSERT(nMachine < UINT32_MAX);
+        ASSERT(machineCpu < std::numeric_limits<ResourceT>::max());
+        ASSERT(machineMemory < std::numeric_limits<ResourceT>::max());
+
+        for (uint64_t j = 0; j < nMachine; ++j) {
+            machines_.push_back(
+                Machine(machineIndex++, static_cast<ResourceT>(machineCpu), static_cast<ResourceT>(machineMemory))
+            );
         }
     }
+    ASSERT(machineIndex == totalMachine);
 
     std::vector<tree_entry> entries;
     entries.reserve(machines_.size());
 
-    for (const auto& m : machines_) {
+    for (const Machine& m : machines_) {
         entries.push_back({{m.availableCpu_, m.availableMemory_}, m.machineIndex_});
     }
 
-    printf("In MachineManager, start of rtree construction\n");
+    // https://groups.google.com/g/boost-list/c/pPgWc2Wf2Bo
     tree_ = std::move(rtree_2d(entries.begin(), entries.end()));
-    printf("In MachineManager, end of rtree construction\n");
 
     printf("End of MachineManager construction\n");
 }

@@ -32,16 +32,12 @@ public:
             ASSERT(currentSize_ >= currentIter_);
             currentIter_ += (currentSize_ - currentIter_) / currentTaskCount_;
 
-            delete job;
+            Job::Delete(job);
         } else {
             ++it_;
         }
 
         FindNextIt();
-    }
-
-    size_t JobCount() override {
-        return jobs_.size();
     }
 
     void NewSchedulingCycle() override {
@@ -51,8 +47,8 @@ public:
 
         isNextIterValid = true;
         currentIter_ = 0;
-        currentTaskCount_ = JobCount();
-        currentSize_ = JobCount() * kRounds;
+        currentTaskCount_ = jobs_.size();
+        currentSize_ = currentTaskCount_ * kRounds;
 
         FindNextIt();
     }
@@ -63,7 +59,7 @@ public:
 
     ~RoundRobinNB() {
         for (Job* job : jobs_) {
-            delete job;
+            Job::Delete(job);
         }
     }
 

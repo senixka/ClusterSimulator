@@ -1,10 +1,10 @@
-#pragma once
+    #pragma once
 
-#include "Task.h"
 #include "Job.h"
+#include "Task.h"
+#include "Defines.h"
 #include "Machine.h"
 #include "Statistics.h"
-#include "BoundedTime.h"
 #include "MachineManager.h"
 #include "job_manager/IJobManager.h"
 #include "task_manager/FactoryTaskManager.h"
@@ -32,20 +32,23 @@ public:
 
 private:
     bool Update();
+    void DeleteEvent(ClusterEvent* event);
 
 public:
     using EventQueueType = std::priority_queue<ClusterEvent*, std::vector<ClusterEvent*>, ClusterEventPtrCompare>;
 
-    uint64_t time_{0};
+    BoundedTimeT time_{0};
     EventQueueType clusterEvents_;
 
     std::shared_ptr<IJobManager> jobManager_{nullptr};
 
     std::shared_ptr<IScheduler> scheduler_{nullptr};
-    const uint64_t scheduleEachTime_{1};
+    const BoundedTimeT scheduleEachTime_{1};
 
     std::shared_ptr<MachineManager> machineManager_{nullptr};
 
     std::shared_ptr<Statistics> statistics_{nullptr};
-    const uint64_t updateStatisticsEachTime_{10};
+    const BoundedTimeT updateStatisticsEachTime_{10};
+
+    const size_t kCriticalPendingSize = 600'000;
 };

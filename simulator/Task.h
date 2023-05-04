@@ -4,22 +4,22 @@
 #include "Defines.h"
 #include "Macro.h"
 
+#include <boost/pool/pool.hpp>
+#include <boost/pool/object_pool.hpp>
+
 
 class Task : public ClusterEvent {
 public:
-    explicit Task(uint64_t estimate, unsigned cpuRequest, unsigned memoryRequest, unsigned jobID)
-             : estimate_(estimate), cpuRequest_(cpuRequest), memoryRequest_(memoryRequest), jobID_(jobID) {
-        ASSERT(1 <= cpuRequest_);
-        ASSERT(cpuRequest_ <= MACHINE_MAX_POSSIBLE_CPU);
+    Task() = default;
 
-        ASSERT(1 <= memoryRequest_);
-        ASSERT(memoryRequest_ <= MACHINE_MAX_POSSIBLE_MEMORY);
-    }
+    static void PrepareMemoryPool(unsigned nTask);
+    static Task* New(BoundedTimeT estimate, ResourceT cpuRequest, ResourceT memoryRequest, JobIdT jobId);
+    static void Delete(Task* ptr);
 
 public:
-    const uint64_t estimate_{0};
-    const unsigned cpuRequest_{0};
-    const unsigned memoryRequest_{0};
-    const unsigned jobID_{0};
+    BoundedTimeT estimate_{0};
+    ResourceT cpuRequest_{0};
+    ResourceT memoryRequest_{0};
+    JobIdT jobId_{0};
     unsigned machineIndex_{UINT32_MAX};
 };

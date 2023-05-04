@@ -5,10 +5,13 @@
 #include <fstream>
 
 
-Statistics::Statistics(const std::string& outputFilePath) : outputFilePath_(outputFilePath) {
+Statistics::Statistics(const std::string& outputFilePath, const std::string& jobManagerName,
+                       const std::string& taskManagerName, const std::string& placingStrategyName)
+    : outputFilePath_(outputFilePath), jobManagerName_(jobManagerName),
+      taskManagerName_(taskManagerName), placingStrategyName_(placingStrategyName) {
 }
 
-void Statistics::UpdateStats(uint64_t currentTime) {
+void Statistics::UpdateStats(BoundedTimeT currentTime) {
     utilizationCPUNumerator_.push_back(currentUsedCPU_);
     utilizationMemoryNumerator_.push_back(currentUsedMemory_);
     utilizationMeasurementsTime_.push_back(currentTime);
@@ -17,15 +20,16 @@ void Statistics::UpdateStats(uint64_t currentTime) {
     workingTask_.push_back(currentWorkingTaskCounter_);
 }
 
-void Statistics::OnJobSubmitted(uint64_t currentTime, const Job& job) {
+void Statistics::OnJobSubmitted(BoundedTimeT currentTime, const Job& job) {
     ++jobSubmittedCounter_;
     ++currentUnfinishedJobCounter_;
 
     currentPendingTaskCounter_ += job.taskManager_->TaskCount();
+    maxPendingTask_ = std::max(maxPendingTask_, currentPendingTaskCounter_);
 
-    jobStartTime_[job.jobID_] = currentTime;
-    jobUnfinishedTaskCount_[job.jobID_] = job.taskManager_->TaskCount();
-    jobIdealEstimateTime_[job.jobID_] = job.taskManager_->MaxTaskEstimateTime();
+    jobStartTime_[job.jobId_] = currentTime;
+    jobUnfinishedTaskCount_[job.jobId_] = job.taskManager_->TaskCount();
+    jobIdealEstimateTime_[job.jobId_] = job.taskManager_->MaxTaskEstimateTime();
 }
 
 void Statistics::OnTaskScheduled(const Task& task) {
@@ -36,90 +40,26 @@ void Statistics::OnTaskScheduled(const Task& task) {
     currentUsedMemory_ += task.memoryRequest_;
 }
 
-void Statistics::OnTaskFinished(uint64_t currentTime, const Task& task) {
+void Statistics::OnTaskFinished(BoundedTimeT currentTime, const Task& task) {
     --currentWorkingTaskCounter_;
     ++taskFinishedCounter_;
 
     currentUsedCPU_ -= task.cpuRequest_;
     currentUsedMemory_ -= task.memoryRequest_;
 
-    ASSERT(jobUnfinishedTaskCount_.find(task.jobID_) != jobUnfinishedTaskCount_.end());
+    ASSERT(jobUnfinishedTaskCount_.find(task.jobId_) != jobUnfinishedTaskCount_.end());
 
-    if (--jobUnfinishedTaskCount_.at(task.jobID_) == 0) {
-        jobUnfinishedTaskCount_.erase(task.jobID_);
+    if (--jobUnfinishedTaskCount_.at(task.jobId_) == 0) {
+        jobUnfinishedTaskCount_.erase(task.jobId_);
 
         --currentUnfinishedJobCounter_;
 
-        jobEndTime_[task.jobID_] = currentTime;
+        jobEndTime_[task.jobId_] = currentTime;
     }
 }
 
-void Statistics::OnSimulationFinished(uint64_t currentTime) {
-    ////////////////////// MakeSpan /////////////////////////
-    {
-        makeSpanTime_ = currentTime;
-    }
-
-    ////////////////////// Average Utilization //////////////
-//    {
-//        long double sumCPU = 0, sumMemory = 0, sumDisk = 0;
-//        for (size_t i = 0; i < utilizationMeasurementsTime_.size(); ++i) {
-//            sumCPU += utilizationCPU_[i];
-//            sumMemory += utilizationMemory_[i];
-//            sumDisk += utilizationDisk_[i];
-//        }
-//
-//        averageUtilizationCPU_ = static_cast<float>(sumCPU / utilizationMeasurementsTime_.size());
-//        averageUtilizationMemory_ = static_cast<float>(sumMemory / utilizationMeasurementsTime_.size());
-//        averageUtilizationDisk_ = static_cast<float>(sumDisk / utilizationMeasurementsTime_.size());
-//    }
-
-    ////////////////////// Job's ANP ////////////////////////
-//    {
-//        for (const auto &[jobID, endTime] : jobEndTime_) {
-//            jobANP_[jobID] = static_cast<long double>(jobMinEstimateTime_.at(jobID)) / (endTime - jobStartTime_.at(jobID));
-//            minANP_ = std::min(minANP_, jobANP_[jobID]);
-//            maxANP_ = std::max(maxANP_, jobANP_[jobID]);
-//        }
-//    }
-
-    ////////////////////// SNP //////////////////////////////
-//    {
-//        long double snp = 0;
-//        for (const auto &[jobID, anp] : jobANP_) {
-//            snp += std::log(anp);
-//        }
-//        snp = std::exp(snp / jobANP_.size());
-//
-//        simulationSNP_ = snp;
-//    }
-
-    ////////////////////// Unfairness ///////////////////////
-//    {
-//        long double meanANP = 0;
-//        for (const auto &[jobID, anp] : jobANP_) {
-//            meanANP += anp;
-//        }
-//        meanANP /= jobANP_.size();
-//
-//        long double stdDeviation = 0;
-//        for (const auto &[jobID, anp] : jobANP_) {
-//            stdDeviation += (anp - meanANP) * (anp - meanANP);
-//        }
-//        stdDeviation = std::pow(stdDeviation / jobANP_.size(), 0.5L);
-//
-//        simulationUnfairness_ = stdDeviation * 100 / meanANP;
-//    }
-
-    ////////////////////// Slowdown 2-norm /////////////////////
-//    {
-//        long double slowdown = 0;
-//        for (const auto &[jobID, anp] : jobANP_) {
-//            slowdown += 1.0L / (anp * anp);
-//        }
-//
-//        simulationSlowdown2Norm_ = std::sqrt(slowdown / jobANP_.size());
-//    }
+void Statistics::OnSimulationFinished(BoundedTimeT currentTime) {
+    makeSpanTime_ = currentTime;
 }
 
 void Statistics::OnMachineAdded(const Machine& machine) {
@@ -129,7 +69,7 @@ void Statistics::OnMachineAdded(const Machine& machine) {
 
 void Statistics::PrintStatistics() const {
     if (utilizationMeasurementsTime_.empty()) [[unlikely]] {
-        printf("CPU: NO INFO  Memory: NO INFO  Disk: NO INFO\n");
+        printf("Stats: NO_INFO\n");
     } else [[likely]] {
         printf("CPU: %7.3Lf%%  Memory: %7.3Lf%%", static_cast<long double>(utilizationCPUNumerator_.back()) / totalAvailableCPU_ * 100,
                                                   static_cast<long double>(utilizationMemoryNumerator_.back()) / totalAvailableMemory_ * 100);
@@ -138,20 +78,26 @@ void Statistics::PrintStatistics() const {
     }
 }
 
-void Statistics::DumpStatistics() {
+void Statistics::DumpStatistics() const {
     std::ofstream fout;
     fout.open(outputFilePath_);
 
-    fout << "MakeSpan\n" << makeSpanTime_ << std::endl;
+    fout << "JobManagerName\n" << jobManagerName_ << std::endl;
+    fout << "TaskManagerName\n" << taskManagerName_ << std::endl;
+    fout << "PlacingStrategyName\n" << placingStrategyName_ << std::endl;
+
+    fout << "nJobInSimulation\n" << nJobInSimulation_ << std::endl;
+    fout << "nTaskInSimulation\n" << nTaskInSimulation_ << std::endl;
 
     fout << "TotalAvailableCPU\n" << totalAvailableCPU_ << std::endl;
     fout << "TotalAvailableMemory\n" << totalAvailableMemory_ << std::endl;
 
+    fout << "MakeSpan\n" << makeSpanTime_ << std::endl;
+
+    fout << "MaxPendingTask\n" << maxPendingTask_ << std::endl;
+
     fout << "PendingTaskCounter\n" << currentPendingTaskCounter_ << std::endl;
     fout << "UnfinishedJobCounter\n" << currentUnfinishedJobCounter_ << std::endl;
-
-    fout << "nJobInSimulation\n" << nJobInSimulation_ << std::endl;
-    fout << "nTaskInSimulation\n" << nTaskInSimulation_ << std::endl;
     fout << "TaskFinishedCounter\n" << taskFinishedCounter_ << std::endl;
 
     fout << "UtilizationMeasurementsTime UtilizationCPUNumerator UtilizationMemoryNumerator PendingTask WorkingTask" << std::endl;

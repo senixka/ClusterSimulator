@@ -44,7 +44,8 @@ void Experiment::Do() {
 
     auto scheduler = std::make_shared<SchedulerImpl>(placingStrategy);
     auto machineManager = std::make_shared<MachineManager>(machineFilePath_);
-    auto statistics = std::make_shared<Statistics>(outputFilePath_);
+    auto statistics = std::make_shared<Statistics>(outputFilePath_, jobManagerName_,
+                                                   taskManagerName_, placingStrategyName_);
 
     Cluster cluster(taskAndJobFilePath_, taskManagerType, jobManager, scheduler, machineManager, statistics);
     cluster.Run();

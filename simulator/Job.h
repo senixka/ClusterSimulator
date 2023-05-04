@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Task.h"
+#include "Defines.h"
 #include "ClusterEvent.h"
 #include "task_manager/ITaskManager.h"
 #include "task_manager/FactoryTaskManager.h"
@@ -12,12 +13,16 @@
 
 class Job : public ClusterEvent {
 public:
-    explicit Job(TaskManagerType taskManagerType, std::istream& in, unsigned jobID);
+    Job() = default;
     ~Job();
 
-public:
-    ITaskManager* taskManager_{nullptr};
+    static void PrepareMemoryPool(unsigned nJob);
+    static Job* New(TaskManagerType taskManagerType, std::istream& in, JobIdT jobId);
+    static void Delete(Job* ptr);
 
-    uint64_t jobTime_{0};
-    const unsigned jobID_{0};
+public:
+    JobIdT jobId_{0};
+    BoundedTimeT jobTime_{0};
+
+    ITaskManager* taskManager_{nullptr};
 };
