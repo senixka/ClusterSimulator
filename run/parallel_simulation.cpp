@@ -47,6 +47,53 @@ void ReadInput(std::vector<Experiment>& experiments) {
 
             experiments.push_back(Experiment(taskAndJobFilePath, machineFilePath, outputFilePath,
                                              jobManagerName, taskManagerName, placingStrategyName));
+        } else if (eType == "MULTI") {
+            std::vector<std::pair<std::string, std::string>> taskAndJobFilePath, machineFilePath;
+            std::string outputFilePathPrefix;
+            std::vector<std::string> jobManagerName, taskManagerName, placingStrategyName;
+
+            auto ReadPairValues = [](std::vector<std::pair<std::string, std::string>>& values) {
+                size_t size;
+                std::cin >> size;
+                values.resize(size);
+
+                for (size_t i = 0; i < size; ++i) {
+                    std::cin >> values[i].first >> values[i].second;
+                }
+            };
+
+            ReadPairValues(taskAndJobFilePath);
+            ReadPairValues(machineFilePath);
+            std::cin >> outputFilePathPrefix;
+
+            {
+                size_t size;
+                std::cin >> size;
+
+                jobManagerName.resize(size);
+                taskManagerName.resize(size);
+                placingStrategyName.resize(size);
+
+                for (size_t i = 0; i < size; ++i) {
+                    std::cin >> jobManagerName[i] >> taskManagerName[i] >> placingStrategyName[i];
+                }
+            }
+
+            for (const auto& [taskAndJobFile, taskAndJobMnemonic] : taskAndJobFilePath) {
+                for (const auto& [machineFile, machineMnemonic] : machineFilePath) {
+                    for (size_t i = 0; i < jobManagerName.size(); ++i) {
+                        const std::string updatedPrefix = outputFilePathPrefix +
+                                                          taskAndJobMnemonic + "_" +
+                                                          machineMnemonic + "_" +
+                                                          jobManagerName[i] + "_" +
+                                                          taskManagerName[i] + "_" +
+                                                          placingStrategyName[i] + ".txt";
+                        experiments.push_back(Experiment(taskAndJobFile, machineFile,
+                                                         updatedPrefix,
+                                                         jobManagerName[i], taskManagerName[i], placingStrategyName[i]));
+                    }
+                }
+            }
         } else if (eType == "CARTESIAN") {
             std::vector<std::pair<std::string, std::string>> taskAndJobFilePath, machineFilePath;
             std::string outputFilePathPrefix;
