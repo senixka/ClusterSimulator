@@ -6,6 +6,7 @@
 #include <fstream>
 #include <unistd.h>
 #include <iostream>
+#include <filesystem>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <unordered_map>
@@ -35,7 +36,7 @@ public:
 };
 
 
-void ReadInput(std::vector<Experiment>& experiments) {
+void ReadInput(std::vector<Experiment>& experiments, int skipExisting) {
     std::string eType;
     while (std::cin >> eType) {
         if (eType == "SINGLE") {
@@ -149,6 +150,21 @@ void ReadInput(std::vector<Experiment>& experiments) {
             UNREACHABLE("Bad experiment type");
         }
     }
+
+    if (skipExisting == 1) {
+        std::vector<Experiment> filtered;
+        filtered.reserve(experiments.size());
+
+        for (const Experiment& exp : experiments) {
+            if (!std::filesystem::exists(exp.outputFilePath_)) {
+                filtered.push_back(exp);
+            }
+        }
+        printf("Skipping %lu experiments\n", experiments.size() - filtered.size());
+
+        experiments.clear();
+        experiments = std::move(filtered);
+    }
 }
 
 void WriteExperimentConfig(const Experiment& experiment, const std::string& configFilePath) {
@@ -185,17 +201,20 @@ void WriteCrashReport(const std::string& message, const std::string& outputFileP
 
 int main() {
     std::cout << "If you do not need console output for child processes, enter 0.\n"
-                 "To run child processes in separate xterm consoles, enter 1." << std::endl;
-
+                 "To run child processes in separate xterm consoles, enter 1: " << std::endl;
     int childMode{0};
     std::cin >> childMode;
+
+    std::cout << "Skip experiments for which the result has already been calculated? Enter 1 to skip, 0 otherwise: " << std::endl;
+    int skipExisting{0};
+    std::cin >> skipExisting;
 
     size_t procMax, currentWorkingProcCount{0};
     std::cin >> procMax;
     std::cout << "Using procMax = " << procMax << std::endl;
 
     std::vector<Experiment> experiments;
-    ReadInput(experiments);
+    ReadInput(experiments, skipExisting);
 
     std::cout << "Experiments count = " << experiments.size() << std::endl;
 

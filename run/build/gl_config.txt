@@ -1,6 +1,6 @@
 0
 
-64
+120
 
 CARTESIAN
 1 ../../simulator/input/job_and_task.txt jat

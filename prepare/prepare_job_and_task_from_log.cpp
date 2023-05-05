@@ -284,13 +284,21 @@ int main() {
         fout.close();
     }
 
-    const unsigned shift = static_cast<unsigned>(jobSubmitTime[jobs.back().jobID] -
-                                                (jobSubmitTime[jobs.front().jobID] + sliceDuration)) / kSplits;
     {
-        std::list<OutJob>::iterator left{jobs.begin()}, right{jobs.begin()};
+        std::list<OutJob>::iterator left{jobs.begin()}, right;
         size_t nJob{0}, nTask{0};
-
+        size_t zeroJob, zeroTask;
         {
+            for (; left != jobs.end() && jobSubmitTime[left->jobID] == 0; ++left) {
+                ++nJob;
+                nTask += left->TaskCount();
+            }
+
+            assert(left != jobs.end());
+            right = left;
+            zeroJob = nJob;
+            zeroTask = nTask;
+
             uint64_t rightTime = jobSubmitTime[left->jobID] + sliceDuration;
             for (; right != jobs.end() && jobSubmitTime[right->jobID] < rightTime; ++right) {
                 ++nJob;
@@ -298,13 +306,19 @@ int main() {
             }
         }
 
+        const unsigned shift = static_cast<unsigned>(jobSubmitTime[jobs.back().jobID] -
+                                                    (jobSubmitTime[left->jobID] + sliceDuration)) / kSplits;
+        std::cout << "SHIFT IS: " << shift << std::endl;
+
 
         std::ofstream fout;
-
         for (unsigned i = 0; i < kSplits; ++i) {
             fout.open(sliceOutputFilePrefix + std::to_string(i) + ".txt");
             fout << nJob << ' ' << nTask << "\n\n";
 
+            for (auto it = jobs.begin(); jobSubmitTime[it->jobID] == 0; ++it) {
+                JobDump(fout, *it, 0);
+            }
             for (auto it = left; it != right; ++it) {
                 JobDump(fout, *it, jobSubmitTime[it->jobID] - jobSubmitTime[left->jobID]);
             }
@@ -318,8 +332,8 @@ int main() {
             }
 
             if (left == right) {
-                assert(nTask == 0);
-                assert(nJob == 0);
+                assert(nTask == zeroTask);
+                assert(nJob == zeroJob);
             }
 
             if (left == jobs.end()) {

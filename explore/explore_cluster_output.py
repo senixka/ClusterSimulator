@@ -1,4 +1,6 @@
 import multiprocessing
+from functools import reduce
+from collections import defaultdict
 import os
 import matplotlib.pyplot as plt
 import matplotlib
@@ -56,7 +58,7 @@ def GetMetricsFromFile(inputFilePath: str):
     return metrics
 
 
-def BuildStats(metrics: dict, outputPathPrefix: str):
+def BuildStats(metrics: dict):
     decimal.getcontext().prec = 100
 
     # ////////////////////// Average Utilization //////////////
@@ -119,7 +121,10 @@ def BuildStats(metrics: dict, outputPathPrefix: str):
 
     metrics['SlowdownNorm2'] = (slowdown / jobANPLen).sqrt()
 
-    # ////////////////////// Write out /////////////////////
+    return metrics
+
+
+def DumpStats(metrics: dict, outputPathPrefix: str):
     with open(outputPathPrefix + '_stat.txt', 'w') as fout:
         for name in ['JobManagerName', 'TaskManagerName', 'PlacingStrategyName']:
             fout.write(name + '\n')
@@ -179,24 +184,60 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
     plt.close()
 
 
-def Worker(filePath: str, subDir: str, removeInput: int):
-    print(f'Process path: {filePath}')
+def UpdateMetrics(glMetrics: dict, metrics: dict):
+    for key, value in metrics.items():
+        if key in glMetrics:
+            glMetrics[key].append(value)
+        else:
+            glMetrics[key] = [value]
 
-    prefix = filePath[:-len('.txt')].split('/')[-1]
+    return glMetrics
 
-    print(f'Metrics from file: {filePath}')
-    metrics = GetMetricsFromFile(filePath)
 
-    print(f'Build stats: {filePath}')
-    BuildStats(metrics, './stats_of_output/' + subDir + '/' + prefix)
+def ReduceMetrics(glMetrics: dict):
+    size = Decimal(len(glMetrics[list(glMetrics.keys())[0]]))
 
-    print(f'Build plots: {filePath}')
-    BuildPlots(metrics, './plots_of_output/' + subDir + '/' + prefix)
+    for key, value in glMetrics.items():
+        assert(len(value) == size)
 
-    if removeInput == 1:
-        os.remove(filePath)
+        if key in ['JobManagerName', 'TaskManagerName', 'PlacingStrategyName']:
+            assert([value[0]] * len(value) == value)
+            glMetrics[key] = value[0]
+        elif type(value[0]) is not list:
+            glMetrics[key] = sum(value) / size
+        else:
+            glMetrics[key] = [sum(x) / len(x) for x in zip(*value)]
 
-    print(f'End of process: {filePath}')
+    return glMetrics
+
+
+def Worker(filePathList: list, subDir: str, removeInput: int):
+    glMetrics = {}
+    prefix = '_'.join(filePathList[0][:-len('.txt')].split('/')[-1].split('_')[2:])
+
+    print(f'Process {len(filePathList)} paths with algo {prefix}')
+
+    for filePath in filePathList:
+        print(f'Metrics from file: {filePath}')
+        metrics = GetMetricsFromFile(filePath)
+        metrics = BuildStats(metrics)
+
+        algo = metrics['JobManagerName'] + '_' + metrics['TaskManagerName'] + '_' + metrics['PlacingStrategyName']
+        suffix = '_'.join(filePath[:-len('.txt')].split('/')[-1].split('_')[:2])
+        BuildPlots(metrics, './plots_of_output/' + subDir + '/' + suffix + '_' + algo)
+
+        glMetrics = UpdateMetrics(glMetrics, metrics)
+        if removeInput == 1:
+            os.remove(filePath)
+
+    glMetrics = ReduceMetrics(glMetrics)
+
+    print(f'Build plots for algo {prefix}')
+    algo = glMetrics['JobManagerName'] + '_' + glMetrics['TaskManagerName'] + '_' + glMetrics['PlacingStrategyName']
+    BuildPlots(glMetrics, './plots_of_output/' + subDir + '/' + str(len(filePathList)) + '_' + algo)
+    DumpStats(glMetrics, './stats_of_output/' + subDir + '/' + str(len(filePathList)) + '_' + algo)
+
+    print(f'End of process: {prefix}')
 
 
 def main():
@@ -210,10 +251,16 @@ def main():
 
     pool = multiprocessing.Pool(int(input('Enter max thread count: ').strip()))
 
-    for filePath in GetFiles():
-        if not filePath.endswith('.txt'):
-            continue
-        pool.apply_async(Worker, [filePath, subDir, removeInput])
+    files = GetFiles()
+    baskets = {}
+    for key, value in map(lambda x: ['_'.join(x.split('/')[-1].split('_')[2:]), x], files):
+        if key in baskets:
+            baskets[key].append(value)
+        else:
+            baskets[key] = [value]
+
+    for algo, paths in baskets.items():
+        pool.apply_async(Worker, [sorted(paths), subDir, removeInput])
 
     pool.close()
     pool.join()
