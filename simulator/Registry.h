@@ -119,13 +119,21 @@ enum class PlacingStrategyType {
     MaxMemory_UsedFirst,
     MaxMemory_UnusedFirst,
 
-    MinVolume_NoPartition,
-    MinVolume_UsedFirst,
-    MinVolume_UnusedFirst,
+    MinVolumeBefore_NoPartition,
+    MinVolumeBefore_UsedFirst,
+    MinVolumeBefore_UnusedFirst,
 
-    MaxVolume_NoPartition,
-    MaxVolume_UsedFirst,
-    MaxVolume_UnusedFirst,
+    MaxVolumeBefore_NoPartition,
+    MaxVolumeBefore_UsedFirst,
+    MaxVolumeBefore_UnusedFirst,
+
+    MinVolumeAfter_NoPartition,
+    MinVolumeAfter_UsedFirst,
+    MinVolumeAfter_UnusedFirst,
+
+    MaxVolumeAfter_NoPartition,
+    MaxVolumeAfter_UsedFirst,
+    MaxVolumeAfter_UnusedFirst,
 
     MinTaskCount_NoPartition,
     MinTaskCount_UsedFirst,
@@ -173,13 +181,21 @@ static const std::unordered_map<std::string, PlacingStrategyType> nameToPlacingS
         {"MaxMemory_UsedFirst", PlacingStrategyType::MaxMemory_UsedFirst},
         {"MaxMemory_UnusedFirst", PlacingStrategyType::MaxMemory_UnusedFirst},
 
-        {"MinVolume_NoPartition", PlacingStrategyType::MinVolume_NoPartition},
-        {"MinVolume_UsedFirst", PlacingStrategyType::MinVolume_UsedFirst},
-        {"MinVolume_UnusedFirst", PlacingStrategyType::MinVolume_UnusedFirst},
+        {"MinVolumeBefore_NoPartition", PlacingStrategyType::MinVolumeBefore_NoPartition},
+        {"MinVolumeBefore_UsedFirst", PlacingStrategyType::MinVolumeBefore_UsedFirst},
+        {"MinVolumeBefore_UnusedFirst", PlacingStrategyType::MinVolumeBefore_UnusedFirst},
 
-        {"MaxVolume_NoPartition", PlacingStrategyType::MaxVolume_NoPartition},
-        {"MaxVolume_UsedFirst", PlacingStrategyType::MaxVolume_UsedFirst},
-        {"MaxVolume_UnusedFirst", PlacingStrategyType::MaxVolume_UnusedFirst},
+        {"MaxVolumeBefore_NoPartition", PlacingStrategyType::MaxVolumeBefore_NoPartition},
+        {"MaxVolumeBefore_UsedFirst", PlacingStrategyType::MaxVolumeBefore_UsedFirst},
+        {"MaxVolumeBefore_UnusedFirst", PlacingStrategyType::MaxVolumeBefore_UnusedFirst},
+
+        {"MinVolumeAfter_NoPartition", PlacingStrategyType::MinVolumeAfter_NoPartition},
+        {"MinVolumeAfter_UsedFirst", PlacingStrategyType::MinVolumeAfter_UsedFirst},
+        {"MinVolumeAfter_UnusedFirst", PlacingStrategyType::MinVolumeAfter_UnusedFirst},
+
+        {"MaxVolumeAfter_NoPartition", PlacingStrategyType::MaxVolumeAfter_NoPartition},
+        {"MaxVolumeAfter_UsedFirst", PlacingStrategyType::MaxVolumeAfter_UsedFirst},
+        {"MaxVolumeAfter_UnusedFirst", PlacingStrategyType::MaxVolumeAfter_UnusedFirst},
 
         {"MinTaskCount_NoPartition", PlacingStrategyType::MinTaskCount_NoPartition},
         {"MinTaskCount_UsedFirst", PlacingStrategyType::MinTaskCount_UsedFirst},

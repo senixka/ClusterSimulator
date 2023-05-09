@@ -2,6 +2,9 @@ import csv
 import os
 from decimal import Decimal
 
+NAMES_IN_SCORE = ['1-AvgCpuUtilization', '1-AvgMemoryUtilization', '1-SNP',
+                  'AvgPendingTask', 'Unfairness', 'SlowdownNorm2', 'MaxPendingTask']
+
 
 def GetFiles(dirPath):
     files = []
@@ -14,7 +17,7 @@ def GetFiles(dirPath):
 
 def NumberType(value: str):
     if value.count('.') > 0:
-        return float(value)
+        return Decimal(value)
     return int(value)
 
 
@@ -52,36 +55,54 @@ def GetStats(dirPath: str):
 
 
 def CalculateBest(metrics: list, kBest: int):
-    namesASC = ['AvgPendingTask', 'Unfairness', 'SlowdownNorm2', 'MaxPendingTask']
-    namesDESC = ['AvgCpuUtilization', 'AvgMemoryUtilization', 'AvgWorkingTask', 'SNP']
-
     maxMakeSpan = max([x['MakeSpan'] for x in metrics])
     metrics = list(filter(lambda x: x['MakeSpan'] == maxMakeSpan, metrics))
     algoNames = set()
 
     for i in range(len(metrics)):
-        metrics[i]['Score'] = Decimal(0)
+        for name in NAMES_IN_SCORE:
+            metrics[i][name + '_std'] = Decimal(0)
 
-    for name in namesASC + namesDESC:
-        metrics.sort(key=lambda x: x[name], reverse=(name in namesDESC))
-        bestValue = Decimal(metrics[0][name])
+    for name in NAMES_IN_SCORE:
+        mean = Decimal(0)
+        for row in metrics:
+            mean += row[name]
+        mean /= Decimal(len(metrics))
+
+        stdDiv = Decimal(0)
+        for row in metrics:
+            stdDiv += (row[name] - mean) ** Decimal(2)
+        stdDiv /= Decimal(len(metrics) - 1)
 
         for row in metrics:
-            row['Score'] += abs(Decimal(row[name]) - bestValue) / bestValue
+            row['STD_' + name] = (row[name] - mean) / stdDiv
+            row['SIGMOID_STD_' + name] = Decimal(1) / (Decimal(1) + (-row['STD_' + name]).exp())
 
+        metrics.sort(key=lambda x: x['SIGMOID_STD_' + name])
+
+        print('--------------', 'SIGMOID_STD_' + name, '--------------')
+        for i in range(kBest):
+            print(metrics[i]['Algorithm'], metrics[i]['SIGMOID_STD_' + name])
+            algoNames.add(metrics[i]['Algorithm'])
+        print()
+
+    for row in metrics:
+        scoreNorm2, scoreSum = Decimal(0), Decimal(0)
+        for name in NAMES_IN_SCORE:
+            scoreNorm2 += row['SIGMOID_STD_' + name] ** Decimal(2)
+            scoreSum += row['SIGMOID_STD_' + name]
+
+        row['Score_Norm2'] = scoreNorm2.sqrt()
+        row['Score_Sum'] = scoreSum
+
+    # Best by score
+    for name in ['Score_Norm2', 'Score_Sum']:
+        metrics.sort(key=lambda x: x[name])
         print('--------------', name, '--------------')
         for i in range(kBest):
             print(metrics[i]['Algorithm'], metrics[i][name])
             algoNames.add(metrics[i]['Algorithm'])
         print()
-
-    # Best by score
-    metrics.sort(key=lambda x: x['Score'])
-    print('-------------- Score --------------')
-    for i in range(kBest):
-        print(metrics[i]['Algorithm'], metrics[i]['Score'])
-        algoNames.add(metrics[i]['Algorithm'])
-    print()
 
     # All best
     print('-------------- Best algorithms --------------')
@@ -93,18 +114,20 @@ def CalculateBest(metrics: list, kBest: int):
 def Main():
     # Init metrics
     subDir = input('Enter output sub dir name: ').strip()
-    assert(len(subDir) > 0)
+    assert (len(subDir) > 0)
 
     dirPath = './stats_of_output/' + subDir + '/'
-    assert(os.path.isdir(dirPath))
+    assert (os.path.isdir(dirPath))
 
     metrics = GetStats(dirPath)
     metrics = CalculateBest(metrics, 10)
 
-    metrics.sort(key=lambda x: x['Score'])
+    metrics.sort(key=lambda x: x['Score_Norm2'])
 
-    outKeys = ['Algorithm', 'Score', 'AvgCpuUtilization', 'AvgMemoryUtilization',
-               'AvgPendingTask', 'AvgWorkingTask', 'MaxPendingTask', 'Unfairness', 'SlowdownNorm2', 'SNP']
+    outKeys = ['Algorithm', 'Score_Norm2', 'Score_Sum'] + \
+              list(map(lambda x: 'SIGMOID_STD_' + x, NAMES_IN_SCORE)) + \
+              list(map(lambda x: 'STD_' + x, NAMES_IN_SCORE)) + \
+              NAMES_IN_SCORE
 
     for i in range(len(metrics)):
         metrics[i] = {key: metrics[i][key] for key in outKeys}

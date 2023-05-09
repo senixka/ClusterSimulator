@@ -8,10 +8,12 @@
 #include "MaxSum.h"
 #include "MinMemory.h"
 #include "MaxMemory.h"
-#include "MinVolume.h"
-#include "MaxVolume.h"
 #include "MinTaskCount.h"
 #include "MaxTaskCount.h"
+#include "MinVolumeBefore.h"
+#include "MaxVolumeBefore.h"
+#include "MinVolumeAfter.h"
+#include "MaxVolumeAfter.h"
 #include "MinMachineIndex.h"
 
 
@@ -105,24 +107,44 @@ IPlacingStrategy* FactoryPlacingStrategy::Create(PlacingStrategyType placingStra
             return (new placing_strategy::Random<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MinVolume_NoPartition:
-            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::NoPartition>{});
+        case PlacingStrategyType::MinVolumeBefore_NoPartition:
+            return (new placing_strategy::MinVolumeBefore<placing_strategy::partition_policy::NoPartition>{});
 
-        case PlacingStrategyType::MinVolume_UsedFirst:
-            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::UsedFirst>{});
+        case PlacingStrategyType::MinVolumeBefore_UsedFirst:
+            return (new placing_strategy::MinVolumeBefore<placing_strategy::partition_policy::UsedFirst>{});
 
-        case PlacingStrategyType::MinVolume_UnusedFirst:
-            return (new placing_strategy::MinVolume<placing_strategy::partition_policy::UnusedFirst>{});
+        case PlacingStrategyType::MinVolumeBefore_UnusedFirst:
+            return (new placing_strategy::MinVolumeBefore<placing_strategy::partition_policy::UnusedFirst>{});
 
 
-        case PlacingStrategyType::MaxVolume_NoPartition:
-            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::NoPartition>{});
+        case PlacingStrategyType::MaxVolumeBefore_NoPartition:
+            return (new placing_strategy::MaxVolumeBefore<placing_strategy::partition_policy::NoPartition>{});
 
-        case PlacingStrategyType::MaxVolume_UsedFirst:
-            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::UsedFirst>{});
+        case PlacingStrategyType::MaxVolumeBefore_UsedFirst:
+            return (new placing_strategy::MaxVolumeBefore<placing_strategy::partition_policy::UsedFirst>{});
 
-        case PlacingStrategyType::MaxVolume_UnusedFirst:
-            return (new placing_strategy::MaxVolume<placing_strategy::partition_policy::UnusedFirst>{});
+        case PlacingStrategyType::MaxVolumeBefore_UnusedFirst:
+            return (new placing_strategy::MaxVolumeBefore<placing_strategy::partition_policy::UnusedFirst>{});
+
+
+        case PlacingStrategyType::MinVolumeAfter_NoPartition:
+            return (new placing_strategy::MinVolumeAfter<placing_strategy::partition_policy::NoPartition>{});
+
+        case PlacingStrategyType::MinVolumeAfter_UsedFirst:
+            return (new placing_strategy::MinVolumeAfter<placing_strategy::partition_policy::UsedFirst>{});
+
+        case PlacingStrategyType::MinVolumeAfter_UnusedFirst:
+            return (new placing_strategy::MinVolumeAfter<placing_strategy::partition_policy::UnusedFirst>{});
+
+
+        case PlacingStrategyType::MaxVolumeAfter_NoPartition:
+            return (new placing_strategy::MaxVolumeAfter<placing_strategy::partition_policy::NoPartition>{});
+
+        case PlacingStrategyType::MaxVolumeAfter_UsedFirst:
+            return (new placing_strategy::MaxVolumeAfter<placing_strategy::partition_policy::UsedFirst>{});
+
+        case PlacingStrategyType::MaxVolumeAfter_UnusedFirst:
+            return (new placing_strategy::MaxVolumeAfter<placing_strategy::partition_policy::UnusedFirst>{});
 
 
         case PlacingStrategyType::MinTaskCount_NoPartition:

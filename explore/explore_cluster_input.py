@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
+import seaborn as sns
+
 
 matplotlib.use('Agg')
 plt.ioff()
 
-UINT64_MAX = 18446744073709551615
+UINT32_MAX = 4294967295
 
 CPU_BUCKET_CNT, MEM_BUCKET_CNT = 15, 15
 MAX_CPU_VALUE, MAX_MEM_VALUE = 1000, 1000
@@ -15,8 +17,8 @@ MEM_STEP = (MAX_MEM_VALUE + MEM_BUCKET_CNT - 1) // MEM_BUCKET_CNT
 
 
 def BoundedSum(a, b):
-    if a + b > UINT64_MAX:
-        return UINT64_MAX
+    if a + b > UINT32_MAX:
+        return UINT32_MAX
     return a + b
 
 
@@ -24,7 +26,7 @@ def TaskWorkloadInClusterInput():
     # ///////////////////////// Prepare Events /////////////////////////
 
     with open("../simulator/input/job_and_task.txt", "r") as fin:
-        jobN = int(fin.readline())
+        jobN, totalTask = map(int, fin.readline().split())
         fin.readline()
 
         taskCounter = 0
@@ -44,7 +46,9 @@ def TaskWorkloadInClusterInput():
 
             fin.readline()
 
-    assert(taskCounter * 2 == len(events))
+        assert(taskCounter == totalTask)
+        assert(taskCounter * 2 == len(events))
+
     events.sort()
     print('Events size:', len(events))
 
@@ -67,7 +71,7 @@ def TaskWorkloadInClusterInput():
 
             Z[cpu // CPU_STEP][mem // MEM_STEP] += 1
 
-        if time == UINT64_MAX:
+        if time == UINT32_MAX:
             break
 
         while time > nextUpdateTime:
@@ -79,23 +83,6 @@ def TaskWorkloadInClusterInput():
             nextUpdateTime += updateStatEach
 
     Z.astype(int)
-
-    # ///////////////////////// Stat Machines /////////////////////////
-
-    sumCpu, sumMem = 0, 0
-    with open("../simulator/input/machine_orig.txt", "r") as fin:
-        machineN = int(fin.readline())
-        machines = {}
-
-        for _ in range(machineN):
-            cpu, mem, cnt = map(int, fin.readline().split())
-            sumCpu += cpu * cnt
-            sumMem += mem * cnt
-
-            if (cpu, mem) not in machines:
-                machines[(cpu, mem)] = cnt
-            else:
-                machines[(cpu, mem)] += cnt
 
     # ///////////////////////// Task distribution ////////////////////
 
@@ -121,6 +108,28 @@ def TaskWorkloadInClusterInput():
 
     plt.savefig("./plots_of_input/input_task_distribution.png")
     plt.close()
+
+    # ///////////////////////// Stat Machines /////////////////////////
+    sns.set_theme()
+
+    sumCpu, sumMem = 0, 0
+    with open("../simulator/input/machine_orig.txt", "r") as fin:
+        totalMachine, machineN = map(int, fin.readline().split())
+        machines = {}
+        machineCnt = 0
+
+        for _ in range(machineN):
+            cnt, cpu, mem = map(int, fin.readline().split())
+            sumCpu += cpu * cnt
+            sumMem += mem * cnt
+            machineCnt += cnt
+
+            if (cpu, mem) not in machines:
+                machines[(cpu, mem)] = cnt
+            else:
+                machines[(cpu, mem)] += cnt
+
+        assert(machineCnt == totalMachine)
 
     # ///////////////////////// Task working /////////////////////////
 

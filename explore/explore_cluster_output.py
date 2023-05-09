@@ -76,6 +76,9 @@ def BuildStats(metrics: dict):
     metrics['AvgCpuUtilization'] = Decimal(sumCpuNumerator) / Decimal(eventCnt * metrics['TotalAvailableCPU'])
     metrics['AvgMemoryUtilization'] = Decimal(sumMemoryNumerator) / Decimal(eventCnt * metrics['TotalAvailableMemory'])
 
+    metrics['1-AvgCpuUtilization'] = Decimal(1) - metrics['AvgCpuUtilization']
+    metrics['1-AvgMemoryUtilization'] = Decimal(1) - metrics['AvgMemoryUtilization']
+
     # ////////////////////// Average Pending, Working //////////////
     sumPending, sumWorking, eventCnt = 0, 0, 0
     for pending, working in zip(metrics['PendingTask'], metrics['WorkingTask']):
@@ -100,6 +103,7 @@ def BuildStats(metrics: dict):
     jobANPLen = Decimal(len(metrics['JobANP']))
 
     metrics['SNP'] = (snp / jobANPLen).exp()
+    metrics['1-SNP'] = Decimal(1) - metrics['SNP']
 
     # ////////////////////// Unfairness ///////////////////////
     meanANP = Decimal(0)
@@ -109,7 +113,7 @@ def BuildStats(metrics: dict):
 
     stdDeviation = Decimal(0)
     for anp in metrics['JobANP']:
-        stdDeviation += (anp - meanANP) ** 2
+        stdDeviation += (anp - meanANP) ** Decimal(2)
     stdDeviation = (stdDeviation / jobANPLen).sqrt()
 
     metrics['Unfairness'] = stdDeviation * Decimal(100) / meanANP
@@ -117,7 +121,7 @@ def BuildStats(metrics: dict):
     # ////////////////////// Slowdown 2-norm /////////////////////
     slowdown = Decimal(0)
     for anp in metrics['JobANP']:
-        slowdown += Decimal(1) / anp ** 2
+        slowdown += Decimal(1) / anp ** Decimal(2)
 
     metrics['SlowdownNorm2'] = (slowdown / jobANPLen).sqrt()
 
@@ -130,13 +134,17 @@ def DumpStats(metrics: dict, outputPathPrefix: str):
             fout.write(name + '\n')
             fout.write(str(metrics[name]) + '\n')
 
-        for name in ['AvgCpuUtilization', 'AvgMemoryUtilization', 'AvgPendingTask', 'AvgWorkingTask',
-                     'SNP', 'Unfairness', 'SlowdownNorm2']:
+        for name in ['AvgCpuUtilization', 'AvgMemoryUtilization',
+                     '1-AvgCpuUtilization', '1-AvgMemoryUtilization',
+                     'AvgPendingTask', 'AvgWorkingTask',
+                     'SNP', '1-SNP', 'Unfairness', 'SlowdownNorm2']:
             fout.write(name + '\n')
             fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
-        for name in ['MakeSpan', 'MaxPendingTask', 'TotalAvailableCPU', 'TotalAvailableMemory', 'PendingTaskCounter',
-                     'UnfinishedJobCounter', 'nJobInSimulation', 'nTaskInSimulation', 'TaskFinishedCounter']:
+        for name in ['MakeSpan', 'MaxPendingTask', 'TotalAvailableCPU',
+                     'TotalAvailableMemory', 'PendingTaskCounter',
+                     'UnfinishedJobCounter', 'nJobInSimulation',
+                     'nTaskInSimulation', 'TaskFinishedCounter']:
             fout.write(name + '\n')
             fout.write(str(metrics[name]) + '\n')
 
