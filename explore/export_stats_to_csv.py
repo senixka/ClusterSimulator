@@ -5,6 +5,9 @@ from decimal import Decimal
 NAMES_IN_SCORE = ['1-AvgCpuUtilization', '1-AvgMemoryUtilization', '1-SNP',
                   'AvgPendingTask', 'Unfairness', 'SlowdownNorm2', 'MaxPendingTask']
 
+OUT_NAMES = NAMES_IN_SCORE + ['AvgCpuUtilization', 'AvgMemoryUtilization', 'SNP']
+OUT_NAMES = OUT_NAMES + list(map(lambda x: x + '_STDDIV', OUT_NAMES))
+
 
 def GetFiles(dirPath):
     files = []
@@ -120,14 +123,14 @@ def Main():
     assert (os.path.isdir(dirPath))
 
     metrics = GetStats(dirPath)
-    metrics = CalculateBest(metrics, 10)
+    metrics = CalculateBest(metrics, 1)
 
     metrics.sort(key=lambda x: x['Score_Norm2'])
 
     outKeys = ['Algorithm', 'Score_Norm2', 'Score_Sum'] + \
               list(map(lambda x: 'SIGMOID_STD_' + x, NAMES_IN_SCORE)) + \
               list(map(lambda x: 'STD_' + x, NAMES_IN_SCORE)) + \
-              NAMES_IN_SCORE
+              OUT_NAMES
 
     for i in range(len(metrics)):
         metrics[i] = {key: metrics[i][key] for key in outKeys}

@@ -142,10 +142,26 @@ def DumpStats(metrics: dict, outputPathPrefix: str):
             fout.write(name + '\n')
             fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
+        for name in map(lambda x: x + '_STDDIV',
+                        ['AvgCpuUtilization', 'AvgMemoryUtilization',
+                        '1-AvgCpuUtilization', '1-AvgMemoryUtilization',
+                        'AvgPendingTask', 'AvgWorkingTask',
+                        'SNP', '1-SNP', 'Unfairness', 'SlowdownNorm2']):
+            fout.write(name + '\n')
+            fout.write(str(metrics[name])[:OUT_PREC] + '\n')
+
         for name in ['MakeSpan', 'MaxPendingTask', 'TotalAvailableCPU',
                      'TotalAvailableMemory', 'PendingTaskCounter',
                      'UnfinishedJobCounter', 'nJobInSimulation',
                      'nTaskInSimulation', 'TaskFinishedCounter']:
+            fout.write(name + '\n')
+            fout.write(str(metrics[name]) + '\n')
+
+        for name in map(lambda x: x + '_STDDIV',
+                        ['MakeSpan', 'MaxPendingTask', 'TotalAvailableCPU',
+                        'TotalAvailableMemory', 'PendingTaskCounter',
+                        'UnfinishedJobCounter', 'nJobInSimulation',
+                        'nTaskInSimulation', 'TaskFinishedCounter']):
             fout.write(name + '\n')
             fout.write(str(metrics[name]) + '\n')
 
@@ -208,7 +224,7 @@ def UpdateMetrics(glMetrics: dict, metrics: dict):
 def ReduceMetrics(glMetrics: dict):
     size = Decimal(len(glMetrics[list(glMetrics.keys())[0]]))
 
-    for key, value in glMetrics.items():
+    for key, value in list(glMetrics.items()):
         assert(len(value) == size)
 
         if key in ['JobManagerName', 'TaskManagerName', 'PlacingStrategyName']:
@@ -216,6 +232,23 @@ def ReduceMetrics(glMetrics: dict):
             glMetrics[key] = value[0]
         elif type(value[0]) is not list:
             glMetrics[key] = sum(value) / size
+
+            if size > Decimal(1):
+                mean = Decimal(0)
+                for x in value:
+                    mean += x
+                mean /= Decimal(size)
+
+                stdDiv = Decimal(0)
+                for x in value:
+                    stdDiv += (x - mean) ** Decimal(2)
+                stdDiv /= Decimal(size - 1)
+
+                glMetrics[key] = mean
+                glMetrics[key + '_STDDIV'] = stdDiv
+            else:
+                glMetrics[key] = value[0]
+                glMetrics[key + '_STDDIV'] = 0
         else:
             glMetrics[key] = [sum(x) / len(x) for x in zip(*value)]
 
