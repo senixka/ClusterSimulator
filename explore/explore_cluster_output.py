@@ -7,8 +7,9 @@ import matplotlib
 import decimal
 from decimal import Decimal
 import multiprocessing
+import seaborn as sns
 
-
+sns.set_theme()
 matplotlib.use('Agg')
 plt.ioff()
 
@@ -169,6 +170,7 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
     plt.plot(mTimes[0], metrics['PendingTask'][0], label='SNP: ' + str(metrics['SNP'])[:OUT_PREC])
 
     plt.legend()
+    plt.tight_layout()
     plt.savefig(outputPathPrefix + '_pending_working.png')
     plt.close()
 
@@ -188,6 +190,7 @@ def BuildPlots(metrics: dict, outputPathPrefix: str):
              label='Memory AVG ' + str(metrics['AvgMemoryUtilization'])[:OUT_PREC])
 
     plt.legend()
+    plt.tight_layout()
     plt.savefig(outputPathPrefix + '_utilization.png')
     plt.close()
 

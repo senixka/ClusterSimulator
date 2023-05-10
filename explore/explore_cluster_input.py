@@ -83,6 +83,13 @@ def TaskWorkloadInClusterInput():
             nextUpdateTime += updateStatEach
 
     Z.astype(int)
+    FirstD = np.zeros((CPU_BUCKET_CNT, MEM_BUCKET_CNT))
+
+    for i in range(CPU_BUCKET_CNT):
+        for j in range(MEM_BUCKET_CNT):
+            if int(Z[i, j]) != 0:
+                FirstD[i, j] = str(int(Z[i, j]))[0]
+                Z[i, j] = len(str(int(Z[i, j])))
 
     # ///////////////////////// Task distribution ////////////////////
 
@@ -99,7 +106,10 @@ def TaskWorkloadInClusterInput():
 
     for i in range(len(xTicks)):
         for j in range(len(yTicks)):
-            ax.text(j, i, int(Z[i, j]), ha="center", va="center", color="red", size="xx-small")
+            if int(Z[i, j]) != 0:
+                ax.text(j, i, str(int(FirstD[i, j])) + 'e' + str(int(Z[i, j]) - 1), ha="center", va="center", color="red")
+            else:
+                ax.text(j, i, 0, ha="center", va="center", color="red")
 
     ax.set_title("Task count (in cpu/memory demand)")
     ax.set_xlabel("Memory")
@@ -133,7 +143,7 @@ def TaskWorkloadInClusterInput():
 
     # ///////////////////////// Task working /////////////////////////
 
-    plt.figure(figsize=(12, 5))
+    plt.figure(figsize=(8, 5))
     plt.title("Task working in Time")
     plt.xlabel("Time (in microseconds)")
     plt.ylabel("Count")
@@ -141,12 +151,13 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, statTaskCounter, label="Working task")
 
     plt.legend()
+    plt.tight_layout()
     plt.savefig("./plots_of_input/input_working_task.png")
     plt.close()
 
     # //////////////////////////// Resource demand ///////////////////
 
-    plt.figure(figsize=(12, 5))
+    plt.figure(figsize=(8, 5))
     plt.title("Task resource demand in Time")
     plt.xlabel("Time (in seconds)")
     plt.ylabel("Unit")
@@ -157,12 +168,13 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, np.full_like(statTime, sumMem), label="Machine Memory")
 
     plt.legend()
+    plt.tight_layout()
     plt.savefig("./plots_of_input/input_task_resources.png")
     plt.close()
 
     # //////////////////////////// Recourse ratio ////////////////////
 
-    plt.figure(figsize=(12, 5))
+    plt.figure(figsize=(8, 5))
     plt.title("Cpu / Memory")
     plt.xlabel("Time (in seconds)")
     plt.ylabel("Ratio")
@@ -171,6 +183,7 @@ def TaskWorkloadInClusterInput():
     plt.plot(statTime, ratio, label="Ratio")
 
     plt.legend()
+    plt.tight_layout()
     plt.savefig("./plots_of_input/input_ratio_cpu_memory.png")
     plt.close()
 
