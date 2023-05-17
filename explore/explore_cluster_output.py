@@ -74,11 +74,11 @@ def BuildStats(metrics: dict):
         metrics['UtilizationCPU'].append(float(cpuNumerator) / float(metrics['TotalAvailableCPU']))
         metrics['UtilizationMemory'].append(float(memNumerator) / float(metrics['TotalAvailableMemory']))
 
-    metrics['AvgCpuUtilization'] = Decimal(sumCpuNumerator) / Decimal(eventCnt * metrics['TotalAvailableCPU'])
-    metrics['AvgMemoryUtilization'] = Decimal(sumMemoryNumerator) / Decimal(eventCnt * metrics['TotalAvailableMemory'])
+    metrics['AvgCpuUtilization'] = Decimal(100 * sumCpuNumerator) / Decimal(eventCnt * metrics['TotalAvailableCPU'])
+    metrics['AvgMemoryUtilization'] = Decimal(100 * sumMemoryNumerator) / Decimal(eventCnt * metrics['TotalAvailableMemory'])
 
-    metrics['1-AvgCpuUtilization'] = Decimal(1) - metrics['AvgCpuUtilization']
-    metrics['1-AvgMemoryUtilization'] = Decimal(1) - metrics['AvgMemoryUtilization']
+    metrics['100-AvgCpuUtilization'] = Decimal(100) - metrics['AvgCpuUtilization']
+    metrics['100-AvgMemoryUtilization'] = Decimal(100) - metrics['AvgMemoryUtilization']
 
     # ////////////////////// Average Pending, Working //////////////
     sumPending, sumWorking, eventCnt = 0, 0, 0
@@ -136,17 +136,17 @@ def DumpStats(metrics: dict, outputPathPrefix: str):
             fout.write(str(metrics[name]) + '\n')
 
         for name in ['AvgCpuUtilization', 'AvgMemoryUtilization',
-                     '1-AvgCpuUtilization', '1-AvgMemoryUtilization',
+                     '100-AvgCpuUtilization', '100-AvgMemoryUtilization',
                      'AvgPendingTask', 'AvgWorkingTask',
                      'SNP', '1-SNP', 'Unfairness', 'SlowdownNorm2']:
             fout.write(name + '\n')
             fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
-        for name in map(lambda x: x + '_STDDIV',
+        for name in map(lambda x: x + '_STDDEV',
                         ['AvgCpuUtilization', 'AvgMemoryUtilization',
-                        '1-AvgCpuUtilization', '1-AvgMemoryUtilization',
-                        'AvgPendingTask', 'AvgWorkingTask',
-                        'SNP', '1-SNP', 'Unfairness', 'SlowdownNorm2']):
+                         '100-AvgCpuUtilization', '100-AvgMemoryUtilization',
+                         'AvgPendingTask', 'AvgWorkingTask',
+                         'SNP', '1-SNP', 'Unfairness', 'SlowdownNorm2']):
             fout.write(name + '\n')
             fout.write(str(metrics[name])[:OUT_PREC] + '\n')
 
@@ -154,14 +154,6 @@ def DumpStats(metrics: dict, outputPathPrefix: str):
                      'TotalAvailableMemory', 'PendingTaskCounter',
                      'UnfinishedJobCounter', 'nJobInSimulation',
                      'nTaskInSimulation', 'TaskFinishedCounter']:
-            fout.write(name + '\n')
-            fout.write(str(metrics[name]) + '\n')
-
-        for name in map(lambda x: x + '_STDDIV',
-                        ['MakeSpan', 'MaxPendingTask', 'TotalAvailableCPU',
-                        'TotalAvailableMemory', 'PendingTaskCounter',
-                        'UnfinishedJobCounter', 'nJobInSimulation',
-                        'nTaskInSimulation', 'TaskFinishedCounter']):
             fout.write(name + '\n')
             fout.write(str(metrics[name]) + '\n')
 
@@ -225,7 +217,7 @@ def ReduceMetrics(glMetrics: dict):
     size = Decimal(len(glMetrics[list(glMetrics.keys())[0]]))
 
     for key, value in list(glMetrics.items()):
-        assert(len(value) == size)
+        assert(Decimal(len(value)) == size)
 
         if key in ['JobManagerName', 'TaskManagerName', 'PlacingStrategyName']:
             assert([value[0]] * len(value) == value)
@@ -242,13 +234,14 @@ def ReduceMetrics(glMetrics: dict):
                 stdDiv = Decimal(0)
                 for x in value:
                     stdDiv += (x - mean) ** Decimal(2)
-                stdDiv /= Decimal(size - 1)
+                stdDiv /= Decimal(size)
+                stdDiv = stdDiv.sqrt()
 
                 glMetrics[key] = mean
-                glMetrics[key + '_STDDIV'] = stdDiv
+                glMetrics[key + '_STDDEV'] = stdDiv
             else:
                 glMetrics[key] = value[0]
-                glMetrics[key + '_STDDIV'] = 0
+                glMetrics[key + '_STDDEV'] = 0
         else:
             glMetrics[key] = [sum(x) / len(x) for x in zip(*value)]
 

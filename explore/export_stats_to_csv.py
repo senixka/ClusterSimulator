@@ -1,12 +1,20 @@
 import csv
 import os
 from decimal import Decimal
+import matplotlib.pyplot as plt
 
-NAMES_IN_SCORE = ['1-AvgCpuUtilization', '1-AvgMemoryUtilization', '1-SNP',
-                  'AvgPendingTask', 'Unfairness', 'SlowdownNorm2', 'MaxPendingTask']
+
+NAMES_IN_SCORE = ['100-AvgCpuUtilization', '100-AvgMemoryUtilization', '1-SNP',
+                  'AvgPendingTask', 'Unfairness', 'SlowdownNorm2']
+
+METRIC_GROUPS = [('G_Utilization', ['100-AvgCpuUtilization', '100-AvgMemoryUtilization'], 1),
+                 ('G_ANP', ['1-SNP', 'Unfairness', 'SlowdownNorm2'], 1),
+                 ('G_Pending', ['AvgPendingTask'], 1)]
 
 OUT_NAMES = NAMES_IN_SCORE + ['AvgCpuUtilization', 'AvgMemoryUtilization', 'SNP']
-OUT_NAMES = OUT_NAMES + list(map(lambda x: x + '_STDDIV', OUT_NAMES))
+OUT_NAMES += list(map(lambda x: x + '_STDDEV', OUT_NAMES))
+OUT_NAMES += list(map(lambda x: x[0], METRIC_GROUPS))
+OUT_NAMES += ['Score_scaled_sum', 'G_Score_scaled_sum']
 
 
 def GetFiles(dirPath):
@@ -57,59 +65,40 @@ def GetStats(dirPath: str):
     return metrics
 
 
-def CalculateBest(metrics: list, kBest: int):
-    maxMakeSpan = max([x['MakeSpan'] for x in metrics])
-    metrics = list(filter(lambda x: x['MakeSpan'] == maxMakeSpan, metrics))
-    algoNames = set()
-
-    for i in range(len(metrics)):
-        for name in NAMES_IN_SCORE:
-            metrics[i][name + '_std'] = Decimal(0)
-
+def CalculateScore(metrics: list):
     for name in NAMES_IN_SCORE:
-        mean = Decimal(0)
+        minValue = Decimal(min([row[name] for row in metrics]))
         for row in metrics:
-            mean += row[name]
-        mean /= Decimal(len(metrics))
+            row[name + '_scaled'] = row[name] - minValue
 
-        stdDiv = Decimal(0)
+        maxValue = Decimal(max([row[name + '_scaled'] for row in metrics]))
         for row in metrics:
-            stdDiv += (row[name] - mean) ** Decimal(2)
-        stdDiv /= Decimal(len(metrics) - 1)
-
-        for row in metrics:
-            row['STD_' + name] = (row[name] - mean) / stdDiv
-            row['SIGMOID_STD_' + name] = Decimal(1) / (Decimal(1) + (-row['STD_' + name]).exp())
-
-        metrics.sort(key=lambda x: x['SIGMOID_STD_' + name])
-
-        print('--------------', 'SIGMOID_STD_' + name, '--------------')
-        for i in range(kBest):
-            print(metrics[i]['Algorithm'], metrics[i]['SIGMOID_STD_' + name])
-            algoNames.add(metrics[i]['Algorithm'])
-        print()
+            row[name + '_scaled'] = row[name + '_scaled'] / maxValue
 
     for row in metrics:
-        scoreNorm2, scoreSum = Decimal(0), Decimal(0)
+        scoreScaledSum = Decimal(0)
         for name in NAMES_IN_SCORE:
-            scoreNorm2 += row['SIGMOID_STD_' + name] ** Decimal(2)
-            scoreSum += row['SIGMOID_STD_' + name]
+            scoreScaledSum += row[name + '_scaled']
 
-        row['Score_Norm2'] = scoreNorm2.sqrt()
-        row['Score_Sum'] = scoreSum
+        row['Score_scaled_sum'] = scoreScaledSum
 
-    # Best by score
-    for name in ['Score_Norm2', 'Score_Sum']:
-        metrics.sort(key=lambda x: x[name])
-        print('--------------', name, '--------------')
-        for i in range(kBest):
-            print(metrics[i]['Algorithm'], metrics[i][name])
-            algoNames.add(metrics[i]['Algorithm'])
-        print()
+    for row in metrics:
+        for group in METRIC_GROUPS:
+            g_name = group[0]
+            row[g_name] = Decimal(0)
+            for name in group[1]:
+                row[g_name] += row[name + '_scaled']
+            row[g_name] /= Decimal(len(group[1]))
 
-    # All best
-    print('-------------- Best algorithms --------------')
-    print(*algoNames, sep='\n', end='\n\n')
+    for row in metrics:
+        g_ScoreScaledSum = Decimal(0)
+        for group in METRIC_GROUPS:
+            g_name = group[0]
+            alpha = Decimal(group[2])
+
+            g_ScoreScaledSum += alpha * row[g_name]
+
+        row['G_Score_scaled_sum'] = g_ScoreScaledSum
 
     return metrics
 
@@ -122,15 +111,29 @@ def Main():
     dirPath = './stats_of_output/' + subDir + '/'
     assert (os.path.isdir(dirPath))
 
+    filterWithMakeSpan = int(input('Enter 1 to filter with MakeSpan, 0 otherwise: '))
+
     metrics = GetStats(dirPath)
-    metrics = CalculateBest(metrics, 1)
 
-    metrics.sort(key=lambda x: x['Score_Norm2'])
+    if filterWithMakeSpan == 1:
+        maxMakeSpan = max([x['MakeSpan'] for x in metrics])
+        metrics = list(filter(lambda x: x['MakeSpan'] == maxMakeSpan, metrics))
 
-    outKeys = ['Algorithm', 'Score_Norm2', 'Score_Sum'] + \
-              list(map(lambda x: 'SIGMOID_STD_' + x, NAMES_IN_SCORE)) + \
-              list(map(lambda x: 'STD_' + x, NAMES_IN_SCORE)) + \
-              OUT_NAMES
+    metrics = CalculateScore(metrics)
+
+    outKeys = ['Algorithm'] + list(reversed(OUT_NAMES))
+
+    plt.plot(list(sorted([row['Unfairness_scaled'] for row in metrics])))
+    plt.plot(list(sorted([row['1-SNP_scaled'] for row in metrics])))
+    plt.plot(list(sorted([row['SlowdownNorm2_scaled'] for row in metrics])))
+    plt.plot(list(sorted([row['100-AvgCpuUtilization_scaled'] for row in metrics])))
+    plt.plot(list(sorted([row['100-AvgMemoryUtilization_scaled'] for row in metrics])))
+    plt.plot(list(sorted([row['AvgPendingTask_scaled'] for row in metrics])))
+    plt.show()
+
+    plt.plot(list(sorted([row['Score_scaled_sum'] for row in metrics])))
+    plt.plot(list(sorted([row['G_Score_scaled_sum'] for row in metrics])))
+    plt.show()
 
     for i in range(len(metrics)):
         metrics[i] = {key: metrics[i][key] for key in outKeys}
